@@ -60,6 +60,30 @@
         .msg { text-align: center; font-weight: 700; margin-top: 12px; font-size: 14px; min-height: 20px; }
         .msg.err { color: #b91c1c; }
 
+        .fotos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .foto-item { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; border: 1.5px solid #cbd5e1; background: #f8fafc; }
+        .foto-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .foto-item .quitar-foto {
+            position: absolute; top: 4px; right: 4px; width: 30px; height: 30px; border-radius: 50%;
+            border: none; background: rgba(17,24,39,.75); color: #fff; font-size: 15px; font-weight: bold;
+            cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center;
+        }
+        .foto-item .estado-foto {
+            position: absolute; left: 0; right: 0; bottom: 0; padding: 4px 6px; font-size: 11px;
+            font-weight: 700; text-align: center; color: #fff; background: rgba(17,24,39,.72);
+        }
+        .foto-item.subiendo .estado-foto { background: rgba(28,63,148,.85); }
+        .foto-item.lista .estado-foto { background: rgba(21,128,61,.85); }
+        .foto-item.fallo { border-color: #fca5a5; }
+        .foto-item.fallo .estado-foto { background: rgba(185,28,28,.9); cursor: pointer; }
+        .agregar-foto {
+            aspect-ratio: 1; border: 2px dashed #93c5fd; border-radius: 10px; background: #eff6ff;
+            color: var(--azul-pc); font-size: 32px; font-weight: 300; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px;
+        }
+        .agregar-foto span { font-size: 11.5px; font-weight: 700; }
+        .agregar-foto:disabled { opacity: .45; cursor: not-allowed; }
+
         .ok-screen { display: none; text-align: center; padding: 40px 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .ok-screen .check { font-size: 60px; }
         .ok-screen h2 { color: #16a34a; font-size: 24px; margin: 10px 0; }
@@ -182,6 +206,16 @@
                 <textarea id="f_diagnostico" placeholder="Ejemplo: la pared del fondo se agrietó después de las lluvias y cada vez se abre más..."></textarea>
             </div>
 
+            <div class="seccion" id="seccionFotos">
+                <h3>Fotos</h3>
+                <p class="pista">Opcional, pero ayuda muchísimo. Puedes agregar hasta 10. Toca el <b>+</b> para agregar una y repite para la siguiente.</p>
+                <div class="fotos-grid" id="fotosGrid">
+                    <button type="button" class="agregar-foto" id="btnAgregarFoto">+<span>Agregar foto</span></button>
+                </div>
+                <input type="file" id="entradaFoto" accept="image/*" style="display:none">
+                <div class="msg" id="msgFotos" style="margin-top:8px"></div>
+            </div>
+
             <div class="seccion">
                 <h3>¿Quién reporta?</h3>
                 <p class="pista">Para poder contactarte si hace falta más información.</p>
@@ -273,6 +307,114 @@
 
         function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
+        /* ================= FOTOS =================
+           Se suben a Cloudflare R2 en cuanto se eligen (así el envío
+           final es instantáneo y la persona ve que van subiendo). Se
+           encogen aquí mismo antes de mandarlas: una foto de cámara pesa
+           varios megas y con datos móviles eso no sube nunca. */
+        /* Dirección del Worker que guarda las fotos en Cloudflare R2.
+           Mientras esté vacía, la sección de fotos NO se muestra: es
+           preferible que no aparezca a que aparezca y falle al subir. */
+        const SUBIDA_FOTOS = '';
+        const MAX_FOTOS = 10;
+        const fotos = [];   // { id, estado: 'subiendo'|'lista'|'fallo', url, archivo }
+        let contadorFotos = 0;
+
+        if (!SUBIDA_FOTOS) $('seccionFotos').style.display = 'none';
+
+        function encogerFoto(archivo, ladoMax = 1400, calidad = 0.72) {
+            return new Promise((resolve, reject) => {
+                const lector = new FileReader();
+                lector.onerror = () => reject(new Error('No se pudo leer la foto.'));
+                lector.onload = () => {
+                    const img = new Image();
+                    img.onerror = () => reject(new Error('El archivo no es una imagen válida.'));
+                    img.onload = () => {
+                        const lado = Math.max(img.width, img.height);
+                        const escala = lado > ladoMax ? ladoMax / lado : 1;
+                        const lienzo = document.createElement('canvas');
+                        lienzo.width = Math.round(img.width * escala);
+                        lienzo.height = Math.round(img.height * escala);
+                        lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
+                        lienzo.toBlob(b => b ? resolve(b) : reject(new Error('No se pudo procesar la foto.')), 'image/jpeg', calidad);
+                    };
+                    img.src = lector.result;
+                };
+                lector.readAsDataURL(archivo);
+            });
+        }
+
+        function pintarFotos() {
+            const grid = $('fotosGrid');
+            grid.querySelectorAll('.foto-item').forEach(e => e.remove());
+            const boton = $('btnAgregarFoto');
+            fotos.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'foto-item ' + f.estado;
+                const textos = { subiendo: 'Subiendo…', lista: '✓ Lista', fallo: '⚠ Tocar para reintentar' };
+                div.innerHTML = '<img src="' + f.vista + '" alt="Foto del reporte">' +
+                    '<button type="button" class="quitar-foto" aria-label="Quitar esta foto">✕</button>' +
+                    '<div class="estado-foto">' + textos[f.estado] + '</div>';
+                div.querySelector('.quitar-foto').onclick = () => {
+                    const i = fotos.findIndex(x => x.id === f.id);
+                    if (i >= 0) fotos.splice(i, 1);
+                    pintarFotos();
+                };
+                if (f.estado === 'fallo') {
+                    div.querySelector('.estado-foto').onclick = () => subirFoto(f);
+                }
+                grid.insertBefore(div, boton);
+            });
+            boton.disabled = fotos.length >= MAX_FOTOS;
+            boton.querySelector('span').textContent = fotos.length >= MAX_FOTOS
+                ? 'Máximo 10' : (fotos.length ? 'Agregar otra' : 'Agregar foto');
+        }
+
+        async function subirFoto(f) {
+            f.estado = 'subiendo';
+            pintarFotos();
+            try {
+                const resp = await fetch(SUBIDA_FOTOS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'image/jpeg' },
+                    body: f.blob
+                });
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const datos = await resp.json();
+                if (!datos.url) throw new Error('respuesta sin url');
+                f.url = datos.url;
+                f.estado = 'lista';
+            } catch (e) {
+                /* Nunca se marca como lista si el servidor no confirmó. */
+                f.estado = 'fallo';
+            }
+            pintarFotos();
+        }
+
+        $('btnAgregarFoto').addEventListener('click', () => $('entradaFoto').click());
+
+        $('entradaFoto').addEventListener('change', async (ev) => {
+            const archivo = ev.target.files && ev.target.files[0];
+            ev.target.value = '';   // permite volver a elegir la misma foto
+            if (!archivo) return;
+            if (fotos.length >= MAX_FOTOS) return;
+            $('msgFotos').textContent = '';
+            let blob;
+            try {
+                blob = await encogerFoto(archivo);
+            } catch (e) {
+                $('msgFotos').textContent = e.message;
+                $('msgFotos').className = 'msg err';
+                return;
+            }
+            const f = { id: ++contadorFotos, estado: 'subiendo', blob: blob, vista: URL.createObjectURL(blob), url: null };
+            fotos.push(f);
+            pintarFotos();
+            subirFoto(f);
+        });
+
+        pintarFotos();
+
         function filaNucleo(d) {
             d = d || {};
             const tr = document.createElement('tr');
@@ -352,6 +494,9 @@
                     nombre: t('f_reporta_nombre', 150),
                     telefono: t('f_reporta_telefono', 30)
                 },
+                /* Solo las que el servidor confirmó. Una foto que quedó a
+                   medias no se manda: mejor sin foto que con un enlace roto. */
+                fotos: fotos.filter(f => f.estado === 'lista').map(f => f.url).slice(0, MAX_FOTOS),
                 fecha_registro: Date.now()
             };
         }
@@ -368,6 +513,12 @@
             if (!payload.ubicacion.direccion_exacta) { err('Falta la dirección exacta.'); $('f_direccion_exacta').focus(); return; }
             if (!payload.reportado_por.nombre) { err('Falta tu nombre.'); $('f_reporta_nombre').focus(); return; }
             if (!payload.reportado_por.telefono) { err('Falta tu teléfono.'); $('f_reporta_telefono').focus(); return; }
+            if (fotos.some(f => f.estado === 'subiendo')) { err('Espera un momento: todavía se están subiendo las fotos.'); return; }
+            if (fotos.some(f => f.estado === 'fallo')) {
+                err('Hay una foto que no se pudo subir. Tócala para reintentar, o quítala con la ✕ y envía el reporte sin ella.');
+                $('seccionFotos').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
 
             $('msg').textContent = '';
             $('btnEnviar').disabled = true;

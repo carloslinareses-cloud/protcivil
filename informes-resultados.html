@@ -19,16 +19,19 @@
         .compartir-qr { flex: none; text-align: center; }
         .compartir-qr img { width: 140px; height: 140px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
         .compartir-datos { flex: 1; min-width: 250px; }
-        .compartir-enlace { display: block; width: 100%; padding: 11px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; font-family: inherit; margin-bottom: 10px; }
+        .enlace-corto { font-size: 22px; font-weight: 800; color: #15803d; margin-bottom: 10px; overflow-wrap: anywhere; }
+        .enlace-largo { font-size: 12px; color: #94a3b8; margin-top: 8px; overflow-wrap: anywhere; }
         .compartir-botones { display: flex; gap: 8px; flex-wrap: wrap; }
         .compartir-botones button, .compartir-botones a {
             border: none; border-radius: 8px; padding: 11px 16px; font-size: 13.5px; font-weight: 700;
             cursor: pointer; text-decoration: none; display: inline-block; min-height: 44px;
         }
-        .b-copiar { background: #eff6ff; color: var(--azul-pc); }
-        .b-whatsapp { background: #dcfce7; color: #15803d; }
+        .b-copiar { background: var(--azul-pc); color: #fff; }
+        .b-whatsapp { background: #16a34a; color: #fff; }
+        .b-qr { background: #0a6cb0; color: #fff; }
         .b-abrir { background: #fff7ed; color: #9a3412; }
         .etq-publico { display: inline-block; background: #dcfce7; color: #15803d; font-size: 11.5px; font-weight: 800; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+        .etq-fotos { display: inline-block; background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 20px; white-space: nowrap; margin-left: 4px; }
         .sin-codigo { color: #94a3b8; font-size: 12.5px; }
         h1 { color: var(--azul-pc); font-size: 20px; margin: 0 0 4px; }
         p.sub { color: #666; font-size: 13px; margin: 0 0 18px; }
@@ -61,6 +64,9 @@
         .modal-row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; font-size: 13.5px; border-bottom: 1px dashed #f1f5f9; }
         .modal-row span { color: #64748b; }
         .modal-row b { color: #0f172a; text-align: right; }
+        .galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin: 6px 0 4px; }
+        .galeria a { display: block; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+        .galeria img { width: 100%; height: 110px; object-fit: cover; display: block; }
         .modal-ft { padding: 14px 20px; border-top: 1px solid #f1f5f9; display: flex; gap: 8px; flex-wrap: wrap; }
         .modal-ft button, .modal-ft a { flex: 1; text-align: center; text-decoration: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13.5px; border: none; cursor: pointer; min-width: 120px; }
 
@@ -85,20 +91,21 @@
         </div>
 
         <div class="panel compartir">
-            <h1>📣 Formulario para el público</h1>
-            <p class="sub">Comparte este enlace para que cualquier persona reporte una vivienda o estructura en riesgo, sin necesidad de cuenta. Los reportes llegan aquí mismo, marcados en verde.</p>
+            <h1>📣 Compartir el formulario</h1>
             <div class="compartir-cols">
                 <div class="compartir-qr">
                     <img id="qrPublico" alt="Código QR del formulario público">
-                    <div style="font-size:11.5px;color:#64748b;margin-top:6px">Escanear con el celular</div>
                 </div>
                 <div class="compartir-datos">
-                    <input class="compartir-enlace" id="enlacePublico" type="text" readonly>
+                    <p class="sub" style="margin-bottom:8px">Comparte este enlace o el QR para que cualquier persona reporte una vivienda en riesgo, sin necesidad de cuenta:</p>
+                    <div class="enlace-corto" id="textoCorto">—</div>
                     <div class="compartir-botones">
                         <button type="button" class="b-copiar" id="btnCopiar">📋 Copiar enlace</button>
-                        <a class="b-whatsapp" id="btnWhatsapp" target="_blank" rel="noopener">💬 Enviar por WhatsApp</a>
+                        <a class="b-whatsapp" id="btnWhatsapp" target="_blank" rel="noopener">💬 WhatsApp</a>
+                        <a class="b-qr" id="btnDescargarQr" download="qr-reportar-riesgo.png">⬇️ Descargar QR</a>
                         <a class="b-abrir" id="btnAbrir" target="_blank" rel="noopener">👁️ Ver el formulario</a>
                     </div>
+                    <div class="enlace-largo">Enlace completo: <span id="textoLargo"></span></div>
                 </div>
             </div>
         </div>
@@ -183,9 +190,11 @@
            técnico va a inspeccionar. Se marcan para que se distingan de un
            vistazo, en vez de mostrar una celda vacía. */
         function celdaCodigo(r) {
-            if (r.codigo) return '<b>' + esc(r.codigo) + '</b>';
-            if (r.origen === 'publico') return '<span class="etq-publico">Reporte del público</span>';
-            return '<span class="sin-codigo">sin código</span>';
+            const n = fotosValidas(r).length;
+            const camara = n ? ' <span class="etq-fotos" title="' + n + ' foto' + (n === 1 ? '' : 's') + ' adjunta' + (n === 1 ? '' : 's') + '">📷 ' + n + '</span>' : '';
+            if (r.codigo) return '<b>' + esc(r.codigo) + '</b>' + camara;
+            if (r.origen === 'publico') return '<span class="etq-publico">Reporte del público</span>' + camara;
+            return '<span class="sin-codigo">sin código</span>' + camara;
         }
 
         function pintarTabla(lista) {
@@ -233,6 +242,16 @@
             return '-';
         }
 
+        /* Las fotos vienen de un formulario abierto al público. Las reglas
+           de la base ya obligan a que sean enlaces de nuestro propio
+           depósito, pero aquí se vuelve a comprobar antes de ponerlas en un
+           src o un href: es lo único que impide que un enlace inventado
+           acabe cargándose dentro de la sesión de un funcionario. */
+        function fotosValidas(r) {
+            const patron = /^https:\/\/([a-z0-9-]+\.)+(workers\.dev|alcaldiadecharallave\.com)\/foto\/[a-z0-9]{32}\.(jpg|png|webp)$/;
+            return (Array.isArray(r.fotos) ? r.fotos : []).filter(u => typeof u === 'string' && patron.test(u)).slice(0, 10);
+        }
+
         /* Excel: un texto que empieza con = + - o @ lo abre Excel como
            fórmula. Como estos datos los puede escribir cualquiera desde el
            formulario público, se neutraliza antes de exportar. */
@@ -262,6 +281,15 @@
                 r.nucleo_familiar.forEach(f => h += filaModal(f.parentesco || 'Integrante', [f.nombre_apellido, f.cedula ? 'C.I. ' + f.cedula : '', f.edad ? f.edad + ' años' : ''].filter(Boolean).join(' · ')));
             }
             if (r.diagnostico) h += '<div class="modal-sec">Diagnóstico</div><div class="modal-row" style="display:block"><b style="text-align:left;display:block">' + esc(r.diagnostico) + '</b></div>';
+            const fotos = fotosValidas(r);
+            if (fotos.length) {
+                h += '<div class="modal-sec">Fotos (' + fotos.length + ')</div><div class="galeria">';
+                fotos.forEach((u, i) => {
+                    h += '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer" title="Abrir la foto ' + (i + 1) + ' en grande">' +
+                        '<img src="' + esc(u) + '" alt="Foto ' + (i + 1) + ' del reporte" loading="lazy"></a>';
+                });
+                h += '</div>';
+            }
             h += '<div class="modal-sec">Registro</div>';
             h += filaModal('Registrado por', quienRegistro(r)) + filaModal('Fecha de registro', fmtFecha(r.fecha_registro));
             if (r.origen === 'publico') {
@@ -419,6 +447,11 @@
                 y += 4.5;
                 doc.text('Reportado por: ' + (r.reportado_por.nombre || '-') + '   -   Tel: ' + (r.reportado_por.telefono || '-'), margenX, y);
             }
+            const nFotos = fotosValidas(r).length;
+            if (nFotos) {
+                y += 4.5;
+                doc.text('Fotos adjuntas: ' + nFotos + ' (se ven en el tablero, al abrir la ficha del reporte).', margenX, y);
+            }
             if (r.editado_por) { y += 4.5; doc.text('Última edición: ' + r.editado_por.nombre + '   -   ' + new Date(r.fecha_edicion || 0).toLocaleString('es-VE'), margenX, y); }
             y += 10;
             doc.setFontSize(8.5);
@@ -455,6 +488,7 @@
                     'Diagnóstico': r.diagnostico,
                     'Origen': r.origen === 'publico' ? 'Formulario público' : 'Levantado por técnico',
                     'Reportado por': (r.reportado_por || {}).nombre, 'Teléfono de quien reporta': (r.reportado_por || {}).telefono,
+                    'Fotos': fotosValidas(r).length, 'Enlaces de las fotos': fotosValidas(r).join('  |  '),
                     'Registrado por': quienRegistro(r), 'Fecha de registro': fmtFecha(r.fecha_registro)
                 };
             });
@@ -471,32 +505,31 @@
         $('filtroOrden').addEventListener('change', aplicarFiltro);
 
         /* ---- Compartir el formulario público ----
-           El enlace se arma desde la dirección real del navegador, así
-           funciona igual en el dominio propio que en cualquier otra
-           dirección donde esté publicado el sitio. */
-        (function prepararCompartir() {
-            const url = location.origin + location.pathname.replace(/[^/]*$/, '') + 'reportar-riesgo.html';
-            const texto = 'Reporta una vivienda o estructura en riesgo ante Protección Civil de la Alcaldía de Cristóbal Rojas: ' + url;
+           Mismo patrón que los demás tableros de la Alcaldía: se muestra
+           el enlace corto (que se puede dictar por teléfono), y el largo
+           queda abajo en chiquito. */
+        const URL_CORTO = 'https://tinyurl.com/reportarriesgocr';
+        const URL_FORM = location.origin + location.pathname.replace(/[^/]*$/, '') + 'reportar-riesgo.html';
 
-            $('enlacePublico').value = url;
-            $('qrPublico').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(url);
-            $('btnWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(texto);
-            $('btnAbrir').href = url;
+        (function prepararCompartir() {
+            $('textoCorto').textContent = URL_CORTO.replace('https://', '');
+            $('textoLargo').textContent = URL_FORM;
+            $('qrPublico').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(URL_CORTO);
+            $('btnDescargarQr').href = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&download=1&data=' + encodeURIComponent(URL_CORTO);
+            $('btnWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(
+                '🚨 PROTECCIÓN CIVIL — Reporta aquí una vivienda o estructura en riesgo (Alcaldía de Cristóbal Rojas): ' + URL_CORTO);
+            $('btnAbrir').href = URL_FORM;
 
             $('btnCopiar').addEventListener('click', async () => {
                 const boton = $('btnCopiar');
                 try {
-                    await navigator.clipboard.writeText(url);
+                    await navigator.clipboard.writeText(URL_CORTO);
+                    boton.textContent = '✓ Copiado';
+                    setTimeout(() => { boton.textContent = '📋 Copiar enlace'; }, 1800);
                 } catch (e) {
-                    /* Sin permiso de portapapeles (navegador viejo o http):
-                       se selecciona el texto para que lo copie a mano. */
-                    $('enlacePublico').select();
-                    boton.textContent = '👆 Copia el enlace de arriba';
-                    setTimeout(() => { boton.textContent = '📋 Copiar enlace'; }, 3000);
-                    return;
+                    /* Sin permiso de portapapeles: se muestra para copiar a mano. */
+                    prompt('Copia el enlace:', URL_CORTO);
                 }
-                boton.textContent = '✔ Copiado';
-                setTimeout(() => { boton.textContent = '📋 Copiar enlace'; }, 2000);
             });
         })();
 
