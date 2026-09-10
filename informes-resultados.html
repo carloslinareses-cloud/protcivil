@@ -244,7 +244,7 @@
         function filaModal(k, v) { return '<div class="modal-row"><span>' + esc(k) + '</span><b>' + (esc(v) || '—') + '</b></div>'; }
         function abrirModal(r) {
             const p = r.propietario || {}, u = r.ubicacion || {}, gf = r.grupo_familiar || {};
-            $('modalTitulo').textContent = r.codigo || 'Informe';
+            $('modalTitulo').textContent = r.codigo || (r.origen === 'publico' ? 'Reporte del público (sin código aún)' : 'Informe');
             let h = '';
             h += '<div class="modal-sec">Ubicación</div>';
             h += filaModal('Parroquia', u.parroquia) + filaModal('Sector', u.sector) + filaModal('Comunidad', u.comunidad) + filaModal('Calle', u.calle);
