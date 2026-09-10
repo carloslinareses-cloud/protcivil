@@ -324,23 +324,34 @@
 
         function encogerFoto(archivo, ladoMax = 1400, calidad = 0.72) {
             return new Promise((resolve, reject) => {
-                const lector = new FileReader();
-                lector.onerror = () => reject(new Error('No se pudo leer la foto.'));
-                lector.onload = () => {
-                    const img = new Image();
-                    img.onerror = () => reject(new Error('El archivo no es una imagen válida.'));
-                    img.onload = () => {
-                        const lado = Math.max(img.width, img.height);
-                        const escala = lado > ladoMax ? ladoMax / lado : 1;
-                        const lienzo = document.createElement('canvas');
-                        lienzo.width = Math.round(img.width * escala);
-                        lienzo.height = Math.round(img.height * escala);
-                        lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
-                        lienzo.toBlob(b => b ? resolve(b) : reject(new Error('No se pudo procesar la foto.')), 'image/jpeg', calidad);
-                    };
-                    img.src = lector.result;
+                /* Tope de seguridad. En un teléfono con poca memoria, una
+                   foto gigante puede cerrar la pestaña de golpe y llevarse
+                   TODO el formulario ya llenado. Mejor un aviso claro que
+                   un cierre sin explicación en plena calle. */
+                if (archivo.size > 25 * 1024 * 1024) {
+                    reject(new Error('Esa foto pesa demasiado (más de 25 MB). Bájale la resolución a la cámara o elige otra.'));
+                    return;
+                }
+                /* Se usa un objectURL y no readAsDataURL: pasar la foto a
+                   texto base64 la duplica en memoria (una de 12 MB se
+                   convierte en ~16 MB de texto) sin ninguna ventaja. */
+                const fuente = URL.createObjectURL(archivo);
+                const img = new Image();
+                img.onerror = () => {
+                    URL.revokeObjectURL(fuente);
+                    reject(new Error('El archivo no es una imagen válida.'));
                 };
-                lector.readAsDataURL(archivo);
+                img.onload = () => {
+                    const lado = Math.max(img.width, img.height);
+                    const escala = lado > ladoMax ? ladoMax / lado : 1;
+                    const lienzo = document.createElement('canvas');
+                    lienzo.width = Math.round(img.width * escala);
+                    lienzo.height = Math.round(img.height * escala);
+                    lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
+                    URL.revokeObjectURL(fuente);
+                    lienzo.toBlob(b => b ? resolve(b) : reject(new Error('No se pudo procesar la foto.')), 'image/jpeg', calidad);
+                };
+                img.src = fuente;
             });
         }
 
@@ -351,13 +362,14 @@
             fotos.forEach(f => {
                 const div = document.createElement('div');
                 div.className = 'foto-item ' + f.estado;
-                const textos = { subiendo: 'Subiendo…', lista: '✓ Lista', fallo: '⚠ Tocar para reintentar' };
+                const textos = { procesando: 'Preparando…', subiendo: 'Subiendo…', lista: '✓ Lista', fallo: '⚠ Tocar para reintentar' };
                 div.innerHTML = '<img src="' + f.vista + '" alt="Foto del reporte">' +
                     '<button type="button" class="quitar-foto" aria-label="Quitar esta foto">✕</button>' +
                     '<div class="estado-foto">' + textos[f.estado] + '</div>';
                 div.querySelector('.quitar-foto').onclick = () => {
                     const i = fotos.findIndex(x => x.id === f.id);
                     if (i >= 0) fotos.splice(i, 1);
+                    URL.revokeObjectURL(f.vista);   // si no, la memoria no se suelta nunca
                     pintarFotos();
                 };
                 if (f.estado === 'fallo') {
@@ -399,17 +411,41 @@
             if (!archivo) return;
             if (fotos.length >= MAX_FOTOS) return;
             $('msgFotos').textContent = '';
+            /* Una foto HEIC de iPhone el navegador no la sabe abrir. Se
+               avisa aquí con palabras claras, en vez de dejar que reviente
+               más adelante con un "no es una imagen válida". */
+            if (/hei[cf]/i.test(archivo.type) || /\.hei[cf]$/i.test(archivo.name)) {
+                $('msgFotos').textContent = 'Esa foto está en formato HEIC y el teléfono no la puede abrir aquí. Tómala de nuevo con la cámara, o en Ajustes → Cámara → Formatos elige "Más compatible".';
+                $('msgFotos').className = 'msg err';
+                return;
+            }
+
+            /* Se aparta el lugar ANTES de encoger. Encoger tarda segundos en
+               un teléfono modesto: si esperáramos, el "+" seguiría activo,
+               la persona lo tocaría otra vez creyendo que no pasó nada, y se
+               pasaría del tope de 10. La base solo acepta 10, así que la
+               foto de más haría rebotar el reporte ENTERO. */
+            const f = { id: ++contadorFotos, estado: 'procesando', blob: null, vista: URL.createObjectURL(archivo), url: null };
+            fotos.push(f);
+            pintarFotos();
+
             let blob;
             try {
                 blob = await encogerFoto(archivo);
             } catch (e) {
+                const i = fotos.indexOf(f);
+                if (i >= 0) fotos.splice(i, 1);
+                URL.revokeObjectURL(f.vista);
+                pintarFotos();
                 $('msgFotos').textContent = e.message;
                 $('msgFotos').className = 'msg err';
                 return;
             }
-            const f = { id: ++contadorFotos, estado: 'subiendo', blob: blob, vista: URL.createObjectURL(blob), url: null };
-            fotos.push(f);
-            pintarFotos();
+            URL.revokeObjectURL(f.vista);
+            /* Si la quitó mientras se preparaba, no se sube: se descarta. */
+            if (!fotos.includes(f)) return;
+            f.blob = blob;
+            f.vista = URL.createObjectURL(blob);
             subirFoto(f);
         });
 
@@ -513,7 +549,7 @@
             if (!payload.ubicacion.direccion_exacta) { err('Falta la dirección exacta.'); $('f_direccion_exacta').focus(); return; }
             if (!payload.reportado_por.nombre) { err('Falta tu nombre.'); $('f_reporta_nombre').focus(); return; }
             if (!payload.reportado_por.telefono) { err('Falta tu teléfono.'); $('f_reporta_telefono').focus(); return; }
-            if (fotos.some(f => f.estado === 'subiendo')) { err('Espera un momento: todavía se están subiendo las fotos.'); return; }
+            if (fotos.some(f => f.estado === 'subiendo' || f.estado === 'procesando')) { err('Espera un momento: todavía se están subiendo las fotos.'); return; }
             if (fotos.some(f => f.estado === 'fallo')) {
                 err('Hay una foto que no se pudo subir. Tócala para reintentar, o quítala con la ✕ y envía el reporte sin ella.');
                 $('seccionFotos').scrollIntoView({ behavior: 'smooth', block: 'center' });

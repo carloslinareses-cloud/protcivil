@@ -97,16 +97,45 @@ export default {
             return new Response(null, { status: 204, headers: cabecerasCors(peticion) });
         }
 
+        /* Freno por IP. Sin esto, cualquiera con un bucle de dos líneas
+           gasta el cupo diario del plan gratis en minutos y deja SIN subir
+           fotos a todo el municipio, justo el día de la emergencia; y de
+           paso llena el depósito para siempre.
+           Va después del OPTIONS a propósito: el navegador manda un
+           preflight por cada foto, y si contara, la gente gastaría el doble.
+           El `if` no es adorno: si el Worker se publicara sin el enlace de
+           límite configurado, sin él reventaría en CADA subida. */
+        if (entorno.LIMITE) {
+            const ip = peticion.headers.get('CF-Connecting-IP') || 'sin-ip';
+            const { success } = await entorno.LIMITE.limit({ key: ip });
+            if (!success) {
+                return respuestaJson({ error: 'demasiadas peticiones seguidas, espera un minuto' }, 429, peticion);
+            }
+        }
+
         /* ---------- subir una foto ---------- */
         if (peticion.method === 'POST' && url.pathname === '/subir') {
+            /* Se EXIGE la cabecera Origin, no basta con que "si viene, sea
+               válida": un curl a secas no manda ninguna, y así el endpoint
+               quedaba abierto a que lo usaran de alojamiento gratuito con
+               el nombre de la alcaldía. El navegador siempre la manda,
+               porque el formulario y este servidor son dominios distintos.
+               No es una barrera infranqueable —una cabecera se falsifica—
+               pero corta el abuso fácil, y el freno por IP hace el resto. */
             const origen = peticion.headers.get('Origin') || '';
-            if (origen && !SITIOS_PERMITIDOS.includes(origen)) {
+            if (!SITIOS_PERMITIDOS.includes(origen)) {
                 return respuestaJson({ error: 'origen no autorizado' }, 403, peticion);
             }
 
-            const largoDeclarado = Number(peticion.headers.get('Content-Length') || 0);
-            if (largoDeclarado > TAMANO_MAXIMO) {
-                return respuestaJson({ error: 'la foto pesa demasiado' }, 413, peticion);
+            /* Se EXIGE que declare el tamaño y se revisa ANTES de leer nada.
+               Si solo se mirara después, bastaría con omitir la cabecera
+               (o mandar basura, que da NaN y pasa cualquier comparación)
+               para que el Worker se tragara en memoria un archivo de 100 MB
+               antes de rechazarlo. El formulario manda un Blob, así que el
+               navegador siempre pone esta cabecera. */
+            const largoDeclarado = Number(peticion.headers.get('Content-Length'));
+            if (!Number.isFinite(largoDeclarado) || largoDeclarado <= 0 || largoDeclarado > TAMANO_MAXIMO) {
+                return respuestaJson({ error: 'la foto pesa demasiado o no se pudo medir' }, 413, peticion);
             }
 
             const cuerpo = new Uint8Array(await peticion.arrayBuffer());
