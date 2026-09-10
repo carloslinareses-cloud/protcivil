@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel - Protección Civil Cristóbal Rojas</title>
+    <style>
+        :root {
+            --naranja-pc: #f7941d;
+            --azul-pc: #1c3f94;
+            --gris-fondo: #e9ecef;
+            --gris-borde: #ced4da;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--gris-fondo); padding: 20px 0; padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { background-color: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); max-width: 1100px; margin: auto; border-top: 8px solid var(--naranja-pc); }
+        .gob-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gris-borde); padding-bottom: 20px; margin-bottom: 20px; }
+        .gob-header img { height: 68px; object-fit: contain; }
+        .header-titles { text-align: center; flex-grow: 1; padding: 0 20px; }
+        .header-titles h1 { color: var(--azul-pc); margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; }
+        .header-titles p { color: #555; margin: 5px 0 0 0; font-size: 13px; font-weight: bold; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .quien-soy { font-size: 13px; color: #555; }
+        .quien-soy b { color: var(--azul-pc); }
+        .rol-badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-left: 6px; }
+        .rol-badge.admin_plus { background: #fef3c7; color: #92400e; }
+        .rol-badge.admin { background: #dbeafe; color: #1e40af; }
+        .btn-nav { background-color: #333; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; text-transform: uppercase; }
+        .btn-nav:hover { background-color: #555; }
+        h2 { text-align: center; color: var(--naranja-pc); margin-top: 10px; font-size: 22px; text-transform: uppercase; }
+        p.sub-title { text-align: center; color: #666; font-size: 15px; margin-bottom: 30px; font-weight: bold; }
+
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 35px; }
+        .stat-box { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fdba74; border-radius: 8px; padding: 16px; text-align: center; }
+        .stat-box .num { font-size: 28px; font-weight: 900; color: var(--azul-pc); font-variant-numeric: tabular-nums; }
+        .stat-box .lbl { font-size: 12px; color: #78350f; font-weight: bold; text-transform: uppercase; margin-top: 4px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 10px; }
+        .card { background: #fdfdfd; border: 1px solid var(--gris-borde); border-radius: 8px; padding: 30px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-color: var(--azul-pc); }
+        .card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 5px; }
+        .card-nuevo { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fdba74; }
+        .card-nuevo::before { background-color: var(--naranja-pc); }
+        .card-registrados { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #93c5fd; }
+        .card-registrados::before { background-color: var(--azul-pc); }
+        .card-auditoria { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border: none; color: #fff; }
+        .card-auditoria::before { background-color: #22c55e; }
+        .card-auditoria .card-title { color: #fff; }
+        .card-auditoria .card-desc { color: #ccc; }
+        .card-usuarios { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1px solid #c4b5fd; }
+        .card-usuarios::before { background-color: #7c3aed; }
+        .card-icon { font-size: 50px; margin-bottom: 15px; display: block; }
+        .card-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; text-transform: uppercase; }
+        .card-desc { font-size: 13px; color: #666; }
+        .hidden { display: none !important; }
+        #loader { text-align: center; padding: 80px 20px; color: #777; }
+        #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
+    </style>
+    <script src="autofresh.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div id="loader">Verificando acceso...</div>
+    <div id="acceso-restringido" class="hidden">🚫 Tu cuenta no tiene acceso a este sistema.</div>
+
+    <div class="container hidden" id="contenido">
+        <div class="top-nav">
+            <div class="quien-soy">Sesión: <b id="quienSoy">-</b><span class="rol-badge" id="rolBadge"></span></div>
+            <button type="button" class="btn-nav" id="btnCerrarSesion">Cerrar Sesión Segura</button>
+        </div>
+
+        <div class="gob-header">
+            <img src="logos/cristobal-rojas.png" alt="Escudo Cristóbal Rojas">
+            <div class="header-titles">
+                <h1>Dirección de Protección Civil</h1>
+                <p>ADMINISTRACIÓN DE DESASTRES | MUNICIPIO CRISTÓBAL ROJAS</p>
+            </div>
+            <img src="logos/pc.png" alt="Protección Civil">
+        </div>
+
+        <h2>Informes Técnicos de Riesgo</h2>
+        <p class="sub-title">Seleccione el módulo al que desea acceder</p>
+
+        <div class="stats-row">
+            <div class="stat-box"><div class="num" id="statTotal">-</div><div class="lbl">Informes totales</div></div>
+            <div class="stat-box"><div class="num" id="statHoy">-</div><div class="lbl">Registrados hoy</div></div>
+            <div class="stat-box"><div class="num" id="statSemana">-</div><div class="lbl">Últimos 7 días</div></div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card card-nuevo" onclick="location.href='informe-riesgo.html'">
+                <span class="card-icon">📋</span>
+                <div class="card-title">Nuevo Informe Técnico de Riesgo</div>
+                <div class="card-desc">Levantar una nueva inspección: ubicación, propietario, grupo familiar, evaluación de daños y núcleo familiar.</div>
+            </div>
+
+            <div class="card card-registrados" onclick="location.href='informes-resultados.html'">
+                <span class="card-icon">📁</span>
+                <div class="card-title">Informes Registrados</div>
+                <div class="card-desc">Buscar, ver, editar, imprimir en PDF o eliminar cualquier informe ya levantado.</div>
+            </div>
+
+            <div class="card card-usuarios hidden" id="cardUsuarios" onclick="location.href='usuarios.html'">
+                <span class="card-icon">👥</span>
+                <div class="card-title">Gestión de Usuarios</div>
+                <div class="card-desc">Crear cuentas nuevas para personal de Protección Civil y asignar su rol de acceso.</div>
+            </div>
+
+            <div class="card card-auditoria hidden" id="cardAuditoria" onclick="location.href='auditoria.html'">
+                <span class="card-icon">🕵️</span>
+                <div class="card-title">Auditoría del Sistema</div>
+                <div class="card-desc">Acceso Administrador Plus: qué se hizo, quién lo hizo y cuándo — hasta el mínimo detalle, sin excepción.</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase, ref, get, child, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+
+        window.perfilOperadorPC = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { location.href = 'index.html'; return; }
+            let perfil = null;
+            try {
+                const snap = await get(child(ref(database), `pc_operadores/${user.uid}`));
+                if (snap.exists()) perfil = snap.val();
+            } catch (e) { perfil = null; }
+
+            $('loader').classList.add('hidden');
+            if (!perfil) { $('acceso-restringido').classList.remove('hidden'); return; }
+            if (perfil.cambio_obligatorio) { location.href = 'password.html'; return; }
+
+            window.perfilOperadorPC = { uid: user.uid, email: user.email, ...perfil };
+            $('contenido').classList.remove('hidden');
+            $('quienSoy').textContent = perfil.nombre || user.email;
+            $('rolBadge').textContent = perfil.rol === 'admin_plus' ? 'ADMIN PLUS' : 'ADMIN';
+            $('rolBadge').classList.add(perfil.rol === 'admin_plus' ? 'admin_plus' : 'admin');
+
+            if (perfil.rol === 'admin_plus') {
+                $('cardAuditoria').classList.remove('hidden');
+                $('cardUsuarios').classList.remove('hidden');
+            }
+
+            onValue(ref(database, 'pc_informes'), (snap) => {
+                const datos = snap.val() || {};
+                const lista = Object.values(datos);
+                $('statTotal').textContent = lista.length;
+                const hoyInicio = new Date(); hoyInicio.setHours(0, 0, 0, 0);
+                const hace7 = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                $('statHoy').textContent = lista.filter(r => (r.fecha_registro || 0) >= hoyInicio.getTime()).length;
+                $('statSemana').textContent = lista.filter(r => (r.fecha_registro || 0) >= hace7).length;
+            });
+        });
+
+        $('btnCerrarSesion').addEventListener('click', () => {
+            signOut(auth).then(() => location.href = 'index.html');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Protección Civil</title>
+    <style>
+        :root { --naranja-pc: #f7941d; --azul-pc: #1c3f94; --gris-fondo: #e9ecef; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 760px; margin: 20px auto 60px; padding: 0 14px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+        .topbar a { color: var(--azul-pc); text-decoration: none; font-weight: 700; font-size: 14px; }
+        .topbar button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .panel { background: #fff; border-radius: 10px; padding: 22px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid #7c3aed; margin-bottom: 18px; }
+        h1 { color: var(--azul-pc); font-size: 19px; margin: 0 0 14px; }
+        .campo { margin-bottom: 12px; }
+        .campo label { display: block; font-weight: 700; color: #334155; font-size: 13px; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 11px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 15px; }
+        .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button.crear { width: 100%; background: #7c3aed; color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: 800; cursor: pointer; font-size: 15px; margin-top: 6px; }
+        .msg { text-align: center; font-weight: 700; margin-top: 10px; font-size: 13.5px; }
+        .msg.ok { color: #15803d; } .msg.err { color: #b91c1c; }
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        th { background: #f5f3ff; color: #6d28d9; text-align: left; padding: 8px; font-size: 11px; text-transform: uppercase; }
+        td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .badge.admin_plus { background: #fef3c7; color: #92400e; }
+        .badge.admin { background: #dbeafe; color: #1e40af; }
+        .badge.pend { background: #fee2e2; color: #b91c1c; margin-left: 4px; }
+        .hidden { display: none !important; }
+        #loader { text-align: center; padding: 80px 20px; color: #777; }
+        #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
+    </style>
+    <script src="autofresh.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div id="loader">Verificando acceso...</div>
+    <div id="acceso-restringido" class="hidden">🚫 Solo Administrador Plus puede gestionar usuarios.</div>
+
+    <div class="container hidden" id="contenido">
+        <div class="topbar">
+            <a href="admin.html">← Volver al panel</a>
+            <button type="button" id="btnCerrarSesion">Cerrar sesión</button>
+        </div>
+
+        <div class="panel">
+            <h1>👥 Crear nueva cuenta de Protección Civil</h1>
+            <form id="crearForm">
+                <div class="campo"><label>Nombre completo</label><input type="text" id="c_nombre" required></div>
+                <div class="fila2">
+                    <div class="campo"><label>Correo (Gmail u otro)</label><input type="email" id="c_email" required></div>
+                    <div class="campo">
+                        <label>Rol</label>
+                        <select id="c_rol">
+                            <option value="admin">Admin</option>
+                            <option value="admin_plus">Admin Plus (acceso total)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="campo"><label>Clave provisional</label><input type="text" id="c_clave" value="Alcaldia2026" required></div>
+                <button type="submit" class="crear">Crear cuenta</button>
+                <p class="msg" id="msg"></p>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h1>Cuentas existentes</h1>
+            <table>
+                <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th></tr></thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase, ref, get, child, onValue, set, push } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        // App secundaria: crea la cuenta nueva SIN desconectar la sesión del admin actual.
+        const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+        const secondaryAuth = getAuth(secondaryApp);
+        const $ = (id) => document.getElementById(id);
+
+        async function registrarBitacora(resumen) {
+            const perfil = window.perfilOperadorPC;
+            if (!perfil) return;
+            try {
+                await set(push(ref(database, 'pc_bitacora')), {
+                    accion: 'crear_usuario', informe_id: null, resumen,
+                    uid: perfil.uid, nombre: perfil.nombre || perfil.email, email: perfil.email, rol: perfil.rol,
+                    fecha: Date.now()
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        $('crearForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = $('c_nombre').value.trim();
+            const email = $('c_email').value.trim();
+            const rol = $('c_rol').value;
+            const clave = $('c_clave').value;
+            $('msg').textContent = '';
+            try {
+                const cred = await createUserWithEmailAndPassword(secondaryAuth, email, clave);
+                await set(ref(database, 'pc_operadores/' + cred.user.uid), {
+                    nombre, email, rol, cambio_obligatorio: true, creado_en: Date.now()
+                });
+                await signOut(secondaryAuth);
+                await registrarBitacora('Creó la cuenta de ' + nombre + ' (' + email + ') con rol ' + rol);
+                $('msg').textContent = '✔ Cuenta creada. Debe cambiar su clave al iniciar sesión por primera vez.';
+                $('msg').className = 'msg ok';
+                $('crearForm').reset();
+                $('c_clave').value = 'Alcaldia2026';
+            } catch (err) {
+                $('msg').textContent = 'Error: ' + err.message;
+                $('msg').className = 'msg err';
+            }
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { location.href = 'index.html'; return; }
+            let perfil = null;
+            try {
+                const snap = await get(child(ref(database), `pc_operadores/${user.uid}`));
+                if (snap.exists()) perfil = snap.val();
+            } catch (e) { perfil = null; }
+            $('loader').classList.add('hidden');
+            if (!perfil || perfil.rol !== 'admin_plus') { $('acceso-restringido').classList.remove('hidden'); return; }
+            if (perfil.cambio_obligatorio) { location.href = 'password.html'; return; }
+            window.perfilOperadorPC = { uid: user.uid, email: user.email, ...perfil };
+            $('contenido').classList.remove('hidden');
+
+            onValue(ref(database, 'pc_operadores'), (snap) => {
+                const datos = snap.val() || {};
+                const tb = $('tbody');
+                tb.innerHTML = '';
+                Object.values(datos).forEach(o => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = '<td>' + (o.nombre || '-') + '</td><td>' + (o.email || '-') + '</td>' +
+                        '<td><span class="badge ' + (o.rol === 'admin_plus' ? 'admin_plus' : 'admin') + '">' + (o.rol === 'admin_plus' ? 'ADMIN PLUS' : 'ADMIN') + '</span>' +
+                        (o.cambio_obligatorio ? '<span class="badge pend">Clave pendiente</span>' : '') + '</td>';
+                    tb.appendChild(tr);
+                });
+            });
+        });
+
+        $('btnCerrarSesion').addEventListener('click', () => signOut(auth).then(() => location.href = 'index.html'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Técnico de Riesgo - Protección Civil</title>
+    <style>
+        :root {
+            --naranja-pc: #f7941d;
+            --azul-pc: #1c3f94;
+            --gris-fondo: #e9ecef;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 820px; margin: 20px auto 60px; padding: 0 14px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+        .topbar a { color: var(--azul-pc); text-decoration: none; font-weight: 700; font-size: 14px; }
+        .topbar button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .cabecera-form { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); text-align: center; margin-bottom: 16px; }
+        .cabecera-form img { height: 54px; object-fit: contain; margin: 0 10px; }
+        .cabecera-form h1 { color: var(--azul-pc); font-size: 19px; margin: 10px 0 2px; text-transform: uppercase; }
+        .cabecera-form p { color: #666; font-size: 12.5px; margin: 0; }
+        .codigo-box { display: inline-block; margin-top: 10px; background: #fff7ed; border: 1px solid #fdba74; border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 800; color: #9a3412; }
+
+        .seccion { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .seccion h3 { margin: 0 0 12px; color: var(--azul-pc); font-size: 15px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .campo { margin-bottom: 12px; }
+        .campo label { display: block; font-weight: 700; color: #334155; font-size: 13px; margin-bottom: 5px; }
+        .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .fila3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        @media (max-width: 560px) { .fila2, .fila3 { grid-template-columns: 1fr; } }
+        input[type="text"], input[type="number"], input[type="date"], select, textarea {
+            width: 100%; padding: 11px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 15px; background: #f8fafc; font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--azul-pc); background: #fff; }
+        textarea { min-height: 110px; resize: vertical; }
+
+        .chip-grupo { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip { min-height: 40px; padding: 9px 14px; border: 1.5px solid #cbd5e1; border-radius: 20px; background: #f8fafc; font-weight: 700; font-size: 13.5px; color: #475569; cursor: pointer; user-select: none; }
+        .chip.sel { border-color: var(--naranja-pc); background: #fff7ed; color: #9a3412; }
+
+        .grupo-conteo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media (max-width: 560px) { .grupo-conteo { grid-template-columns: repeat(2, 1fr); } }
+        .conteo-item label { font-size: 12.5px; }
+
+        table.nucleo { width: 100%; border-collapse: collapse; font-size: 13px; }
+        table.nucleo th { background: #eff6ff; color: var(--azul-pc); text-align: left; padding: 7px 6px; font-size: 11px; text-transform: uppercase; }
+        table.nucleo td { padding: 5px; border-bottom: 1px solid #f1f5f9; }
+        table.nucleo input, table.nucleo select { padding: 7px; font-size: 13px; }
+        .fila-nucleo .btn-quitar { background: #fee2e2; color: #b91c1c; border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; font-weight: bold; }
+        .btn-agregar-fila { margin-top: 10px; background: #eff6ff; color: var(--azul-pc); border: 1.5px dashed #93c5fd; border-radius: 8px; padding: 10px 16px; font-weight: 700; cursor: pointer; font-size: 13.5px; }
+        .tabla-scroll { overflow-x: auto; }
+
+        .cne-slot { position: relative; }
+
+        .btn-guardar { width: 100%; background: var(--azul-pc); color: #fff; border: none; border-radius: 10px; padding: 17px; font-size: 17px; font-weight: 800; cursor: pointer; margin-top: 4px; }
+        .btn-guardar:hover { background: #142e6e; }
+        .msg { text-align: center; font-weight: 700; margin-top: 12px; font-size: 14px; }
+        .msg.ok { color: #15803d; }
+        .msg.err { color: #b91c1c; }
+        .hidden { display: none !important; }
+        #loader { text-align: center; padding: 80px 20px; color: #777; }
+        #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
+    </style>
+    <script src="autofresh.js"></script>
+    <script src="cne-dateas.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div id="loader">Verificando acceso...</div>
+    <div id="acceso-restringido" class="hidden">🚫 Tu cuenta no tiene acceso a este sistema.</div>
+
+    <div class="container hidden" id="contenido">
+        <div class="topbar">
+            <a href="admin.html">← Volver al panel</a>
+            <button type="button" id="btnCerrarSesion">Cerrar sesión</button>
+        </div>
+
+        <div class="cabecera-form">
+            <img src="logos/cristobal-rojas.png" alt="Escudo Cristóbal Rojas">
+            <img src="logos/pc.png" alt="Protección Civil">
+            <h1 id="tituloForm">Informe Técnico de Riesgo</h1>
+            <p>Dirección de Protección Civil - Municipio Cristóbal Rojas</p>
+            <div class="codigo-box" id="codigoBox">Código: se asigna al guardar</div>
+        </div>
+
+        <form id="informeForm">
+            <div class="seccion">
+                <h3>Datos generales de ubicación</h3>
+                <div class="fila2">
+                    <div class="campo"><label>Parroquia</label><input type="text" id="f_parroquia"></div>
+                    <div class="campo"><label>Sector</label><input type="text" id="f_sector"></div>
+                </div>
+                <div class="fila2">
+                    <div class="campo"><label>Comunidad</label><input type="text" id="f_comunidad"></div>
+                    <div class="campo"><label>Calle</label><input type="text" id="f_calle"></div>
+                </div>
+                <div class="fila3">
+                    <div class="campo"><label>Cuadrante de Paz</label><input type="text" id="f_cuadrante"></div>
+                    <div class="campo"><label>Telf. del cuadrante</label><input type="text" id="f_telf_cuadrante"></div>
+                    <div class="campo"><label>Sala de autogobierno</label><input type="text" id="f_sala_autogobierno"></div>
+                </div>
+                <div class="campo"><label>Dirección exacta</label><input type="text" id="f_direccion_exacta"></div>
+                <div class="fila2">
+                    <div class="campo"><label>Inspección realizada por</label><input type="text" id="f_inspeccion_por"></div>
+                    <div class="campo"><label>Informe transcrito por</label><input type="text" id="f_transcrito_por"></div>
+                </div>
+                <div class="campo"><label>Fecha del informe</label><input type="date" id="f_fecha_informe"></div>
+            </div>
+
+            <div class="seccion">
+                <h3>Datos del propietario</h3>
+                <div class="campo cne-slot">
+                    <label>Cédula</label>
+                    <input type="text" id="f_prop_cedula" inputmode="numeric" placeholder="Ej: 12345678" data-cne data-cne-nombre="#f_prop_nombre">
+                </div>
+                <div class="campo"><label>Nombres y apellidos</label><input type="text" id="f_prop_nombre"></div>
+                <div class="fila3">
+                    <div class="campo"><label>Edad</label><input type="number" id="f_prop_edad" min="0" max="120"></div>
+                    <div class="campo"><label>Teléfono</label><input type="text" id="f_prop_telf"></div>
+                    <div class="campo"><label>Ocupación</label><input type="text" id="f_prop_ocupacion"></div>
+                </div>
+                <div class="campo">
+                    <label>Tenencia de la vivienda</label>
+                    <select id="f_prop_tenencia">
+                        <option value="">-- Seleccione --</option>
+                        <option>Propia</option>
+                        <option>Alquilada</option>
+                        <option>Prestada</option>
+                        <option>Invadida / Ocupada</option>
+                        <option>Otra</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h3>Grupo familiar (cantidades)</h3>
+                <div class="grupo-conteo">
+                    <div class="conteo-item campo"><label>Adultos</label><input type="number" id="gf_adultos" min="0" value="0"></div>
+                    <div class="conteo-item campo"><label>Niños</label><input type="number" id="gf_ninos" min="0" value="0"></div>
+                    <div class="conteo-item campo"><label>Lactantes</label><input type="number" id="gf_lactantes" min="0" value="0"></div>
+                    <div class="conteo-item campo"><label>Adolescentes</label><input type="number" id="gf_adolescentes" min="0" value="0"></div>
+                    <div class="conteo-item campo"><label>Tercera edad</label><input type="number" id="gf_tercera_edad" min="0" value="0"></div>
+                    <div class="conteo-item campo"><label>Discapacitados</label><input type="number" id="gf_discapacitados" min="0" value="0"></div>
+                </div>
+            </div>
+
+            <div class="seccion"><h3>Tipo de estructura</h3><div class="chip-grupo" data-grupo="tipo_estructura"></div></div>
+            <div class="seccion"><h3>Evaluación de daños</h3><div class="chip-grupo" data-grupo="evaluacion_danos"></div></div>
+            <div class="seccion"><h3>Ubicación de los daños</h3><div class="chip-grupo" data-grupo="ubicacion_danos"></div></div>
+            <div class="seccion"><h3>Losa del techo</h3><div class="chip-grupo" data-grupo="losa_techo"></div></div>
+            <div class="seccion"><h3>Losa del piso</h3><div class="chip-grupo" data-grupo="losa_piso"></div></div>
+            <div class="seccion"><h3>Sistema estructural</h3><div class="chip-grupo" data-grupo="sistema_estructural"></div></div>
+            <div class="seccion"><h3>Distribución de la vivienda</h3><div class="chip-grupo" data-grupo="distribucion_vivienda"></div></div>
+
+            <div class="seccion">
+                <h3>Conformidad del núcleo familiar</h3>
+                <div class="tabla-scroll">
+                    <table class="nucleo">
+                        <thead><tr>
+                            <th style="min-width:110px">Parentesco</th>
+                            <th style="min-width:170px">Nombre y apellido</th>
+                            <th style="min-width:70px">Edad</th>
+                            <th style="min-width:90px">Sexo</th>
+                            <th style="min-width:110px">C.I.</th>
+                            <th style="min-width:150px">Nombre del plantel</th>
+                            <th></th>
+                        </tr></thead>
+                        <tbody id="nucleoBody"></tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn-agregar-fila" id="btnAgregarNucleo">+ Agregar integrante</button>
+            </div>
+
+            <div class="seccion">
+                <h3>Diagnóstico</h3>
+                <textarea id="f_diagnostico" placeholder="Conclusión técnica de la inspección..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-guardar" id="btnGuardar">Guardar Informe</button>
+            <p class="msg" id="msg"></p>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase, ref, get, child, push, set, update, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+
+        // ── Grupos de selección múltiple (chips), igual en todo el formulario ──
+        const GRUPOS = {
+            tipo_estructura: ['Concreto armado', 'Mampostería', 'Mixta', 'Improvisada', 'Bahareque', 'Otro'],
+            evaluacion_danos: ['Grietas superficiales', 'Grietas relevantes', 'Grietas profundas', 'Columnas estables', 'Columnas comprometidas', 'Columnas colapsadas', 'Desprendimiento', 'Mampostería', 'Fachada', 'Filtración', 'Desplazamiento', 'Socavación'],
+            ubicacion_danos: ['Habitaciones', 'Sala', 'Comedor', 'Baños', 'Cocina', 'Porche', 'Estacionamiento', 'Balcón', 'Otro'],
+            losa_techo: ['Platabanda', 'Láminas de zinc', 'Techo razo', 'Machimbrado', 'Drywall', 'Improvisada', 'Mixta', 'Sin techo', 'Otra'],
+            losa_piso: ['Cerámica', 'Concreto curado (liso)', 'Concreto rústico', 'Madera / Acrílico', 'Tierra compactada', 'Granito pulido'],
+            sistema_estructural: ['Columna de riostra', 'Columna de corona', 'Viga de soporte', 'Fundaciones', 'Columna vertical', 'Muros de contención'],
+            distribucion_vivienda: ['Habitaciones', 'Sala', 'Comedor', 'Baño', 'Cocina', 'Porche']
+        };
+        const estadoGrupos = {};
+        Object.keys(GRUPOS).forEach(k => estadoGrupos[k] = new Set());
+
+        function pintarGrupos() {
+            document.querySelectorAll('.chip-grupo').forEach(cont => {
+                const grupo = cont.dataset.grupo;
+                cont.innerHTML = '';
+                GRUPOS[grupo].forEach(op => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'chip' + (estadoGrupos[grupo].has(op) ? ' sel' : '');
+                    b.textContent = op;
+                    b.onclick = () => {
+                        if (estadoGrupos[grupo].has(op)) estadoGrupos[grupo].delete(op);
+                        else estadoGrupos[grupo].add(op);
+                        b.classList.toggle('sel');
+                    };
+                    cont.appendChild(b);
+                });
+            });
+        }
+        pintarGrupos();
+
+        // ── Núcleo familiar: tabla dinámica ──
+        function filaNucleo(d) {
+            d = d || {};
+            const tr = document.createElement('tr');
+            tr.className = 'fila-nucleo';
+            tr.innerHTML =
+                '<td><input type="text" class="n-parentesco" value="' + escHtml(d.parentesco) + '"></td>' +
+                '<td><input type="text" class="n-nombre" value="' + escHtml(d.nombre_apellido) + '"></td>' +
+                '<td><input type="number" class="n-edad" min="0" max="120" value="' + escHtml(d.edad) + '"></td>' +
+                '<td><select class="n-sexo"><option value="">-</option><option value="M"' + (d.sexo === 'M' ? ' selected' : '') + '>M</option><option value="F"' + (d.sexo === 'F' ? ' selected' : '') + '>F</option></select></td>' +
+                '<td><input type="text" class="n-cedula" value="' + escHtml(d.cedula) + '"></td>' +
+                '<td><input type="text" class="n-plantel" value="' + escHtml(d.nombre_plantel) + '"></td>' +
+                '<td><button type="button" class="btn-quitar">✕</button></td>';
+            tr.querySelector('.btn-quitar').onclick = () => tr.remove();
+            return tr;
+        }
+        function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+        $('btnAgregarNucleo').onclick = () => $('nucleoBody').appendChild(filaNucleo());
+
+        function leerNucleo() {
+            return [...document.querySelectorAll('.fila-nucleo')].map(tr => ({
+                parentesco: tr.querySelector('.n-parentesco').value.trim(),
+                nombre_apellido: tr.querySelector('.n-nombre').value.trim(),
+                edad: tr.querySelector('.n-edad').value ? Number(tr.querySelector('.n-edad').value) : null,
+                sexo: tr.querySelector('.n-sexo').value,
+                cedula: tr.querySelector('.n-cedula').value.trim(),
+                nombre_plantel: tr.querySelector('.n-plantel').value.trim()
+            })).filter(f => f.parentesco || f.nombre_apellido || f.cedula);
+        }
+
+        // ── Modo edición: ?id=xxx ──
+        const params = new URLSearchParams(location.search);
+        const idEdicion = params.get('id');
+        let registroOriginal = null;
+
+        function poblarFormulario(r) {
+            const u = r.ubicacion || {};
+            $('f_parroquia').value = u.parroquia || '';
+            $('f_sector').value = u.sector || '';
+            $('f_comunidad').value = u.comunidad || '';
+            $('f_calle').value = u.calle || '';
+            $('f_cuadrante').value = u.cuadrante_paz || '';
+            $('f_telf_cuadrante').value = u.telf_cuadrante || '';
+            $('f_sala_autogobierno').value = u.sala_autogobierno || '';
+            $('f_direccion_exacta').value = u.direccion_exacta || '';
+            $('f_inspeccion_por').value = r.inspeccion_realizada_por || '';
+            $('f_transcrito_por').value = r.informe_transcrito_por || '';
+            $('f_fecha_informe').value = r.fecha_informe || '';
+
+            const p = r.propietario || {};
+            $('f_prop_cedula').value = p.cedula || '';
+            $('f_prop_nombre').value = p.nombres_apellidos || '';
+            $('f_prop_edad').value = p.edad ?? '';
+            $('f_prop_telf').value = p.telf || '';
+            $('f_prop_ocupacion').value = p.ocupacion || '';
+            $('f_prop_tenencia').value = p.tenencia_vivienda || '';
+
+            const gf = r.grupo_familiar || {};
+            $('gf_adultos').value = gf.adultos ?? 0;
+            $('gf_ninos').value = gf.ninos ?? 0;
+            $('gf_lactantes').value = gf.lactantes ?? 0;
+            $('gf_adolescentes').value = gf.adolescentes ?? 0;
+            $('gf_tercera_edad').value = gf.tercera_edad ?? 0;
+            $('gf_discapacitados').value = gf.discapacitados ?? 0;
+
+            Object.keys(GRUPOS).forEach(k => {
+                estadoGrupos[k] = new Set(Array.isArray(r[k]) ? r[k] : []);
+            });
+            pintarGrupos();
+
+            $('nucleoBody').innerHTML = '';
+            (r.nucleo_familiar || []).forEach(f => $('nucleoBody').appendChild(filaNucleo(f)));
+
+            $('f_diagnostico').value = r.diagnostico || '';
+            $('codigoBox').textContent = 'Código: ' + (r.codigo || '—');
+        }
+
+        async function cargarSiEsEdicion() {
+            if (!idEdicion) {
+                $('f_fecha_informe').value = new Date().toISOString().slice(0, 10);
+                return;
+            }
+            $('tituloForm').textContent = 'Editar Informe Técnico de Riesgo';
+            $('btnGuardar').textContent = 'Guardar cambios';
+            const snap = await get(child(ref(database), 'pc_informes/' + idEdicion));
+            if (!snap.exists()) { alert('No se encontró ese informe.'); location.href = 'informes-resultados.html'; return; }
+            registroOriginal = snap.val();
+            poblarFormulario(registroOriginal);
+        }
+
+        function armarPayload() {
+            return {
+                ubicacion: {
+                    parroquia: $('f_parroquia').value.trim(),
+                    sector: $('f_sector').value.trim(),
+                    comunidad: $('f_comunidad').value.trim(),
+                    calle: $('f_calle').value.trim(),
+                    cuadrante_paz: $('f_cuadrante').value.trim(),
+                    telf_cuadrante: $('f_telf_cuadrante').value.trim(),
+                    sala_autogobierno: $('f_sala_autogobierno').value.trim(),
+                    direccion_exacta: $('f_direccion_exacta').value.trim()
+                },
+                inspeccion_realizada_por: $('f_inspeccion_por').value.trim(),
+                informe_transcrito_por: $('f_transcrito_por').value.trim(),
+                fecha_informe: $('f_fecha_informe').value || null,
+                propietario: {
+                    cedula: $('f_prop_cedula').value.trim(),
+                    nombres_apellidos: $('f_prop_nombre').value.trim(),
+                    edad: $('f_prop_edad').value ? Number($('f_prop_edad').value) : null,
+                    telf: $('f_prop_telf').value.trim(),
+                    ocupacion: $('f_prop_ocupacion').value.trim(),
+                    tenencia_vivienda: $('f_prop_tenencia').value
+                },
+                grupo_familiar: {
+                    adultos: Number($('gf_adultos').value) || 0,
+                    ninos: Number($('gf_ninos').value) || 0,
+                    lactantes: Number($('gf_lactantes').value) || 0,
+                    adolescentes: Number($('gf_adolescentes').value) || 0,
+                    tercera_edad: Number($('gf_tercera_edad').value) || 0,
+                    discapacitados: Number($('gf_discapacitados').value) || 0
+                },
+                tipo_estructura: [...estadoGrupos.tipo_estructura],
+                evaluacion_danos: [...estadoGrupos.evaluacion_danos],
+                ubicacion_danos: [...estadoGrupos.ubicacion_danos],
+                losa_techo: [...estadoGrupos.losa_techo],
+                losa_piso: [...estadoGrupos.losa_piso],
+                sistema_estructural: [...estadoGrupos.sistema_estructural],
+                distribucion_vivienda: [...estadoGrupos.distribucion_vivienda],
+                nucleo_familiar: leerNucleo(),
+                diagnostico: $('f_diagnostico').value.trim()
+            };
+        }
+
+        async function registrarBitacora(accion, informeId, resumen) {
+            const perfil = window.perfilOperadorPC;
+            if (!perfil) return;
+            try {
+                await set(push(ref(database, 'pc_bitacora')), {
+                    accion, informe_id: informeId, resumen,
+                    uid: perfil.uid, nombre: perfil.nombre || perfil.email, email: perfil.email, rol: perfil.rol,
+                    fecha: Date.now()
+                });
+            } catch (e) { console.error('No se pudo registrar en la bitácora:', e); }
+        }
+
+        document.getElementById('informeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = armarPayload();
+            if (!payload.propietario.nombres_apellidos || !payload.propietario.cedula) {
+                $('msg').textContent = 'Falta el nombre o la cédula del propietario.';
+                $('msg').className = 'msg err';
+                return;
+            }
+            $('btnGuardar').disabled = true;
+            $('btnGuardar').textContent = 'Guardando...';
+            $('msg').textContent = '';
+
+            try {
+                const perfil = window.perfilOperadorPC;
+                if (idEdicion) {
+                    payload.codigo = registroOriginal.codigo;
+                    payload.fecha_registro = registroOriginal.fecha_registro;
+                    payload.registrado_por = registroOriginal.registrado_por;
+                    payload.editado_por = { uid: perfil.uid, nombre: perfil.nombre || perfil.email, email: perfil.email };
+                    payload.fecha_edicion = Date.now();
+                    await update(ref(database, 'pc_informes/' + idEdicion), payload);
+                    await registrarBitacora('editar', idEdicion, 'Editó el informe ' + payload.codigo + ' (propietario: ' + payload.propietario.nombres_apellidos + ')');
+                    $('msg').textContent = '✔ Cambios guardados correctamente.';
+                } else {
+                    const resultado = await runTransaction(ref(database, 'pc_config/contador_informes'), (actual) => (actual || 0) + 1);
+                    const numero = resultado.snapshot.val();
+                    payload.codigo = 'PCCR-RS-' + String(numero).padStart(4, '0') + '-' + new Date().getFullYear().toString().slice(-2);
+                    payload.registrado_por = { uid: perfil.uid, nombre: perfil.nombre || perfil.email, email: perfil.email };
+                    payload.fecha_registro = Date.now();
+                    const nuevoRef = push(ref(database, 'pc_informes'));
+                    await set(nuevoRef, payload);
+                    await registrarBitacora('crear', nuevoRef.key, 'Registró el informe ' + payload.codigo + ' (propietario: ' + payload.propietario.nombres_apellidos + ')');
+                    $('codigoBox').textContent = 'Código: ' + payload.codigo;
+                    $('msg').textContent = '✔ Informe ' + payload.codigo + ' guardado correctamente.';
+                }
+                $('msg').className = 'msg ok';
+                setTimeout(() => { location.href = 'informes-resultados.html'; }, 1200);
+            } catch (err) {
+                $('msg').textContent = 'Error al guardar: ' + err.message;
+                $('msg').className = 'msg err';
+                $('btnGuardar').disabled = false;
+                $('btnGuardar').textContent = idEdicion ? 'Guardar cambios' : 'Guardar Informe';
+            }
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { location.href = 'index.html'; return; }
+            let perfil = null;
+            try {
+                const snap = await get(child(ref(database), `pc_operadores/${user.uid}`));
+                if (snap.exists()) perfil = snap.val();
+            } catch (e) { perfil = null; }
+            $('loader').classList.add('hidden');
+            if (!perfil) { $('acceso-restringido').classList.remove('hidden'); return; }
+            if (perfil.cambio_obligatorio) { location.href = 'password.html'; return; }
+            window.perfilOperadorPC = { uid: user.uid, email: user.email, ...perfil };
+            $('contenido').classList.remove('hidden');
+            await cargarSiEsEdicion();
+        });
+
+        $('btnCerrarSesion').addEventListener('click', () => signOut(auth).then(() => location.href = 'index.html'));
+    </script>
+</body>
+</html>

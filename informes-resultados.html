@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informes Registrados - Protección Civil</title>
+    <style>
+        :root { --naranja-pc: #f7941d; --azul-pc: #1c3f94; --gris-fondo: #e9ecef; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 1150px; margin: 20px auto 60px; padding: 0 14px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+        .topbar a { color: var(--azul-pc); text-decoration: none; font-weight: 700; font-size: 14px; }
+        .topbar button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .panel { background: #fff; border-radius: 10px; padding: 22px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); }
+        h1 { color: var(--azul-pc); font-size: 20px; margin: 0 0 4px; }
+        p.sub { color: #666; font-size: 13px; margin: 0 0 18px; }
+
+        .herramientas { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+        .herramientas input, .herramientas select { padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; }
+        .herramientas input[type="text"] { flex: 1; min-width: 200px; }
+        .btn-nuevo { background: var(--azul-pc); color: #fff; border: none; padding: 11px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 13.5px; }
+        .btn-excel { background: #15803d; color: #fff; border: none; padding: 11px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13.5px; }
+
+        .tabla-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        th { background: #eff6ff; color: var(--azul-pc); text-align: left; padding: 9px 8px; font-size: 11.5px; text-transform: uppercase; white-space: nowrap; }
+        td { padding: 9px 8px; border-bottom: 1px solid #f1f5f9; }
+        tr:hover td { background: #fafbfc; }
+        .btn-fila { border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer; margin-right: 4px; }
+        .btn-ver { background: #eff6ff; color: var(--azul-pc); }
+        .btn-pdf { background: #fff7ed; color: #9a3412; }
+        .btn-del { background: #fee2e2; color: #b91c1c; }
+        .vacio { text-align: center; color: #999; padding: 40px; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(8,15,30,.6); z-index: 9999; align-items: flex-start; justify-content: center; padding: 20px; overflow: auto; }
+        .modal.abierto { display: flex; }
+        .modal-card { background: #fff; border-radius: 12px; max-width: 640px; width: 100%; overflow: hidden; margin-top: 20px; }
+        .modal-hd { background: var(--azul-pc); color: #fff; padding: 14px 18px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+        .modal-hd button { background: rgba(255,255,255,.2); border: none; color: #fff; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 15px; }
+        .modal-bd { padding: 16px 20px; max-height: 65vh; overflow-y: auto; }
+        .modal-sec { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--naranja-pc); margin: 14px 0 6px; border-bottom: 2px solid #fdba74; padding-bottom: 3px; }
+        .modal-sec:first-child { margin-top: 0; }
+        .modal-row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; font-size: 13.5px; border-bottom: 1px dashed #f1f5f9; }
+        .modal-row span { color: #64748b; }
+        .modal-row b { color: #0f172a; text-align: right; }
+        .modal-ft { padding: 14px 20px; border-top: 1px solid #f1f5f9; display: flex; gap: 8px; flex-wrap: wrap; }
+        .modal-ft button, .modal-ft a { flex: 1; text-align: center; text-decoration: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13.5px; border: none; cursor: pointer; min-width: 120px; }
+
+        .hidden { display: none !important; }
+        #loader { text-align: center; padding: 80px 20px; color: #777; }
+        #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
+    </style>
+    <script src="autofresh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div id="loader">Verificando acceso...</div>
+    <div id="acceso-restringido" class="hidden">🚫 Tu cuenta no tiene acceso a este sistema.</div>
+
+    <div class="container hidden" id="contenido">
+        <div class="topbar">
+            <a href="admin.html">← Volver al panel</a>
+            <button type="button" id="btnCerrarSesion">Cerrar sesión</button>
+        </div>
+
+        <div class="panel">
+            <h1>📁 Informes Técnicos de Riesgo</h1>
+            <p class="sub" id="totalTxt">Cargando...</p>
+
+            <div class="herramientas">
+                <input type="text" id="buscador" placeholder="Buscar por nombre, cédula, código, parroquia o sector...">
+                <select id="filtroOrden">
+                    <option value="reciente">Más recientes primero</option>
+                    <option value="antiguo">Más antiguos primero</option>
+                </select>
+                <button type="button" class="btn-excel" id="btnExcel">📊 Excel</button>
+                <a href="informe-riesgo.html" class="btn-nuevo">+ Nuevo Informe</a>
+            </div>
+
+            <div class="tabla-scroll">
+                <table>
+                    <thead><tr>
+                        <th>Código</th><th>Fecha</th><th>Propietario</th><th>Cédula</th><th>Parroquia / Sector</th><th>Registrado por</th><th>Acciones</th>
+                    </tr></thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+                <p class="vacio hidden" id="vacioMsg">No hay informes registrados todavía.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalVer">
+        <div class="modal-card">
+            <div class="modal-hd"><span id="modalTitulo">Informe</span><button type="button" id="modalCerrar">✕</button></div>
+            <div class="modal-bd" id="modalBody"></div>
+            <div class="modal-ft" id="modalFooter"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase, ref, get, child, onValue, remove, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+
+        let TODOS = [];
+        let esAdminPlus = false;
+
+        function fmtFecha(ts) {
+            if (!ts) return '-';
+            return new Date(ts).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function aplicarFiltro() {
+            const q = $('buscador').value.trim().toLowerCase();
+            let lista = TODOS.filter(r => {
+                if (!q) return true;
+                const p = r.propietario || {}, u = r.ubicacion || {};
+                return [r.codigo, p.nombres_apellidos, p.cedula, u.parroquia, u.sector, u.comunidad]
+                    .some(v => String(v || '').toLowerCase().includes(q));
+            });
+            lista.sort((a, b) => (a.fecha_registro || 0) - (b.fecha_registro || 0));
+            if ($('filtroOrden').value === 'reciente') lista.reverse();
+            pintarTabla(lista);
+        }
+
+        function pintarTabla(lista) {
+            const tb = $('tbody');
+            tb.innerHTML = '';
+            $('vacioMsg').classList.toggle('hidden', lista.length > 0);
+            lista.forEach(r => {
+                const p = r.propietario || {}, u = r.ubicacion || {};
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td><b>' + esc(r.codigo) + '</b></td>' +
+                    '<td>' + esc(r.fecha_informe || fmtFecha(r.fecha_registro).split(',')[0]) + '</td>' +
+                    '<td>' + esc(p.nombres_apellidos || '-') + '</td>' +
+                    '<td>' + esc(p.cedula || '-') + '</td>' +
+                    '<td>' + esc([u.parroquia, u.sector].filter(Boolean).join(' / ') || '-') + '</td>' +
+                    '<td>' + esc((r.registrado_por && r.registrado_por.nombre) || '-') + '</td>' +
+                    '<td>' +
+                        '<button class="btn-fila btn-ver" data-id="' + r._id + '" data-accion="ver">Ver</button>' +
+                        '<button class="btn-fila btn-pdf" data-id="' + r._id + '" data-accion="pdf">PDF</button>' +
+                        (esAdminPlus ? '<button class="btn-fila btn-del" data-id="' + r._id + '" data-accion="del">Eliminar</button>' : '') +
+                    '</td>';
+                tb.appendChild(tr);
+            });
+            tb.querySelectorAll('button[data-accion]').forEach(b => {
+                b.onclick = () => {
+                    const r = TODOS.find(x => x._id === b.dataset.id);
+                    if (b.dataset.accion === 'ver') abrirModal(r);
+                    else if (b.dataset.accion === 'pdf') generarPdf(r);
+                    else if (b.dataset.accion === 'del') eliminar(r);
+                };
+            });
+        }
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+        function filaModal(k, v) { return '<div class="modal-row"><span>' + esc(k) + '</span><b>' + (esc(v) || '—') + '</b></div>'; }
+        function abrirModal(r) {
+            const p = r.propietario || {}, u = r.ubicacion || {}, gf = r.grupo_familiar || {};
+            $('modalTitulo').textContent = r.codigo || 'Informe';
+            let h = '';
+            h += '<div class="modal-sec">Ubicación</div>';
+            h += filaModal('Parroquia', u.parroquia) + filaModal('Sector', u.sector) + filaModal('Comunidad', u.comunidad) + filaModal('Calle', u.calle);
+            h += filaModal('Cuadrante de Paz', u.cuadrante_paz) + filaModal('Dirección exacta', u.direccion_exacta);
+            h += '<div class="modal-sec">Propietario</div>';
+            h += filaModal('Nombres y apellidos', p.nombres_apellidos) + filaModal('Cédula', p.cedula) + filaModal('Edad', p.edad) + filaModal('Teléfono', p.telf) + filaModal('Ocupación', p.ocupacion) + filaModal('Tenencia', p.tenencia_vivienda);
+            h += '<div class="modal-sec">Grupo familiar</div>';
+            h += filaModal('Adultos', gf.adultos) + filaModal('Niños', gf.ninos) + filaModal('Lactantes', gf.lactantes) + filaModal('Adolescentes', gf.adolescentes) + filaModal('Tercera edad', gf.tercera_edad) + filaModal('Discapacitados', gf.discapacitados);
+            ['tipo_estructura', 'evaluacion_danos', 'ubicacion_danos', 'losa_techo', 'losa_piso', 'sistema_estructural', 'distribucion_vivienda'].forEach(k => {
+                const arr = r[k] || [];
+                if (arr.length) h += '<div class="modal-sec">' + tituloGrupo(k) + '</div>' + filaModal('Marcado', arr.join(', '));
+            });
+            if ((r.nucleo_familiar || []).length) {
+                h += '<div class="modal-sec">Núcleo familiar</div>';
+                r.nucleo_familiar.forEach(f => h += filaModal(f.parentesco || 'Integrante', [f.nombre_apellido, f.cedula ? 'C.I. ' + f.cedula : '', f.edad ? f.edad + ' años' : ''].filter(Boolean).join(' · ')));
+            }
+            if (r.diagnostico) h += '<div class="modal-sec">Diagnóstico</div><div class="modal-row" style="display:block"><b style="text-align:left;display:block">' + esc(r.diagnostico) + '</b></div>';
+            h += '<div class="modal-sec">Registro</div>';
+            h += filaModal('Registrado por', r.registrado_por && r.registrado_por.nombre) + filaModal('Fecha de registro', fmtFecha(r.fecha_registro));
+            if (r.editado_por) h += filaModal('Última edición por', r.editado_por.nombre) + filaModal('Fecha de edición', fmtFecha(r.fecha_edicion));
+            $('modalBody').innerHTML = h;
+            $('modalFooter').innerHTML =
+                '<a href="informe-riesgo.html?id=' + r._id + '" style="background:#eff6ff;color:#1c3f94">✏️ Editar</a>' +
+                '<button type="button" id="btnModalPdf" style="background:#fff7ed;color:#9a3412">🖨️ PDF</button>' +
+                (esAdminPlus ? '<button type="button" id="btnModalDel" style="background:#fee2e2;color:#b91c1c">🗑️ Eliminar</button>' : '');
+            $('btnModalPdf').onclick = () => generarPdf(r);
+            const bd = $('btnModalDel'); if (bd) bd.onclick = () => eliminar(r);
+            $('modalVer').classList.add('abierto');
+        }
+        function tituloGrupo(k) {
+            return { tipo_estructura: 'Tipo de estructura', evaluacion_danos: 'Evaluación de daños', ubicacion_danos: 'Ubicación de los daños', losa_techo: 'Losa del techo', losa_piso: 'Losa del piso', sistema_estructural: 'Sistema estructural', distribucion_vivienda: 'Distribución de la vivienda' }[k] || k;
+        }
+        $('modalCerrar').onclick = () => $('modalVer').classList.remove('abierto');
+        $('modalVer').onclick = (e) => { if (e.target.id === 'modalVer') $('modalVer').classList.remove('abierto'); };
+
+        async function registrarBitacora(accion, informeId, resumen) {
+            const perfil = window.perfilOperadorPC;
+            if (!perfil) return;
+            try {
+                await set(push(ref(database, 'pc_bitacora')), {
+                    accion, informe_id: informeId, resumen,
+                    uid: perfil.uid, nombre: perfil.nombre || perfil.email, email: perfil.email, rol: perfil.rol,
+                    fecha: Date.now()
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function eliminar(r) {
+            if (!confirm('¿Eliminar el informe ' + r.codigo + ' de ' + (r.propietario && r.propietario.nombres_apellidos) + '? Esta acción no se puede deshacer.')) return;
+            try {
+                await remove(ref(database, 'pc_informes/' + r._id));
+                await registrarBitacora('eliminar', r._id, 'Eliminó el informe ' + r.codigo + ' (propietario: ' + (r.propietario && r.propietario.nombres_apellidos) + ')');
+                $('modalVer').classList.remove('abierto');
+            } catch (e) { alert('Error al eliminar: ' + e.message); }
+        }
+
+        // ── PDF: recrea el informe en papel, con encabezado institucional ──
+        function generarPdf(r) {
+            if (!window.jspdf) { alert('La librería de PDF no cargó.'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+            const pageW = 216, pageH = 279, margenX = 16, anchoUtil = pageW - margenX * 2;
+            let y = 14;
+
+            function encabezado() {
+                doc.setFillColor(28, 63, 148);
+                doc.rect(0, 0, pageW, 22, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12);
+                doc.text('REPUBLICA BOLIVARIANA DE VENEZUELA - ESTADO MIRANDA', pageW / 2, 8, { align: 'center' });
+                doc.text('MUNICIPIO CRISTOBAL ROJAS - DIRECCION DE PROTECCION CIVIL', pageW / 2, 14, { align: 'center' });
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.text('INFORME TECNICO DE RIESGO', pageW / 2, 19.5, { align: 'center' });
+                y = 28;
+                doc.setTextColor(20, 20, 20);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.text('Codigo: ' + (r.codigo || '-'), margenX, y);
+                doc.text('Fecha: ' + (r.fecha_informe || '-'), margenX + anchoUtil, y, { align: 'right' });
+                y += 8;
+            }
+            function seccion(titulo) {
+                if (y > pageH - 25) { doc.addPage(); y = 16; }
+                doc.setFillColor(247, 148, 29);
+                doc.rect(margenX, y, anchoUtil, 6.5, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9.5);
+                doc.text(titulo.toUpperCase(), margenX + 3, y + 4.6);
+                y += 10;
+                doc.setTextColor(20, 20, 20);
+            }
+            function campo(l, v) {
+                if (y > pageH - 18) { doc.addPage(); y = 16; }
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                doc.setTextColor(80, 80, 80);
+                doc.text(String(l) + ':', margenX, y);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(20, 20, 20);
+                const lineas = doc.splitTextToSize(String(v == null || v === '' ? '-' : v), anchoUtil - 62);
+                doc.text(lineas, margenX + 60, y);
+                y += Math.max(5.5, lineas.length * 4.6);
+            }
+            function parrafo(v) {
+                if (y > pageH - 25) { doc.addPage(); y = 16; }
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9.5);
+                doc.setTextColor(20, 20, 20);
+                const lineas = doc.splitTextToSize(String(v || '(sin observaciones)'), anchoUtil);
+                doc.text(lineas, margenX, y);
+                y += lineas.length * 4.6 + 3;
+            }
+
+            encabezado();
+            const u = r.ubicacion || {}, p = r.propietario || {}, gf = r.grupo_familiar || {};
+
+            seccion('Ubicación');
+            campo('Estado / Municipio', 'Miranda / Cristóbal Rojas');
+            campo('Parroquia', u.parroquia); campo('Sector', u.sector); campo('Comunidad', u.comunidad); campo('Calle', u.calle);
+            campo('Cuadrante de Paz', u.cuadrante_paz); campo('Telf. cuadrante', u.telf_cuadrante); campo('Sala de autogobierno', u.sala_autogobierno);
+            campo('Dirección exacta', u.direccion_exacta);
+            campo('Inspección realizada por', r.inspeccion_realizada_por); campo('Informe transcrito por', r.informe_transcrito_por);
+            y += 2;
+
+            seccion('Propietario');
+            campo('Nombres y apellidos', p.nombres_apellidos); campo('Cédula', p.cedula); campo('Edad', p.edad);
+            campo('Teléfono', p.telf); campo('Ocupación', p.ocupacion); campo('Tenencia de la vivienda', p.tenencia_vivienda);
+            y += 2;
+
+            seccion('Grupo familiar');
+            campo('Adultos', gf.adultos ?? 0); campo('Niños', gf.ninos ?? 0); campo('Lactantes', gf.lactantes ?? 0);
+            campo('Adolescentes', gf.adolescentes ?? 0); campo('Tercera edad', gf.tercera_edad ?? 0); campo('Discapacitados', gf.discapacitados ?? 0);
+            y += 2;
+
+            [['tipo_estructura', 'Tipo de estructura'], ['evaluacion_danos', 'Evaluación de daños'], ['ubicacion_danos', 'Ubicación de los daños'],
+             ['losa_techo', 'Losa del techo'], ['losa_piso', 'Losa del piso'], ['sistema_estructural', 'Sistema estructural'],
+             ['distribucion_vivienda', 'Distribución de la vivienda']].forEach(([k, t]) => {
+                seccion(t);
+                parrafo((r[k] || []).length ? r[k].join(', ') : '(nada marcado)');
+                y += 2;
+            });
+
+            seccion('Conformidad del núcleo familiar');
+            if ((r.nucleo_familiar || []).length) {
+                r.nucleo_familiar.forEach((f, i) => {
+                    campo((i + 1) + '. ' + (f.parentesco || 'Integrante'),
+                        [f.nombre_apellido, f.edad ? f.edad + ' años' : '', f.sexo, f.cedula ? 'C.I. ' + f.cedula : '', f.nombre_plantel ? 'Plantel: ' + f.nombre_plantel : ''].filter(Boolean).join(' · '));
+                });
+            } else { parrafo('(sin integrantes registrados)'); }
+            y += 2;
+
+            seccion('Diagnóstico');
+            parrafo(r.diagnostico);
+            y += 4;
+
+            if (y > pageH - 30) { doc.addPage(); y = 16; }
+            doc.setDrawColor(200, 200, 200);
+            doc.line(margenX, y, margenX + anchoUtil, y);
+            y += 6;
+            doc.setFontSize(8);
+            doc.setTextColor(120, 120, 120);
+            doc.text('Registrado por: ' + ((r.registrado_por && r.registrado_por.nombre) || '-') + '   -   ' + new Date(r.fecha_registro || 0).toLocaleString('es-VE'), margenX, y);
+            if (r.editado_por) { y += 4.5; doc.text('Última edición: ' + r.editado_por.nombre + '   -   ' + new Date(r.fecha_edicion || 0).toLocaleString('es-VE'), margenX, y); }
+            y += 10;
+            doc.setFontSize(8.5);
+            doc.setTextColor(60, 60, 60);
+            doc.text('Este documento no tiene validez sin sus posteriores firmas y sello.', margenX, y);
+            y += 12;
+            doc.setDrawColor(150, 150, 150);
+            doc.line(margenX, y, margenX + 70, y);
+            doc.line(margenX + anchoUtil - 70, y, margenX + anchoUtil, y);
+            y += 4;
+            doc.setFontSize(8);
+            doc.text('Firma del propietario', margenX + 35, y, { align: 'center' });
+            doc.text('Firma y sello de Protección Civil', margenX + anchoUtil - 35, y, { align: 'center' });
+
+            const total = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= total; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(160, 160, 160); doc.text('Página ' + i + ' de ' + total, pageW / 2, pageH - 6, { align: 'center' }); }
+
+            doc.save('Informe_Riesgo_' + (r.codigo || r._id) + '.pdf');
+        }
+
+        function exportarExcel() {
+            if (!TODOS.length) { alert('No hay informes para exportar.'); return; }
+            const filas = TODOS.map(r => {
+                const p = r.propietario || {}, u = r.ubicacion || {}, gf = r.grupo_familiar || {};
+                return {
+                    'Código': r.codigo, 'Fecha informe': r.fecha_informe,
+                    'Parroquia': u.parroquia, 'Sector': u.sector, 'Comunidad': u.comunidad, 'Calle': u.calle, 'Dirección exacta': u.direccion_exacta,
+                    'Propietario': p.nombres_apellidos, 'Cédula': p.cedula, 'Edad': p.edad, 'Teléfono': p.telf, 'Ocupación': p.ocupacion, 'Tenencia': p.tenencia_vivienda,
+                    'Adultos': gf.adultos, 'Niños': gf.ninos, 'Lactantes': gf.lactantes, 'Adolescentes': gf.adolescentes, 'Tercera edad': gf.tercera_edad, 'Discapacitados': gf.discapacitados,
+                    'Tipo de estructura': (r.tipo_estructura || []).join(', '), 'Evaluación de daños': (r.evaluacion_danos || []).join(', '),
+                    'Ubicación de daños': (r.ubicacion_danos || []).join(', '), 'Losa del techo': (r.losa_techo || []).join(', '),
+                    'Losa del piso': (r.losa_piso || []).join(', '), 'Sistema estructural': (r.sistema_estructural || []).join(', '),
+                    'Distribución vivienda': (r.distribucion_vivienda || []).join(', '), 'Núcleo familiar (integrantes)': (r.nucleo_familiar || []).length,
+                    'Diagnóstico': r.diagnostico,
+                    'Registrado por': r.registrado_por && r.registrado_por.nombre, 'Fecha de registro': fmtFecha(r.fecha_registro)
+                };
+            });
+            const ws = XLSX.utils.json_to_sheet(filas);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Informes');
+            XLSX.writeFile(wb, 'Informes_Riesgo_ProteccionCivil_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+        }
+        $('btnExcel').addEventListener('click', exportarExcel);
+        $('buscador').addEventListener('input', aplicarFiltro);
+        $('filtroOrden').addEventListener('change', aplicarFiltro);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { location.href = 'index.html'; return; }
+            let perfil = null;
+            try {
+                const snap = await get(child(ref(database), `pc_operadores/${user.uid}`));
+                if (snap.exists()) perfil = snap.val();
+            } catch (e) { perfil = null; }
+            $('loader').classList.add('hidden');
+            if (!perfil) { $('acceso-restringido').classList.remove('hidden'); return; }
+            if (perfil.cambio_obligatorio) { location.href = 'password.html'; return; }
+            window.perfilOperadorPC = { uid: user.uid, email: user.email, ...perfil };
+            esAdminPlus = perfil.rol === 'admin_plus';
+            $('contenido').classList.remove('hidden');
+
+            onValue(ref(database, 'pc_informes'), (snap) => {
+                const datos = snap.val() || {};
+                TODOS = Object.entries(datos).map(([id, r]) => ({ _id: id, ...r }));
+                $('totalTxt').textContent = TODOS.length + ' informe(s) registrado(s)';
+                aplicarFiltro();
+            });
+        });
+
+        $('btnCerrarSesion').addEventListener('click', () => signOut(auth).then(() => location.href = 'index.html'));
+    </script>
+</body>
+</html>
