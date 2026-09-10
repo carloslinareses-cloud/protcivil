@@ -366,7 +366,10 @@
                 sistema_estructural: [...estadoGrupos.sistema_estructural],
                 distribucion_vivienda: [...estadoGrupos.distribucion_vivienda],
                 nucleo_familiar: leerNucleo(),
-                diagnostico: $('f_diagnostico').value.trim()
+                diagnostico: $('f_diagnostico').value.trim(),
+                /* Para distinguirlo de los que llegan por el formulario
+                   público (reportar-riesgo.html), que no traen código. */
+                origen: 'interno'
             };
         }
 

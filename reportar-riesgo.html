@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportar un riesgo - Protección Civil Cristóbal Rojas</title>
+    <meta name="description" content="Formulario público de la Dirección de Protección Civil de la Alcaldía de Cristóbal Rojas para reportar una vivienda o estructura en riesgo.">
+    <style>
+        :root {
+            --naranja-pc: #f7941d;
+            --azul-pc: #1c3f94;
+            --gris-fondo: #e9ecef;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 820px; margin: 20px auto 60px; padding: 0 14px; }
+
+        .cabecera-form { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); text-align: center; margin-bottom: 16px; }
+        .cabecera-form img { height: 54px; object-fit: contain; margin: 0 10px; }
+        .cabecera-form h1 { color: var(--azul-pc); font-size: 20px; margin: 10px 0 2px; text-transform: uppercase; }
+        .cabecera-form p { color: #666; font-size: 13px; margin: 0; line-height: 1.5; }
+
+        .seccion { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .seccion h3 { margin: 0 0 4px; color: var(--azul-pc); font-size: 15px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .seccion .pista { color: #64748b; font-size: 12.5px; margin: 0 0 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .campo { margin-bottom: 12px; }
+        .campo label { display: block; font-weight: 700; color: #334155; font-size: 13px; margin-bottom: 5px; }
+        .campo .obligatorio { color: #b91c1c; }
+        .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .fila3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        @media (max-width: 560px) { .fila2, .fila3 { grid-template-columns: 1fr; } }
+        input[type="text"], input[type="tel"], input[type="number"], input[type="date"], select, textarea {
+            width: 100%; padding: 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: #f8fafc; font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--azul-pc); background: #fff; }
+        textarea { min-height: 110px; resize: vertical; }
+
+        .chip-grupo { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip { min-height: 44px; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 20px; background: #f8fafc; font-weight: 700; font-size: 13.5px; color: #475569; cursor: pointer; user-select: none; }
+        .chip.sel { border-color: var(--naranja-pc); background: #fff7ed; color: #9a3412; }
+
+        .grupo-conteo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media (max-width: 560px) { .grupo-conteo { grid-template-columns: repeat(2, 1fr); } }
+        .conteo-item label { font-size: 12.5px; }
+
+        table.nucleo { width: 100%; border-collapse: collapse; font-size: 13px; }
+        table.nucleo th { background: #eff6ff; color: var(--azul-pc); text-align: left; padding: 7px 6px; font-size: 11px; text-transform: uppercase; }
+        table.nucleo td { padding: 5px; border-bottom: 1px solid #f1f5f9; }
+        table.nucleo input, table.nucleo select { padding: 8px; font-size: 14px; }
+        .fila-nucleo .btn-quitar { background: #fee2e2; color: #b91c1c; border: none; border-radius: 6px; padding: 10px 12px; cursor: pointer; font-weight: bold; }
+        .btn-agregar-fila { margin-top: 10px; background: #eff6ff; color: var(--azul-pc); border: 1.5px dashed #93c5fd; border-radius: 8px; padding: 12px 16px; font-weight: 700; cursor: pointer; font-size: 13.5px; min-height: 44px; }
+        .tabla-scroll { overflow-x: auto; }
+
+        .cne-slot { position: relative; }
+
+        .btn-enviar { width: 100%; background: var(--azul-pc); color: #fff; border: none; border-radius: 10px; padding: 18px; font-size: 17px; font-weight: 800; cursor: pointer; min-height: 52px; }
+        .btn-enviar:hover { background: #142e6e; }
+        .btn-enviar:disabled { opacity: .6; cursor: not-allowed; }
+        .msg { text-align: center; font-weight: 700; margin-top: 12px; font-size: 14px; min-height: 20px; }
+        .msg.err { color: #b91c1c; }
+
+        .ok-screen { display: none; text-align: center; padding: 40px 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .ok-screen .check { font-size: 60px; }
+        .ok-screen h2 { color: #16a34a; font-size: 24px; margin: 10px 0; }
+        .ok-screen p { color: #475569; font-size: 15px; line-height: 1.6; }
+        .ok-screen button { margin-top: 20px; background: var(--azul-pc); color: #fff; border: none; border-radius: 10px; padding: 14px 22px; font-size: 15px; font-weight: 700; cursor: pointer; min-height: 48px; }
+
+        .pie { text-align: center; color: #64748b; font-size: 12px; padding: 18px 12px 30px; line-height: 1.6; }
+        .pie b { color: var(--azul-pc); }
+    </style>
+    <script src="autofresh.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div class="container">
+        <div class="cabecera-form">
+            <img src="logos/cristobal-rojas.png" alt="Escudo Cristóbal Rojas">
+            <img src="logos/pc.png" alt="Protección Civil">
+            <h1>Reportar un riesgo</h1>
+            <p>Dirección de Protección Civil · Municipio Cristóbal Rojas<br>
+            Llena este formulario para reportar una vivienda o estructura en riesgo. Un técnico revisará el caso.</p>
+        </div>
+
+        <div id="formWrap">
+            <div class="seccion">
+                <h3>¿Dónde queda?</h3>
+                <p class="pista">Mientras más exacta sea la dirección, más rápido llega la inspección.</p>
+                <div class="fila2">
+                    <div class="campo"><label>Parroquia</label><input type="text" id="f_parroquia"></div>
+                    <div class="campo"><label>Sector</label><input type="text" id="f_sector"></div>
+                </div>
+                <div class="fila2">
+                    <div class="campo"><label>Comunidad</label><input type="text" id="f_comunidad"></div>
+                    <div class="campo"><label>Calle</label><input type="text" id="f_calle"></div>
+                </div>
+                <div class="campo">
+                    <label>Dirección exacta <span class="obligatorio">*</span></label>
+                    <input type="text" id="f_direccion_exacta" placeholder="Calle, casa, punto de referencia">
+                </div>
+                <div class="fila3">
+                    <div class="campo"><label>Cuadrante de Paz</label><input type="text" id="f_cuadrante"></div>
+                    <div class="campo"><label>Telf. del cuadrante</label><input type="tel" id="f_telf_cuadrante" inputmode="tel"></div>
+                    <div class="campo"><label>Sala de autogobierno</label><input type="text" id="f_sala_autogobierno"></div>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h3>Datos del propietario</h3>
+                <p class="pista">De la persona dueña o responsable de la vivienda.</p>
+                <div class="campo cne-slot">
+                    <label>Cédula</label>
+                    <input type="text" id="f_prop_cedula" inputmode="numeric" placeholder="Ej: 12345678" data-cne data-cne-nombre="#f_prop_nombre">
+                </div>
+                <div class="campo">
+                    <label>Nombres y apellidos <span class="obligatorio">*</span></label>
+                    <input type="text" id="f_prop_nombre">
+                </div>
+                <div class="fila3">
+                    <div class="campo"><label>Edad</label><input type="number" id="f_prop_edad" min="0" max="120" inputmode="numeric"></div>
+                    <div class="campo"><label>Teléfono</label><input type="tel" id="f_prop_telf" inputmode="tel" placeholder="0424-1234567"></div>
+                    <div class="campo"><label>Ocupación</label><input type="text" id="f_prop_ocupacion"></div>
+                </div>
+                <div class="campo">
+                    <label>Tenencia de la vivienda</label>
+                    <select id="f_prop_tenencia">
+                        <option value="">-- Seleccione --</option>
+                        <option>Propia</option>
+                        <option>Alquilada</option>
+                        <option>Prestada</option>
+                        <option>Invadida / Ocupada</option>
+                        <option>Otra</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h3>¿Cuántas personas viven ahí?</h3>
+                <p class="pista">Si no estás seguro, coloca un aproximado.</p>
+                <div class="grupo-conteo">
+                    <div class="conteo-item campo"><label>Adultos</label><input type="number" id="gf_adultos" min="0" value="0" inputmode="numeric"></div>
+                    <div class="conteo-item campo"><label>Niños</label><input type="number" id="gf_ninos" min="0" value="0" inputmode="numeric"></div>
+                    <div class="conteo-item campo"><label>Lactantes</label><input type="number" id="gf_lactantes" min="0" value="0" inputmode="numeric"></div>
+                    <div class="conteo-item campo"><label>Adolescentes</label><input type="number" id="gf_adolescentes" min="0" value="0" inputmode="numeric"></div>
+                    <div class="conteo-item campo"><label>Tercera edad</label><input type="number" id="gf_tercera_edad" min="0" value="0" inputmode="numeric"></div>
+                    <div class="conteo-item campo"><label>Discapacitados</label><input type="number" id="gf_discapacitados" min="0" value="0" inputmode="numeric"></div>
+                </div>
+            </div>
+
+            <div class="seccion"><h3>Tipo de estructura</h3><p class="pista">Toca lo que aplique. Puedes marcar varias.</p><div class="chip-grupo" data-grupo="tipo_estructura"></div></div>
+            <div class="seccion"><h3>¿Qué daños tiene?</h3><p class="pista">Toca todo lo que veas.</p><div class="chip-grupo" data-grupo="evaluacion_danos"></div></div>
+            <div class="seccion"><h3>¿Dónde están los daños?</h3><p class="pista">En qué parte de la vivienda.</p><div class="chip-grupo" data-grupo="ubicacion_danos"></div></div>
+            <div class="seccion"><h3>Losa del techo</h3><p class="pista">De qué es el techo.</p><div class="chip-grupo" data-grupo="losa_techo"></div></div>
+            <div class="seccion"><h3>Losa del piso</h3><p class="pista">De qué es el piso.</p><div class="chip-grupo" data-grupo="losa_piso"></div></div>
+            <div class="seccion"><h3>Sistema estructural</h3><p class="pista">Si lo sabes. Si no, déjalo vacío.</p><div class="chip-grupo" data-grupo="sistema_estructural"></div></div>
+            <div class="seccion"><h3>Distribución de la vivienda</h3><p class="pista">Qué ambientes tiene.</p><div class="chip-grupo" data-grupo="distribucion_vivienda"></div></div>
+
+            <div class="seccion">
+                <h3>Núcleo familiar</h3>
+                <p class="pista">Opcional. Agrega a las personas que viven en la vivienda.</p>
+                <div class="tabla-scroll">
+                    <table class="nucleo">
+                        <thead><tr>
+                            <th style="min-width:110px">Parentesco</th>
+                            <th style="min-width:170px">Nombre y apellido</th>
+                            <th style="min-width:70px">Edad</th>
+                            <th style="min-width:90px">Sexo</th>
+                            <th style="min-width:110px">C.I.</th>
+                            <th style="min-width:150px">Nombre del plantel</th>
+                            <th></th>
+                        </tr></thead>
+                        <tbody id="nucleoBody"></tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn-agregar-fila" id="btnAgregarNucleo">+ Agregar integrante</button>
+            </div>
+
+            <div class="seccion">
+                <h3>Cuéntanos qué está pasando</h3>
+                <p class="pista">Describe el riesgo con tus palabras: qué pasó, desde cuándo, si empeora con la lluvia, etc.</p>
+                <textarea id="f_diagnostico" placeholder="Ejemplo: la pared del fondo se agrietó después de las lluvias y cada vez se abre más..."></textarea>
+            </div>
+
+            <div class="seccion">
+                <h3>¿Quién reporta?</h3>
+                <p class="pista">Para poder contactarte si hace falta más información.</p>
+                <div class="fila2">
+                    <div class="campo">
+                        <label>Tu nombre <span class="obligatorio">*</span></label>
+                        <input type="text" id="f_reporta_nombre">
+                    </div>
+                    <div class="campo">
+                        <label>Tu teléfono <span class="obligatorio">*</span></label>
+                        <input type="tel" id="f_reporta_telefono" inputmode="tel" placeholder="0424-1234567">
+                    </div>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <button type="button" class="btn-enviar" id="btnEnviar">Enviar reporte</button>
+                <div class="msg" id="msg"></div>
+            </div>
+        </div>
+
+        <div class="ok-screen" id="okScreen">
+            <div class="check">✅</div>
+            <h2>¡Reporte enviado!</h2>
+            <p>Protección Civil ya tiene tu reporte.<br>Un técnico va a revisar el caso y, si hace falta, te contactará al teléfono que dejaste.</p>
+            <button id="btnOtro" type="button">Enviar otro reporte</button>
+        </div>
+    </div>
+
+    <div class="pie">
+        <b>Dirección de Protección Civil y Administración de Desastres</b><br>
+        Alcaldía del Municipio Bolivariano Cristóbal Rojas · Charallave
+    </div>
+
+    <script type="module">
+        /* Formulario PÚBLICO: no pide iniciar sesión. Solo puede CREAR
+           reportes — las reglas de la base no le permiten leer ni tocar
+           lo que ya está guardado. */
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+
+        /* Las mismas opciones exactas del formulario interno: así el
+           informe que llega del público se ve igual en el panel. */
+        const GRUPOS = {
+            tipo_estructura: ['Concreto armado', 'Mampostería', 'Mixta', 'Improvisada', 'Bahareque', 'Otro'],
+            evaluacion_danos: ['Grietas superficiales', 'Grietas relevantes', 'Grietas profundas', 'Columnas estables', 'Columnas comprometidas', 'Columnas colapsadas', 'Desprendimiento', 'Mampostería', 'Fachada', 'Filtración', 'Desplazamiento', 'Socavación'],
+            ubicacion_danos: ['Habitaciones', 'Sala', 'Comedor', 'Baños', 'Cocina', 'Porche', 'Estacionamiento', 'Balcón', 'Otro'],
+            losa_techo: ['Platabanda', 'Láminas de zinc', 'Techo razo', 'Machimbrado', 'Drywall', 'Improvisada', 'Mixta', 'Sin techo', 'Otra'],
+            losa_piso: ['Cerámica', 'Concreto curado (liso)', 'Concreto rústico', 'Madera / Acrílico', 'Tierra compactada', 'Granito pulido'],
+            sistema_estructural: ['Columna de riostra', 'Columna de corona', 'Viga de soporte', 'Fundaciones', 'Columna vertical', 'Muros de contención'],
+            distribucion_vivienda: ['Habitaciones', 'Sala', 'Comedor', 'Baño', 'Cocina', 'Porche']
+        };
+        const estadoGrupos = {};
+        Object.keys(GRUPOS).forEach(k => estadoGrupos[k] = new Set());
+
+        function pintarGrupos() {
+            document.querySelectorAll('.chip-grupo').forEach(cont => {
+                const grupo = cont.dataset.grupo;
+                cont.innerHTML = '';
+                GRUPOS[grupo].forEach(op => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'chip' + (estadoGrupos[grupo].has(op) ? ' sel' : '');
+                    b.textContent = op;
+                    b.onclick = () => {
+                        if (estadoGrupos[grupo].has(op)) estadoGrupos[grupo].delete(op);
+                        else estadoGrupos[grupo].add(op);
+                        b.classList.toggle('sel');
+                    };
+                    cont.appendChild(b);
+                });
+            });
+        }
+        pintarGrupos();
+
+        function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+        function filaNucleo(d) {
+            d = d || {};
+            const tr = document.createElement('tr');
+            tr.className = 'fila-nucleo';
+            tr.innerHTML =
+                '<td><input type="text" class="n-parentesco" value="' + escHtml(d.parentesco) + '"></td>' +
+                '<td><input type="text" class="n-nombre" value="' + escHtml(d.nombre_apellido) + '"></td>' +
+                '<td><input type="number" class="n-edad" min="0" max="120" inputmode="numeric" value="' + escHtml(d.edad) + '"></td>' +
+                '<td><select class="n-sexo"><option value="">-</option><option value="M">M</option><option value="F">F</option></select></td>' +
+                '<td><input type="text" class="n-cedula" inputmode="numeric" value="' + escHtml(d.cedula) + '"></td>' +
+                '<td><input type="text" class="n-plantel" value="' + escHtml(d.nombre_plantel) + '"></td>' +
+                '<td><button type="button" class="btn-quitar">✕</button></td>';
+            tr.querySelector('.btn-quitar').onclick = () => tr.remove();
+            return tr;
+        }
+        $('btnAgregarNucleo').onclick = () => $('nucleoBody').appendChild(filaNucleo());
+
+        function leerNucleo() {
+            return [...document.querySelectorAll('.fila-nucleo')].map(tr => ({
+                parentesco: tr.querySelector('.n-parentesco').value.trim().slice(0, 60),
+                nombre_apellido: tr.querySelector('.n-nombre').value.trim().slice(0, 120),
+                edad: tr.querySelector('.n-edad').value ? Number(tr.querySelector('.n-edad').value) : null,
+                sexo: tr.querySelector('.n-sexo').value,
+                cedula: tr.querySelector('.n-cedula').value.trim().slice(0, 15),
+                nombre_plantel: tr.querySelector('.n-plantel').value.trim().slice(0, 120)
+            })).filter(f => f.parentesco || f.nombre_apellido || f.cedula).slice(0, 30);
+        }
+
+        const t = (id, max) => $(id).value.trim().slice(0, max);
+        const n = (id) => Math.max(0, Math.min(999, Number($(id).value) || 0));
+
+        function armarPayload() {
+            return {
+                ubicacion: {
+                    parroquia: t('f_parroquia', 80),
+                    sector: t('f_sector', 120),
+                    comunidad: t('f_comunidad', 120),
+                    calle: t('f_calle', 120),
+                    cuadrante_paz: t('f_cuadrante', 80),
+                    telf_cuadrante: t('f_telf_cuadrante', 30),
+                    sala_autogobierno: t('f_sala_autogobierno', 120),
+                    direccion_exacta: t('f_direccion_exacta', 300)
+                },
+                inspeccion_realizada_por: '',
+                informe_transcrito_por: '',
+                fecha_informe: new Date().toISOString().slice(0, 10),
+                propietario: {
+                    cedula: t('f_prop_cedula', 15),
+                    nombres_apellidos: t('f_prop_nombre', 150),
+                    edad: $('f_prop_edad').value ? Number($('f_prop_edad').value) : null,
+                    telf: t('f_prop_telf', 30),
+                    ocupacion: t('f_prop_ocupacion', 100),
+                    tenencia_vivienda: $('f_prop_tenencia').value
+                },
+                grupo_familiar: {
+                    adultos: n('gf_adultos'), ninos: n('gf_ninos'), lactantes: n('gf_lactantes'),
+                    adolescentes: n('gf_adolescentes'), tercera_edad: n('gf_tercera_edad'), discapacitados: n('gf_discapacitados')
+                },
+                tipo_estructura: [...estadoGrupos.tipo_estructura],
+                evaluacion_danos: [...estadoGrupos.evaluacion_danos],
+                ubicacion_danos: [...estadoGrupos.ubicacion_danos],
+                losa_techo: [...estadoGrupos.losa_techo],
+                losa_piso: [...estadoGrupos.losa_piso],
+                sistema_estructural: [...estadoGrupos.sistema_estructural],
+                distribucion_vivienda: [...estadoGrupos.distribucion_vivienda],
+                nucleo_familiar: leerNucleo(),
+                diagnostico: t('f_diagnostico', 2000),
+                /* Marca de origen: el panel distingue estos de los que
+                   levanta un técnico, y el código oficial se lo asigna
+                   el administrador cuando se hace la inspección real.
+                   A propósito NO se manda "registrado_por" ni "codigo":
+                   las reglas de la base los rechazan sin sesión iniciada,
+                   justamente para que nadie pueda firmar un reporte falso
+                   con el nombre de un funcionario. */
+                origen: 'publico',
+                reportado_por: {
+                    nombre: t('f_reporta_nombre', 150),
+                    telefono: t('f_reporta_telefono', 30)
+                },
+                fecha_registro: Date.now()
+            };
+        }
+
+        function err(texto) {
+            $('msg').textContent = texto;
+            $('msg').className = 'msg err';
+        }
+
+        $('btnEnviar').addEventListener('click', async () => {
+            const payload = armarPayload();
+
+            if (!payload.propietario.nombres_apellidos) { err('Falta el nombre del propietario.'); $('f_prop_nombre').focus(); return; }
+            if (!payload.ubicacion.direccion_exacta) { err('Falta la dirección exacta.'); $('f_direccion_exacta').focus(); return; }
+            if (!payload.reportado_por.nombre) { err('Falta tu nombre.'); $('f_reporta_nombre').focus(); return; }
+            if (!payload.reportado_por.telefono) { err('Falta tu teléfono.'); $('f_reporta_telefono').focus(); return; }
+
+            $('msg').textContent = '';
+            $('btnEnviar').disabled = true;
+            $('btnEnviar').textContent = 'Enviando…';
+
+            try {
+                const nuevo = push(ref(database, 'pc_informes'));
+                await set(nuevo, payload);
+                $('formWrap').style.display = 'none';
+                $('okScreen').style.display = 'block';
+                window.scrollTo(0, 0);
+            } catch (e) {
+                /* Nunca decimos "enviado" si el servidor no confirmó. */
+                err('No se pudo enviar (' + (e.message || e.code || 'error') + '). Revisa tu conexión e intenta de nuevo.');
+                $('btnEnviar').disabled = false;
+                $('btnEnviar').textContent = 'Enviar reporte';
+            }
+        });
+
+        $('btnOtro').addEventListener('click', () => location.reload());
+    </script>
+    <script src="cne-dateas.js"></script>
+</body>
+</html>

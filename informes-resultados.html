@@ -14,6 +14,22 @@
         .topbar a { color: var(--azul-pc); text-decoration: none; font-weight: 700; font-size: 14px; }
         .topbar button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
         .panel { background: #fff; border-radius: 10px; padding: 22px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); }
+        .panel.compartir { border-top-color: #15803d; margin-bottom: 16px; }
+        .compartir-cols { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+        .compartir-qr { flex: none; text-align: center; }
+        .compartir-qr img { width: 140px; height: 140px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+        .compartir-datos { flex: 1; min-width: 250px; }
+        .compartir-enlace { display: block; width: 100%; padding: 11px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; background: #f8fafc; font-family: inherit; margin-bottom: 10px; }
+        .compartir-botones { display: flex; gap: 8px; flex-wrap: wrap; }
+        .compartir-botones button, .compartir-botones a {
+            border: none; border-radius: 8px; padding: 11px 16px; font-size: 13.5px; font-weight: 700;
+            cursor: pointer; text-decoration: none; display: inline-block; min-height: 44px;
+        }
+        .b-copiar { background: #eff6ff; color: var(--azul-pc); }
+        .b-whatsapp { background: #dcfce7; color: #15803d; }
+        .b-abrir { background: #fff7ed; color: #9a3412; }
+        .etq-publico { display: inline-block; background: #dcfce7; color: #15803d; font-size: 11.5px; font-weight: 800; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+        .sin-codigo { color: #94a3b8; font-size: 12.5px; }
         h1 { color: var(--azul-pc); font-size: 20px; margin: 0 0 4px; }
         p.sub { color: #666; font-size: 13px; margin: 0 0 18px; }
 
@@ -66,6 +82,25 @@
         <div class="topbar">
             <a href="admin.html">← Volver al panel</a>
             <button type="button" id="btnCerrarSesion">Cerrar sesión</button>
+        </div>
+
+        <div class="panel compartir">
+            <h1>📣 Formulario para el público</h1>
+            <p class="sub">Comparte este enlace para que cualquier persona reporte una vivienda o estructura en riesgo, sin necesidad de cuenta. Los reportes llegan aquí mismo, marcados en verde.</p>
+            <div class="compartir-cols">
+                <div class="compartir-qr">
+                    <img id="qrPublico" alt="Código QR del formulario público">
+                    <div style="font-size:11.5px;color:#64748b;margin-top:6px">Escanear con el celular</div>
+                </div>
+                <div class="compartir-datos">
+                    <input class="compartir-enlace" id="enlacePublico" type="text" readonly>
+                    <div class="compartir-botones">
+                        <button type="button" class="b-copiar" id="btnCopiar">📋 Copiar enlace</button>
+                        <a class="b-whatsapp" id="btnWhatsapp" target="_blank" rel="noopener">💬 Enviar por WhatsApp</a>
+                        <a class="b-abrir" id="btnAbrir" target="_blank" rel="noopener">👁️ Ver el formulario</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="panel">
@@ -143,6 +178,16 @@
             pintarTabla(lista);
         }
 
+        /* Los reportes que llegan del formulario público todavía no tienen
+           código oficial: ese número lo asigna Protección Civil cuando un
+           técnico va a inspeccionar. Se marcan para que se distingan de un
+           vistazo, en vez de mostrar una celda vacía. */
+        function celdaCodigo(r) {
+            if (r.codigo) return '<b>' + esc(r.codigo) + '</b>';
+            if (r.origen === 'publico') return '<span class="etq-publico">Reporte del público</span>';
+            return '<span class="sin-codigo">sin código</span>';
+        }
+
         function pintarTabla(lista) {
             const tb = $('tbody');
             tb.innerHTML = '';
@@ -151,16 +196,16 @@
                 const p = r.propietario || {}, u = r.ubicacion || {};
                 const tr = document.createElement('tr');
                 tr.innerHTML =
-                    '<td><b>' + esc(r.codigo) + '</b></td>' +
+                    '<td>' + celdaCodigo(r) + '</td>' +
                     '<td>' + esc(r.fecha_informe || fmtFecha(r.fecha_registro).split(',')[0]) + '</td>' +
                     '<td>' + esc(p.nombres_apellidos || '-') + '</td>' +
                     '<td>' + esc(p.cedula || '-') + '</td>' +
                     '<td>' + esc([u.parroquia, u.sector].filter(Boolean).join(' / ') || '-') + '</td>' +
-                    '<td>' + esc((r.registrado_por && r.registrado_por.nombre) || '-') + '</td>' +
+                    '<td>' + esc(quienRegistro(r)) + '</td>' +
                     '<td>' +
-                        '<button class="btn-fila btn-ver" data-id="' + r._id + '" data-accion="ver">Ver</button>' +
-                        '<button class="btn-fila btn-pdf" data-id="' + r._id + '" data-accion="pdf">PDF</button>' +
-                        (esAdminPlus ? '<button class="btn-fila btn-del" data-id="' + r._id + '" data-accion="del">Eliminar</button>' : '') +
+                        '<button class="btn-fila btn-ver" data-id="' + esc(r._id) + '" data-accion="ver">Ver</button>' +
+                        '<button class="btn-fila btn-pdf" data-id="' + esc(r._id) + '" data-accion="pdf">PDF</button>' +
+                        (esAdminPlus ? '<button class="btn-fila btn-del" data-id="' + esc(r._id) + '" data-accion="del">Eliminar</button>' : '') +
                     '</td>';
                 tb.appendChild(tr);
             });
@@ -173,7 +218,28 @@
                 };
             });
         }
-        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+        /* Escapa también la comilla simple: cualquier texto que entre aquí
+           puede venir del formulario público, o sea de un desconocido, y
+           acaba dentro de atributos HTML de este mismo tablero. */
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+        /* Quién levantó el informe, en texto legible. Los que llegan del
+           formulario público no traen "registrado_por" a propósito (las
+           reglas de la base no dejan que un anónimo firme), así que aquí
+           se dice de dónde vino. */
+        function quienRegistro(r) {
+            if (r.registrado_por && r.registrado_por.nombre) return r.registrado_por.nombre;
+            if (r.origen === 'publico') return 'Formulario público';
+            return '-';
+        }
+
+        /* Excel: un texto que empieza con = + - o @ lo abre Excel como
+           fórmula. Como estos datos los puede escribir cualquiera desde el
+           formulario público, se neutraliza antes de exportar. */
+        function seguroExcel(v) {
+            if (typeof v !== 'string' || !v) return v;
+            return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
+        }
 
         function filaModal(k, v) { return '<div class="modal-row"><span>' + esc(k) + '</span><b>' + (esc(v) || '—') + '</b></div>'; }
         function abrirModal(r) {
@@ -197,7 +263,11 @@
             }
             if (r.diagnostico) h += '<div class="modal-sec">Diagnóstico</div><div class="modal-row" style="display:block"><b style="text-align:left;display:block">' + esc(r.diagnostico) + '</b></div>';
             h += '<div class="modal-sec">Registro</div>';
-            h += filaModal('Registrado por', r.registrado_por && r.registrado_por.nombre) + filaModal('Fecha de registro', fmtFecha(r.fecha_registro));
+            h += filaModal('Registrado por', quienRegistro(r)) + filaModal('Fecha de registro', fmtFecha(r.fecha_registro));
+            if (r.origen === 'publico') {
+                const rep = r.reportado_por || {};
+                h += filaModal('Reportado por', rep.nombre) + filaModal('Teléfono de contacto', rep.telefono);
+            }
             if (r.editado_por) h += filaModal('Última edición por', r.editado_por.nombre) + filaModal('Fecha de edición', fmtFecha(r.fecha_edicion));
             $('modalBody').innerHTML = h;
             $('modalFooter').innerHTML =
@@ -227,10 +297,11 @@
         }
 
         async function eliminar(r) {
-            if (!confirm('¿Eliminar el informe ' + r.codigo + ' de ' + (r.propietario && r.propietario.nombres_apellidos) + '? Esta acción no se puede deshacer.')) return;
+            const comoSeLlama = r.codigo || (r.origen === 'publico' ? 'el reporte del público' : 'el informe sin código');
+            if (!confirm('¿Eliminar ' + comoSeLlama + ' de ' + ((r.propietario && r.propietario.nombres_apellidos) || 'sin propietario') + '? Esta acción no se puede deshacer.')) return;
             try {
                 await remove(ref(database, 'pc_informes/' + r._id));
-                await registrarBitacora('eliminar', r._id, 'Eliminó el informe ' + r.codigo + ' (propietario: ' + (r.propietario && r.propietario.nombres_apellidos) + ')');
+                await registrarBitacora('eliminar', r._id, 'Eliminó ' + comoSeLlama + ' (propietario: ' + ((r.propietario && r.propietario.nombres_apellidos) || 'sin propietario') + ')');
                 $('modalVer').classList.remove('abierto');
             } catch (e) { alert('Error al eliminar: ' + e.message); }
         }
@@ -343,7 +414,11 @@
             y += 6;
             doc.setFontSize(8);
             doc.setTextColor(120, 120, 120);
-            doc.text('Registrado por: ' + ((r.registrado_por && r.registrado_por.nombre) || '-') + '   -   ' + new Date(r.fecha_registro || 0).toLocaleString('es-VE'), margenX, y);
+            doc.text('Registrado por: ' + quienRegistro(r) + '   -   ' + new Date(r.fecha_registro || 0).toLocaleString('es-VE'), margenX, y);
+            if (r.origen === 'publico' && r.reportado_por) {
+                y += 4.5;
+                doc.text('Reportado por: ' + (r.reportado_por.nombre || '-') + '   -   Tel: ' + (r.reportado_por.telefono || '-'), margenX, y);
+            }
             if (r.editado_por) { y += 4.5; doc.text('Última edición: ' + r.editado_por.nombre + '   -   ' + new Date(r.fecha_edicion || 0).toLocaleString('es-VE'), margenX, y); }
             y += 10;
             doc.setFontSize(8.5);
@@ -378,9 +453,14 @@
                     'Losa del piso': (r.losa_piso || []).join(', '), 'Sistema estructural': (r.sistema_estructural || []).join(', '),
                     'Distribución vivienda': (r.distribucion_vivienda || []).join(', '), 'Núcleo familiar (integrantes)': (r.nucleo_familiar || []).length,
                     'Diagnóstico': r.diagnostico,
-                    'Registrado por': r.registrado_por && r.registrado_por.nombre, 'Fecha de registro': fmtFecha(r.fecha_registro)
+                    'Origen': r.origen === 'publico' ? 'Formulario público' : 'Levantado por técnico',
+                    'Reportado por': (r.reportado_por || {}).nombre, 'Teléfono de quien reporta': (r.reportado_por || {}).telefono,
+                    'Registrado por': quienRegistro(r), 'Fecha de registro': fmtFecha(r.fecha_registro)
                 };
             });
+            /* Ningún texto que venga de afuera puede llegar al Excel
+               empezando por = + - o @: Excel lo abriría como fórmula. */
+            filas.forEach(f => { Object.keys(f).forEach(k => { f[k] = seguroExcel(f[k]); }); });
             const ws = XLSX.utils.json_to_sheet(filas);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Informes');
@@ -389,6 +469,36 @@
         $('btnExcel').addEventListener('click', exportarExcel);
         $('buscador').addEventListener('input', aplicarFiltro);
         $('filtroOrden').addEventListener('change', aplicarFiltro);
+
+        /* ---- Compartir el formulario público ----
+           El enlace se arma desde la dirección real del navegador, así
+           funciona igual en el dominio propio que en cualquier otra
+           dirección donde esté publicado el sitio. */
+        (function prepararCompartir() {
+            const url = location.origin + location.pathname.replace(/[^/]*$/, '') + 'reportar-riesgo.html';
+            const texto = 'Reporta una vivienda o estructura en riesgo ante Protección Civil de la Alcaldía de Cristóbal Rojas: ' + url;
+
+            $('enlacePublico').value = url;
+            $('qrPublico').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(url);
+            $('btnWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(texto);
+            $('btnAbrir').href = url;
+
+            $('btnCopiar').addEventListener('click', async () => {
+                const boton = $('btnCopiar');
+                try {
+                    await navigator.clipboard.writeText(url);
+                } catch (e) {
+                    /* Sin permiso de portapapeles (navegador viejo o http):
+                       se selecciona el texto para que lo copie a mano. */
+                    $('enlacePublico').select();
+                    boton.textContent = '👆 Copia el enlace de arriba';
+                    setTimeout(() => { boton.textContent = '📋 Copiar enlace'; }, 3000);
+                    return;
+                }
+                boton.textContent = '✔ Copiado';
+                setTimeout(() => { boton.textContent = '📋 Copiar enlace'; }, 2000);
+            });
+        })();
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { location.href = 'index.html'; return; }

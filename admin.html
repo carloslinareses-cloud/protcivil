@@ -43,6 +43,8 @@
         .card-nuevo::before { background-color: var(--naranja-pc); }
         .card-registrados { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #93c5fd; }
         .card-registrados::before { background-color: var(--azul-pc); }
+        .card-publico { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; }
+        .card-publico::before { background-color: #15803d; }
         .card-auditoria { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border: none; color: #fff; }
         .card-auditoria::before { background-color: #22c55e; }
         .card-auditoria .card-title { color: #fff; }
@@ -99,6 +101,12 @@
                 <span class="card-icon">📁</span>
                 <div class="card-title">Informes Registrados</div>
                 <div class="card-desc">Buscar, ver, editar, imprimir en PDF o eliminar cualquier informe ya levantado.</div>
+            </div>
+
+            <div class="card card-publico" onclick="location.href='reportar-riesgo.html'">
+                <span class="card-icon">📣</span>
+                <div class="card-title">Formulario público</div>
+                <div class="card-desc">El que llena la gente sin cuenta para reportar una vivienda en riesgo. El enlace y el código QR para compartirlo están en Informes Registrados.</div>
             </div>
 
             <div class="card card-usuarios hidden" id="cardUsuarios" onclick="location.href='usuarios.html'">
