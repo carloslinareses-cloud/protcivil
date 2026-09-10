@@ -54,6 +54,18 @@
         .card-icon { font-size: 50px; margin-bottom: 15px; display: block; }
         .card-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; text-transform: uppercase; }
         .card-desc { font-size: 13px; color: #666; }
+        /* Tarjeta para compartir el formulario público. Es la misma que
+           usan los tableros de Sala Situacional, para que quien maneje los
+           dos sistemas no tenga que aprender dos cosas distintas. */
+        .share { background: #fff; border-radius: 10px; border-top: 5px solid var(--naranja-pc); box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 18px; margin-bottom: 30px; }
+        .share h3 { font-size: 15px; font-weight: 800; color: var(--azul-pc); margin-bottom: 12px; text-transform: uppercase; letter-spacing: .3px; }
+        .share-cols { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+        .share img.qr { width: 150px; height: 150px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; flex: none; }
+        .share-datos { flex: 1; min-width: 240px; }
+        .share-datos p { color: #475569; font-size: 14px; margin-bottom: 8px; }
+        .share-corto { font-size: 22px; font-weight: 800; color: var(--naranja-pc); margin-bottom: 10px; overflow-wrap: anywhere; }
+        .share-largo { font-size: 12px; color: #94a3b8; margin-top: 8px; overflow-wrap: anywhere; }
+        .btn-exp { border: none; border-radius: 6px; padding: 10px 15px; font-size: 13px; font-weight: 700; cursor: pointer; margin: 0 8px 8px 0; color: #fff; text-decoration: none; display: inline-block; }
         .hidden { display: none !important; }
         #loader { text-align: center; padding: 80px 20px; color: #777; }
         #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
@@ -90,6 +102,23 @@
             <div class="stat-box"><div class="num" id="statSemana">-</div><div class="lbl">Últimos 7 días</div></div>
         </div>
 
+        <div class="share">
+            <h3>📣 Compartir el formulario</h3>
+            <div class="share-cols">
+                <img class="qr" id="qr" alt="Código QR del formulario público">
+                <div class="share-datos">
+                    <p>Comparte este enlace o el QR para que cualquier persona reporte una vivienda o estructura en riesgo, sin necesidad de cuenta:</p>
+                    <div class="share-corto" id="shortTxt">—</div>
+                    <div>
+                        <button type="button" id="btnCopiar" class="btn-exp" style="background:#0a2351;">📋 Copiar enlace</button>
+                        <a id="btnWa" class="btn-exp" style="background:#16a34a;" target="_blank" rel="noopener">💬 WhatsApp</a>
+                        <a id="btnQrDl" class="btn-exp" style="background:#ea580c;" download="qr-reportar-riesgo.png">⬇️ Descargar QR</a>
+                    </div>
+                    <div class="share-largo">Enlace completo: <span id="fullTxt"></span></div>
+                </div>
+            </div>
+        </div>
+
         <div class="dashboard-grid">
             <div class="card card-nuevo" onclick="location.href='informe-riesgo.html'">
                 <span class="card-icon">📋</span>
@@ -106,7 +135,7 @@
             <div class="card card-publico" onclick="location.href='reportar-riesgo.html'">
                 <span class="card-icon">📣</span>
                 <div class="card-title">Formulario público</div>
-                <div class="card-desc">El que llena la gente sin cuenta para reportar una vivienda en riesgo. El enlace y el código QR para compartirlo están en Informes Registrados.</div>
+                <div class="card-desc">Ver cómo lo llena la gente: sin cuenta, desde el teléfono, y puede adjuntar hasta 10 fotos. El enlace para compartirlo está aquí arriba.</div>
             </div>
 
             <div class="card card-usuarios hidden" id="cardUsuarios" onclick="location.href='usuarios.html'">
@@ -182,6 +211,29 @@
 
         $('btnCerrarSesion').addEventListener('click', () => {
             signOut(auth).then(() => location.href = 'index.html');
+        });
+
+        /* Compartir el formulario público. Se muestra el enlace corto, que
+           es el que se puede dictar por teléfono, y el largo queda abajo en
+           chiquito. Mismo patrón que los tableros de Sala Situacional. */
+        const URL_CORTO = 'https://tinyurl.com/reportarriesgocr';
+        const URL_FORM = location.origin + location.pathname.replace(/[^/]*$/, '') + 'reportar-riesgo.html';
+
+        $('qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(URL_CORTO);
+        $('shortTxt').textContent = URL_CORTO.replace('https://', '');
+        $('fullTxt').textContent = URL_FORM;
+        $('btnQrDl').href = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&download=1&data=' + encodeURIComponent(URL_CORTO);
+        $('btnWa').href = 'https://wa.me/?text=' + encodeURIComponent(
+            '🚨 PROTECCIÓN CIVIL — Reporta aquí una vivienda o estructura en riesgo (Alcaldía de Cristóbal Rojas): ' + URL_CORTO);
+        $('btnCopiar').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(URL_CORTO);
+                $('btnCopiar').textContent = '✓ Copiado';
+                setTimeout(() => { $('btnCopiar').textContent = '📋 Copiar enlace'; }, 1800);
+            } catch (e) {
+                /* Sin permiso de portapapeles: se muestra para copiar a mano. */
+                prompt('Copia el enlace:', URL_CORTO);
+            }
         });
     </script>
 </body>

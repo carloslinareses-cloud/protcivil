@@ -14,22 +14,21 @@
         .topbar a { color: var(--azul-pc); text-decoration: none; font-weight: 700; font-size: 14px; }
         .topbar button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
         .panel { background: #fff; border-radius: 10px; padding: 22px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); }
-        .panel.compartir { border-top-color: #15803d; margin-bottom: 16px; }
+        .panel.compartir { border-top-color: var(--naranja-pc); margin-bottom: 16px; }
         .compartir-cols { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
         .compartir-qr { flex: none; text-align: center; }
-        .compartir-qr img { width: 140px; height: 140px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+        .compartir-qr img { width: 150px; height: 150px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
         .compartir-datos { flex: 1; min-width: 250px; }
-        .enlace-corto { font-size: 22px; font-weight: 800; color: #15803d; margin-bottom: 10px; overflow-wrap: anywhere; }
+        .enlace-corto { font-size: 22px; font-weight: 800; color: var(--naranja-pc); margin-bottom: 10px; overflow-wrap: anywhere; }
         .enlace-largo { font-size: 12px; color: #94a3b8; margin-top: 8px; overflow-wrap: anywhere; }
         .compartir-botones { display: flex; gap: 8px; flex-wrap: wrap; }
         .compartir-botones button, .compartir-botones a {
             border: none; border-radius: 8px; padding: 11px 16px; font-size: 13.5px; font-weight: 700;
             cursor: pointer; text-decoration: none; display: inline-block; min-height: 44px;
         }
-        .b-copiar { background: var(--azul-pc); color: #fff; }
+        .b-copiar { background: #0a2351; color: #fff; }
         .b-whatsapp { background: #16a34a; color: #fff; }
-        .b-qr { background: #0a6cb0; color: #fff; }
-        .b-abrir { background: #fff7ed; color: #9a3412; }
+        .b-qr { background: #ea580c; color: #fff; }
         .etq-publico { display: inline-block; background: #dcfce7; color: #15803d; font-size: 11.5px; font-weight: 800; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
         .etq-fotos { display: inline-block; background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 20px; white-space: nowrap; margin-left: 4px; }
         .sin-codigo { color: #94a3b8; font-size: 12.5px; }
@@ -97,13 +96,12 @@
                     <img id="qrPublico" alt="Código QR del formulario público">
                 </div>
                 <div class="compartir-datos">
-                    <p class="sub" style="margin-bottom:8px">Comparte este enlace o el QR para que cualquier persona reporte una vivienda en riesgo, sin necesidad de cuenta:</p>
+                    <p class="sub" style="margin-bottom:8px">Comparte este enlace o el QR para que cualquier persona reporte una vivienda o estructura en riesgo, sin necesidad de cuenta:</p>
                     <div class="enlace-corto" id="textoCorto">—</div>
                     <div class="compartir-botones">
                         <button type="button" class="b-copiar" id="btnCopiar">📋 Copiar enlace</button>
                         <a class="b-whatsapp" id="btnWhatsapp" target="_blank" rel="noopener">💬 WhatsApp</a>
                         <a class="b-qr" id="btnDescargarQr" download="qr-reportar-riesgo.png">⬇️ Descargar QR</a>
-                        <a class="b-abrir" id="btnAbrir" target="_blank" rel="noopener">👁️ Ver el formulario</a>
                     </div>
                     <div class="enlace-largo">Enlace completo: <span id="textoLargo"></span></div>
                 </div>
@@ -518,7 +516,6 @@
             $('btnDescargarQr').href = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&download=1&data=' + encodeURIComponent(URL_CORTO);
             $('btnWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(
                 '🚨 PROTECCIÓN CIVIL — Reporta aquí una vivienda o estructura en riesgo (Alcaldía de Cristóbal Rojas): ' + URL_CORTO);
-            $('btnAbrir').href = URL_FORM;
 
             $('btnCopiar').addEventListener('click', async () => {
                 const boton = $('btnCopiar');
