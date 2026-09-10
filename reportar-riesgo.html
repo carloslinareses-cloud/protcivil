@@ -313,9 +313,9 @@
            encogen aquí mismo antes de mandarlas: una foto de cámara pesa
            varios megas y con datos móviles eso no sube nunca. */
         /* Dirección del Worker que guarda las fotos en Cloudflare R2.
-           Mientras esté vacía, la sección de fotos NO se muestra: es
+           Si se deja vacía, la sección de fotos NO se muestra: es
            preferible que no aparezca a que aparezca y falle al subir. */
-        const SUBIDA_FOTOS = '';
+        const SUBIDA_FOTOS = 'https://fotos.alcaldiadecharallave.com/subir';
         const MAX_FOTOS = 10;
         const fotos = [];   // { id, estado: 'subiendo'|'lista'|'fallo', url, archivo }
         let contadorFotos = 0;
