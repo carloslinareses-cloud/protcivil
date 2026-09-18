@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornada social - Protección Civil Cristóbal Rojas</title>
+    <meta name="description" content="Registro de personas atendidas en una jornada social de Protección Civil, Alcaldía de Cristóbal Rojas.">
+    <style>
+        :root { --naranja-pc: #f7941d; --azul-pc: #1c3f94; --gris-fondo: #e9ecef; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 820px; margin: 20px auto 60px; padding: 0 14px; }
+        .volver { display: inline-block; color: var(--azul-pc); font-weight: 700; font-size: 14px; text-decoration: none; margin-bottom: 10px; min-height: 44px; line-height: 44px; }
+
+        .cabecera-form { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); text-align: center; margin-bottom: 16px; }
+        .cabecera-form img { height: 54px; object-fit: contain; margin: 0 10px; }
+        .cabecera-form h1 { color: var(--azul-pc); font-size: 20px; margin: 10px 0 2px; text-transform: uppercase; }
+        .cabecera-form p { color: #666; font-size: 13px; margin: 0; line-height: 1.5; }
+
+        .seccion { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .seccion h3 { margin: 0 0 4px; color: var(--azul-pc); font-size: 15px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .seccion .pista { color: #64748b; font-size: 12.5px; margin: 0 0 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .campo { margin-bottom: 12px; min-width: 0; }
+        .campo label { display: block; font-weight: 700; color: #334155; font-size: 13px; margin-bottom: 5px; }
+        .campo .obligatorio { color: #b91c1c; }
+        .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 560px) { .fila2 { grid-template-columns: 1fr; } }
+        input[type="text"], input[type="tel"], input[type="number"], input[type="date"], select {
+            width: 100%; padding: 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: #f8fafc; font-family: inherit; min-height: 46px;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--azul-pc); background: #fff; }
+
+        .cabeza-lista { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .contador { background: #fff7ed; color: #9a3412; border-radius: 20px; padding: 6px 12px; font-weight: 800; font-size: 13.5px; }
+        .persona { border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 12px; background: #fcfdff; }
+        .persona-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .persona-hd b { color: var(--azul-pc); font-size: 14px; }
+        .btn-quitar { background: #fee2e2; color: #b91c1c; border: none; border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: bold; min-height: 44px; }
+        .p-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+        .p-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        @media (max-width: 560px) { .p-grid { grid-template-columns: 1fr; } .p-grid3 { grid-template-columns: 1fr 1fr; } }
+        .p-grid > *, .p-grid3 > * { min-width: 0; }
+        .persona .campo { margin-bottom: 8px; }
+        .persona .campo label { font-size: 12px; }
+        .cne-slot { position: relative; }
+        .btn-agregar { width: 100%; background: #eff6ff; color: var(--azul-pc); border: 2px dashed #93c5fd; border-radius: 10px; padding: 14px; font-weight: 800; cursor: pointer; font-size: 15px; min-height: 52px; }
+
+        .btn-enviar { width: 100%; background: var(--azul-pc); color: #fff; border: none; border-radius: 10px; padding: 18px; font-size: 17px; font-weight: 800; cursor: pointer; min-height: 52px; }
+        .btn-enviar:hover { background: #142e6e; }
+        .btn-enviar:disabled { opacity: .6; cursor: not-allowed; }
+        .msg { text-align: center; font-weight: 700; margin-top: 12px; font-size: 14px; min-height: 20px; }
+        .msg.err { color: #b91c1c; }
+        .aviso-borrador { display: none; background: #ecfdf5; color: #065f46; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
+        .aviso-borrador button { background: none; border: none; color: #b91c1c; font-weight: 700; cursor: pointer; text-decoration: underline; font-size: 13px; padding: 4px; }
+
+        .ok-screen { display: none; text-align: center; padding: 36px 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .ok-screen .check { font-size: 60px; }
+        .ok-screen h2 { color: #16a34a; font-size: 24px; margin: 10px 0; }
+        .ok-screen p { color: #475569; font-size: 15px; line-height: 1.6; }
+        .ok-screen button { margin-top: 20px; background: var(--azul-pc); color: #fff; border: none; border-radius: 10px; padding: 14px 22px; font-size: 15px; font-weight: 700; cursor: pointer; min-height: 48px; }
+
+        .pie { text-align: center; color: #64748b; font-size: 12px; padding: 18px 12px 30px; line-height: 1.6; }
+        .pie b { color: var(--azul-pc); }
+    </style>
+    <script src="autofresh.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div class="container">
+        <a class="volver" href="reportar-riesgo.html">← Otros formularios</a>
+        <div class="cabecera-form">
+            <img src="logos/cristobal-rojas.png" alt="Escudo Cristóbal Rojas">
+            <img src="logos/pc.png" alt="Protección Civil">
+            <h1>Jornada social</h1>
+            <p>Dirección de Protección Civil · Municipio Cristóbal Rojas<br>
+            Anota a cada persona atendida. Lo que escribes se va guardando en el teléfono, así que no se pierde si se va la señal.</p>
+        </div>
+
+        <div id="formWrap">
+            <div class="aviso-borrador" id="avisoBorrador">
+                Recuperamos la jornada que estabas llenando y no se envió. <button type="button" id="btnDescartar">Empezar de cero</button>
+            </div>
+
+            <div class="seccion">
+                <h3>La jornada</h3>
+                <div class="fila2">
+                    <div class="campo"><label for="j_lugar">Lugar <span class="obligatorio">*</span></label><input type="text" id="j_lugar" placeholder="Ej: Escuela Básica ..., sector ..."></div>
+                    <div class="campo"><label for="j_fecha">Fecha <span class="obligatorio">*</span></label><input type="date" id="j_fecha"></div>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <div class="cabeza-lista">
+                    <h3>Personas atendidas</h3>
+                    <span class="contador" id="contador">0 personas</span>
+                </div>
+                <p class="pista">Con la cédula se busca el nombre solo. Toca "Agregar persona" para la siguiente.</p>
+                <div id="lista"></div>
+                <button type="button" class="btn-agregar" id="btnAgregar">+ Agregar persona</button>
+            </div>
+
+            <div class="seccion">
+                <h3>¿Quién registra la jornada?</h3>
+                <div class="fila2">
+                    <div class="campo"><label for="j_rep_nombre">Tu nombre <span class="obligatorio">*</span></label><input type="text" id="j_rep_nombre"></div>
+                    <div class="campo"><label for="j_rep_telefono">Tu teléfono <span class="obligatorio">*</span></label><input type="tel" id="j_rep_telefono" inputmode="tel" placeholder="0424-1234567"></div>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <button type="button" class="btn-enviar" id="btnEnviar">Enviar la jornada</button>
+                <div class="msg" id="msg"></div>
+            </div>
+        </div>
+
+        <div class="ok-screen" id="okScreen">
+            <div class="check">✅</div>
+            <h2>¡Jornada registrada!</h2>
+            <p id="okTexto">Protección Civil ya tiene la lista.</p>
+            <button id="btnOtra" type="button">Registrar otra jornada</button>
+        </div>
+    </div>
+
+    <div class="pie">
+        <b>Dirección de Protección Civil y Administración de Desastres</b><br>
+        Alcaldía del Municipio Bolivariano Cristóbal Rojas · Charallave
+    </div>
+
+    <script type="module">
+        /* Formulario PÚBLICO: no pide iniciar sesión. Solo puede CREAR
+           jornadas; las reglas de la base no le permiten leer ni tocar lo
+           que ya está guardado. */
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+
+        /* La base acepta hasta 300 personas por jornada. */
+        const MAX_PERSONAS = 300;
+        const CAMPOS_PERSONA = ['nombre', 'edad', 'cedula', 'telefono', 'ta', 'saturacion', 'comunidad'];
+        let contador = 0;
+
+        function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+        /* Una persona tal como se guarda: sin espacios de más, con tope de
+           largo, la edad como número y la cédula solo si tiene forma de
+           cédula. Devuelve también qué está mal, para decirlo claro. */
+        function limpiarPersona(crudo) {
+            const t = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
+            const p = {
+                nombre: t(crudo.nombre, 150),
+                cedula: t(crudo.cedula, 15).toUpperCase().replace(/[.\s]/g, ''),
+                telefono: t(crudo.telefono, 30),
+                ta: t(crudo.ta, 20),
+                saturacion: t(crudo.saturacion, 20),
+                comunidad: t(crudo.comunidad, 120)
+            };
+            let problema = null;
+            const e = String(crudo.edad == null ? '' : crudo.edad).trim();
+            if (e !== '') {
+                const n = Math.round(Number(e));
+                if (Number.isFinite(n) && n >= 0 && n <= 120) p.edad = n;
+                else problema = 'la edad debe ser un número entre 0 y 120';
+            }
+            if (p.cedula && !/^[VE]?-?[0-9]{4,10}$/.test(p.cedula)) problema = 'la cédula no se entiende (solo números, puede llevar V o E)';
+            const vacia = !p.nombre && !p.cedula && !p.telefono && !p.ta && !p.saturacion && !p.comunidad && p.edad === undefined;
+            if (!vacia && p.nombre.length < 2) problema = problema || 'falta el nombre';
+            return { persona: p, vacia, problema };
+        }
+
+        function tarjetaPersona(d) {
+            d = d || {};
+            const i = ++contador;
+            const div = document.createElement('div');
+            div.className = 'persona';
+            div.innerHTML =
+                '<div class="persona-hd"><b class="p-num"></b><button type="button" class="btn-quitar" aria-label="Quitar a esta persona">✕ Quitar</button></div>' +
+                '<div class="p-grid">' +
+                    '<div class="campo cne-slot"><label for="jp_cedula_' + i + '">C.I.</label><input type="text" id="jp_cedula_' + i + '" data-campo="cedula" inputmode="numeric" data-cne data-cne-nombre="#jp_nombre_' + i + '" value="' + escHtml(d.cedula) + '"></div>' +
+                    '<div class="campo"><label for="jp_edad_' + i + '">Edad</label><input type="number" id="jp_edad_' + i + '" data-campo="edad" min="0" max="120" inputmode="numeric" value="' + escHtml(d.edad) + '"></div>' +
+                '</div>' +
+                '<div class="campo"><label for="jp_nombre_' + i + '">Nombre y apellido</label><input type="text" id="jp_nombre_' + i + '" data-campo="nombre" value="' + escHtml(d.nombre) + '"></div>' +
+                '<div class="p-grid3">' +
+                    '<div class="campo"><label for="jp_ta_' + i + '">T/A</label><input type="text" id="jp_ta_' + i + '" data-campo="ta" placeholder="120/80" value="' + escHtml(d.ta) + '"></div>' +
+                    '<div class="campo"><label for="jp_sat_' + i + '">Saturación</label><input type="text" id="jp_sat_' + i + '" data-campo="saturacion" inputmode="numeric" placeholder="%" value="' + escHtml(d.saturacion) + '"></div>' +
+                    '<div class="campo"><label for="jp_tel_' + i + '">Teléfono</label><input type="tel" id="jp_tel_' + i + '" data-campo="telefono" inputmode="tel" value="' + escHtml(d.telefono) + '"></div>' +
+                '</div>' +
+                '<div class="campo"><label for="jp_com_' + i + '">Comunidad</label><input type="text" id="jp_com_' + i + '" data-campo="comunidad" value="' + escHtml(d.comunidad) + '"></div>';
+            div.querySelector('.btn-quitar').onclick = () => {
+                const hayAlgo = [...div.querySelectorAll('input')].some(x => x.value.trim());
+                if (hayAlgo && !confirm('¿Quitar a esta persona de la lista?')) return;
+                div.remove();
+                renumerar();
+                guardarBorrador();
+            };
+            return div;
+        }
+
+        function renumerar() {
+            const tarjetas = [...document.querySelectorAll('#lista .persona')];
+            tarjetas.forEach((c, k) => { c.querySelector('.p-num').textContent = 'Persona ' + (k + 1); });
+            $('contador').textContent = tarjetas.length + (tarjetas.length === 1 ? ' persona' : ' personas');
+            $('btnAgregar').disabled = tarjetas.length >= MAX_PERSONAS;
+        }
+
+        function agregarPersona(d, enfocar) {
+            if (document.querySelectorAll('#lista .persona').length >= MAX_PERSONAS) return;
+            const c = tarjetaPersona(d);
+            $('lista').appendChild(c);
+            renumerar();
+            if (enfocar) c.querySelector('input').focus();
+        }
+
+        function leerPersonas() {
+            return [...document.querySelectorAll('#lista .persona')].map(c => {
+                const crudo = {};
+                c.querySelectorAll('input[data-campo]').forEach(x => { crudo[x.dataset.campo] = x.value; });
+                return crudo;
+            });
+        }
+
+        /* ---- Borrador en el teléfono ---- */
+        const CLAVE_BORRADOR = 'pc_borrador_jornada_v1';
+        function guardarBorrador() {
+            try {
+                localStorage.setItem(CLAVE_BORRADOR, JSON.stringify({
+                    guardado: Date.now(),
+                    lugar: $('j_lugar').value, fecha: $('j_fecha').value,
+                    rep_nombre: $('j_rep_nombre').value, rep_telefono: $('j_rep_telefono').value,
+                    personas: leerPersonas()
+                }));
+            } catch (e) { /* sin almacenamiento (modo privado): se sigue sin borrador */ }
+        }
+        function recuperarBorrador() {
+            try {
+                const b = JSON.parse(localStorage.getItem(CLAVE_BORRADOR) || 'null');
+                if (!b || Date.now() - b.guardado > 7 * 24 * 3600e3) return false;
+                const personas = (Array.isArray(b.personas) ? b.personas : []).slice(0, MAX_PERSONAS);
+                if (!b.lugar && !personas.some(p => CAMPOS_PERSONA.some(k => String(p[k] || '').trim()))) return false;
+                $('j_lugar').value = b.lugar || '';
+                if (b.fecha) $('j_fecha').value = b.fecha;
+                $('j_rep_nombre').value = b.rep_nombre || '';
+                $('j_rep_telefono').value = b.rep_telefono || '';
+                personas.forEach(p => agregarPersona(p, false));
+                return true;
+            } catch (e) { return false; }
+        }
+        function borrarBorrador() { try { localStorage.removeItem(CLAVE_BORRADOR); } catch (e) { } }
+
+        $('j_fecha').value = new Date(Date.now() - 4 * 3600e3).toISOString().slice(0, 10);
+        if (recuperarBorrador()) $('avisoBorrador').style.display = 'block';
+        if (!document.querySelector('#lista .persona')) agregarPersona(null, false);
+        $('formWrap').addEventListener('input', guardarBorrador);
+        $('formWrap').addEventListener('change', guardarBorrador);
+        $('btnAgregar').onclick = () => { agregarPersona(null, true); guardarBorrador(); };
+        $('btnDescartar').onclick = () => {
+            if (!confirm('¿Borrar la jornada que estabas llenando y empezar de cero?')) return;
+            borrarBorrador();
+            location.reload();
+        };
+
+        function err(texto) { $('msg').textContent = texto; $('msg').className = 'msg err'; }
+
+        $('btnEnviar').addEventListener('click', async () => {
+            const lugar = $('j_lugar').value.trim().slice(0, 200);
+            const fecha = $('j_fecha').value;
+            if (lugar.length < 3) { err('Falta el lugar de la jornada.'); $('j_lugar').focus(); return; }
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) { err('Falta la fecha.'); $('j_fecha').focus(); return; }
+
+            const personas = [];
+            const tarjetas = [...document.querySelectorAll('#lista .persona')];
+            for (let k = 0; k < tarjetas.length; k++) {
+                const crudo = {};
+                tarjetas[k].querySelectorAll('input[data-campo]').forEach(x => { crudo[x.dataset.campo] = x.value; });
+                const r = limpiarPersona(crudo);
+                if (r.vacia) continue;
+                if (r.problema) {
+                    err('Persona ' + (k + 1) + ': ' + r.problema + '.');
+                    tarjetas[k].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+                personas.push(r.persona);
+            }
+            if (!personas.length) { err('Anota al menos a una persona atendida.'); return; }
+
+            const rep = { nombre: $('j_rep_nombre').value.trim().slice(0, 150), telefono: $('j_rep_telefono').value.trim().slice(0, 30) };
+            if (!rep.nombre) { err('Falta tu nombre.'); $('j_rep_nombre').focus(); return; }
+            if (!rep.telefono) { err('Falta tu teléfono.'); $('j_rep_telefono').focus(); return; }
+
+            $('msg').textContent = '';
+            $('btnEnviar').disabled = true;
+            $('btnEnviar').textContent = 'Enviando…';
+            try {
+                await set(push(ref(database, 'pc_jornadas')), {
+                    origen: 'publico', lugar, fecha, personas, total: personas.length,
+                    reportado_por: rep, fecha_registro: Date.now()
+                });
+                borrarBorrador();
+                $('okTexto').textContent = 'Protección Civil ya tiene la lista de ' + personas.length +
+                    (personas.length === 1 ? ' persona atendida' : ' personas atendidas') + ' en ' + lugar + '.';
+                $('formWrap').style.display = 'none';
+                $('okScreen').style.display = 'block';
+                window.scrollTo(0, 0);
+            } catch (e) {
+                /* Nunca decimos "registrada" si el servidor no confirmó. La
+                   lista sigue guardada en el teléfono. */
+                err('No se pudo enviar (' + (e.message || e.code || 'error') + '). Revisa tu conexión e intenta de nuevo: la lista sigue guardada en este teléfono.');
+                $('btnEnviar').disabled = false;
+                $('btnEnviar').textContent = 'Enviar la jornada';
+            }
+        });
+        $('btnOtra').addEventListener('click', () => location.reload());
+    </script>
+    <script src="cne-dateas.js"></script>
+</body>
+</html>

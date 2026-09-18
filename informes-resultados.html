@@ -96,7 +96,7 @@
                     <img id="qrPublico" alt="Código QR del formulario público">
                 </div>
                 <div class="compartir-datos">
-                    <p class="sub" style="margin-bottom:8px">Comparte este enlace o el QR para que cualquier persona reporte una vivienda o estructura en riesgo, sin necesidad de cuenta:</p>
+                    <p class="sub" style="margin-bottom:8px">Comparte este enlace o el QR. Abre el menú de los formularios de Protección Civil (reportar un riesgo, novedades relevantes y jornada social), sin necesidad de cuenta:</p>
                     <div class="enlace-corto" id="textoCorto">—</div>
                     <div class="compartir-botones">
                         <button type="button" class="b-copiar" id="btnCopiar">📋 Copiar enlace</button>
@@ -515,7 +515,7 @@
             $('qrPublico').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(URL_CORTO);
             $('btnDescargarQr').href = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&download=1&data=' + encodeURIComponent(URL_CORTO);
             $('btnWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(
-                '🚨 PROTECCIÓN CIVIL — Reporta aquí una vivienda o estructura en riesgo (Alcaldía de Cristóbal Rojas): ' + URL_CORTO);
+                '🚨 PROTECCIÓN CIVIL (Alcaldía de Cristóbal Rojas) — Formularios: reportar un riesgo, novedades relevantes y jornada social: ' + URL_CORTO);
 
             $('btnCopiar').addEventListener('click', async () => {
                 const boton = $('btnCopiar');

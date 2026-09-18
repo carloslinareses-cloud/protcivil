@@ -1050,6 +1050,178 @@ if (manejador) {
 }
 
 /* ==========================================================================
+   BLOQUE 9 — LOS FORMULARIOS NUEVOS: NOVEDADES RELEVANTES Y JORNADA SOCIAL
+   Se prueba el código de verdad de cada página: el mensaje de WhatsApp
+   (novedades-texto.js, que comparten el formulario y el tablero), la
+   limpieza de cada persona de la jornada, las validaciones, y que el PDF
+   y el Excel de los tableros no se descuadren.
+   ========================================================================== */
+grupo('Formularios nuevos: novedades y jornada social');
+{
+    const ventana = {};
+    new Function('window', leer('novedades-texto.js'))(ventana);
+    const N = ventana.NovedadesTexto;
+    prueba('hora de la tarde en formato de 12 horas', N.horaBonita('14:05'), '2:05 pm');
+    prueba('media noche y media', N.horaBonita('00:30'), '12:30 am');
+    prueba('mediodía', N.horaBonita('12:00'), '12:00 pm');
+    prueba('sin hora no inventa una', N.horaBonita(''), '');
+    prueba('fecha al estilo venezolano', N.fechaBonita('2026-09-18'), '18/09/2026');
+
+    const completa = {
+        parroquia: 'Charallave', fecha: '2026-09-18', hora_inicio: '08:15', hora_fin: '10:40', comuna: 'Comuna X', cuadrante: 'C-3',
+        tipo_actividad: 'Traslado de paciente', resena: 'Se trasladó al paciente.',
+        paciente: { nombre: 'Pedro Pérez', cedula: 'V-12345678', edad: 64, idx: 'HTA', ta: '150/90', pulso: '88', spo2: '96', temperatura: '36.8' },
+        acompanante: { nombre: 'María Pérez', cedula: '', direccion: 'Calle 1', telefono: '0414-0000000' },
+        traslado: { centro_hospitalario: 'CDI Charallave', medico_refiere: 'Dr. A', destino: 'Hospital de Ocumare', servicio: 'Emergencia', medico_recibe: 'Dra. B' },
+        conductor: { nombre: 'Juan', cedula: '1', telefono: '2' }, paramedico: { nombre: 'Luis', cedula: '3', telefono: '4' },
+        unidad: 'Súper Duty', placa: 'A93CR9A', nota: 'Sin novedad', estatus: 'Finalizado'
+    };
+    const txt = N.textoWhatsappNovedad(completa);
+    prueba('el mensaje empieza con el título en negritas', txt.split('\n')[0], '*Novedades relevantes*');
+    prueba('lleva la situación completa con la alcaldesa y el director', txt.includes('• Situación: ' + N.SITUACION), true);
+    prueba('lleva el tipo de actividad en negritas', txt.includes('• *Tipo de actividad:* Traslado de paciente'), true);
+    prueba('lleva la hora en formato de 12 horas', txt.includes('• Hora inicio: 8:15 am'), true);
+    prueba('lleva los signos vitales del paciente', txt.includes('• *T/A:* 150/90') && txt.includes('• *SpO2:* 96'), true);
+    prueba('lleva la unidad y la placa', txt.includes('• *Unidad:* Súper Duty') && txt.includes('• Placa: A93CR9A'), true);
+    prueba('termina con el estatus como en la hoja', txt.endsWith('• Estatus\nFinalizado'), true);
+    prueba('ninguna línea deja una negrita abierta (WhatsApp la mostraría con asteriscos)',
+        txt.split('\n').filter(l => (l.match(/\*/g) || []).length % 2 !== 0), []);
+
+    const sinPaciente = N.textoWhatsappNovedad({ fecha: '2026-09-18', tipo_actividad: 'Inspección', resena: 'x', paciente: { nombre: '', cedula: '' },
+        acompanante: {}, traslado: { destino: '' }, conductor: {}, paramedico: {}, unidad: 'Súper Duty', placa: 'A93CR9A', estatus: 'En curso' });
+    prueba('sin paciente no manda la lista vacía del paciente', sinPaciente.includes('*Paciente*'), false);
+    prueba('sin acompañante no manda esa parte', sinPaciente.includes('Acompañante'), false);
+    prueba('sin centro de salud no manda esa parte', sinPaciente.includes('Médico que refiere'), false);
+    prueba('sin personal no manda esa parte', sinPaciente.includes('Personal actuante'), false);
+    prueba('el estatus "En curso" sale como tal', sinPaciente.endsWith('• Estatus\nEn curso'), true);
+    const soloConductor = N.textoWhatsappNovedad({ ...completa, paciente: {}, conductor: { nombre: 'Juan' }, paramedico: {} });
+    prueba('con solo el conductor sí sale el personal actuante', soloConductor.includes('• *Personal actuante*'), true);
+
+    const fuenteNov = leer('novedades.html');
+    prueba('el formulario usa el texto compartido, no una copia propia',
+        fuenteNov.includes('<script src="novedades-texto.js"></script>') && !/function\s+textoWhatsappNovedad/.test(fuenteNov), true);
+    const fuenteNovTab = leer('novedades-resultados.html');
+    prueba('el tablero usa el mismo texto compartido',
+        fuenteNovTab.includes('<script src="novedades-texto.js"></script>') && !/function\s+textoWhatsappNovedad/.test(fuenteNovTab), true);
+
+    const NF = ejecutar(sacarFuncion(fuenteNov, 'problemaNovedad', 'novedades.html') + '\n' + sacarFuncion(fuenteNov, 'sinVacios', 'novedades.html'),
+        ['problemaNovedad', 'sinVacios']);
+    const base = { fecha: '2026-09-18', tipo_actividad: 'Traslado', resena: 'Algo pasó', reportado_por: { nombre: 'Ana', telefono: '0414' } };
+    prueba('una novedad completa no tiene problemas', NF.problemaNovedad(base, {}), null);
+    prueba('sin fecha lo dice', NF.problemaNovedad({ ...base, fecha: '' }, {})[1], 'Falta la fecha.');
+    prueba('sin tipo de actividad lo dice', NF.problemaNovedad({ ...base, tipo_actividad: '' }, {})[0], 'n_tipo');
+    prueba('sin reseña lo dice', NF.problemaNovedad({ ...base, resena: 'x' }, {})[0], 'n_resena');
+    prueba('una cédula que no se entiende lo dice y señala el campo',
+        NF.problemaNovedad(base, { n_pac_cedula: { cedula: null } })[0], 'n_pac_cedula');
+    prueba('una edad imposible lo dice', NF.problemaNovedad(base, { n_pac_edad: false })[0], 'n_pac_edad');
+    prueba('sin el nombre de quien envía lo dice', NF.problemaNovedad({ ...base, reportado_por: { nombre: '', telefono: '1' } }, {})[0], 'n_rep_nombre');
+    prueba('sin el teléfono de quien envía lo dice', NF.problemaNovedad({ ...base, reportado_por: { nombre: 'A', telefono: '' } }, {})[0], 'n_rep_telefono');
+    prueba('los vacíos que no se mandan: quita null, deja el texto vacío y el cero',
+        NF.sinVacios({ a: null, b: undefined, c: '', d: 0, e: 'x' }), { c: '', d: 0, e: 'x' });
+
+    const fuenteJor = leer('jornada-social.html');
+    const J = ejecutar(sacarFuncion(fuenteJor, 'limpiarPersona', 'jornada-social.html'), ['limpiarPersona']);
+    prueba('una tarjeta vacía se salta sin quejarse', J.limpiarPersona({ nombre: '', edad: '', cedula: '' }).vacia, true);
+    const buena = J.limpiarPersona({ nombre: '  Ana Rojas  ', edad: '30', cedula: 'v-12.345.678', telefono: '0414', ta: '120/80', saturacion: '98', comunidad: 'La Peña' });
+    prueba('una persona bien llenada queda limpia', buena.persona,
+        { nombre: 'Ana Rojas', cedula: 'V-12345678', telefono: '0414', ta: '120/80', saturacion: '98', comunidad: 'La Peña', edad: 30 });
+    prueba('y sin problemas', buena.problema, null);
+    prueba('una edad de 130 años se señala', /edad/.test(J.limpiarPersona({ nombre: 'Ana', edad: '130' }).problema), true);
+    prueba('una cédula con letras se señala', /cédula/.test(J.limpiarPersona({ nombre: 'Ana', cedula: 'abc' }).problema), true);
+    prueba('una persona con cédula pero sin nombre se señala', J.limpiarPersona({ cedula: '12345678' }).problema, 'falta el nombre');
+    prueba('un nombre larguísimo se recorta al tope de la base', J.limpiarPersona({ nombre: 'a'.repeat(400) }).persona.nombre.length, 150);
+    const maxJ = Number(sacarTrozo(fuenteJor, /const MAX_PERSONAS = (\d+);/, 'el tope de personas', 'jornada-social.html')[1]);
+    const reglasJ = fs.readFileSync(path.join(RAIZ, '..', 'alcaldia-admin', 'firebase-rules.json'), 'utf-8');
+    prueba('el tope de personas del formulario es el mismo que acepta la base',
+        reglasJ.includes("!newData.child('personas').child('" + maxJ + "').exists()"), true);
+
+    /* Tablero de jornadas: las columnas del PDF caben en la hoja (trampa
+       10.2) y el Excel no se descuadra (trampa 10.1). */
+    const fuenteJT = leer('jornadas-resultados.html');
+    const codigoJT = sacarTrozo(fuenteJT, /const COLUMNAS = \[[\s\S]*?\];/, 'las columnas', 'jornadas-resultados.html')[0] + '\n' +
+        sacarTrozo(fuenteJT, /const ANCHO_NUMERO = \d+;/, 'el ancho de la columna N°', 'jornadas-resultados.html')[0] + '\n' +
+        ['esc', 'seguroExcel', 'fechaBonita', 'personasDe', 'quienRegistro', 'exportarExcel'].map(f => sacarFuncion(fuenteJT, f, 'jornadas-resultados.html')).join('\n');
+    let hojaJ = null;
+    const falsoXLSX = (guardar) => ({
+        utils: { aoa_to_sheet: (a) => { guardar(a); return {}; }, encode_range: () => 'A3:J9', book_new: () => ({}), book_append_sheet: () => {} },
+        writeFile: () => {}
+    });
+    const JT = ejecutar('let TODOS = __datos;\n' + codigoJT, ['COLUMNAS', 'ANCHO_NUMERO', 'esc', 'seguroExcel', 'personasDe', 'exportarExcel'], {
+        __datos: [
+            { lugar: '=HIPERVINCULO("x")', fecha: '2026-09-18', personas: [{ nombre: 'Ana', edad: 30 }, { nombre: '@Beto', cedula: '1234' }], reportado_por: { nombre: 'Luis' } },
+            { lugar: 'Escuela', fecha: '2026-09-10', personas: { 0: { nombre: 'Carla' }, 1: null, 2: { edad: 5 } } }
+        ],
+        XLSX: falsoXLSX(a => { hojaJ = a; }), alert: () => {}
+    });
+    prueba('las columnas del PDF de la jornada suman 251 mm (lo que cabe en carta horizontal)',
+        JT.ANCHO_NUMERO + JT.COLUMNAS.reduce((s, c) => s + c[2], 0), 251);
+    prueba('ninguna columna del PDF es tan angosta que parta el título',
+        JT.COLUMNAS.filter(c => c[2] < 14).map(c => c[0]), []);
+    prueba('las personas se leen igual si vienen como lista o como objeto, y se descarta la basura',
+        JT.personasDe({ personas: { 0: { nombre: 'Carla' }, 1: null, 2: { edad: 5 } } }).map(p => p.nombre), ['Carla']);
+    JT.exportarExcel();
+    const encabJ = hojaJ[2];
+    prueba('Excel de jornadas: una fila por persona', hojaJ.length - 3, 3);
+    prueba('Excel de jornadas: cada fila tiene tantas celdas como encabezados',
+        hojaJ.slice(3).filter(f => f.length !== encabJ.length).length, 0);
+    prueba('Excel de jornadas: un lugar que empieza con = no se abre como fórmula', hojaJ.slice(3).some(f => String(f[1]).startsWith("'=")), true);
+    prueba('Excel de jornadas: un nombre que empieza con @ no se abre como fórmula', hojaJ.slice(3).some(f => f.includes("'@Beto")), true);
+    prueba('el tablero escapa también la comilla simple', JT.esc(`"><img src=x onerror='a'>`), '&quot;&gt;&lt;img src=x onerror=&#39;a&#39;&gt;');
+
+    /* Tablero de novedades: el Excel sale de la misma lista que la ficha. */
+    const fuenteNT = leer('novedades-resultados.html');
+    let hojaN = null;
+    const NT = ejecutar('let TODOS = __datos;\nconst { SITUACION, horaBonita, fechaBonita, textoWhatsappNovedad } = __N;\n' +
+        ['esc', 'seguroExcel', 'fmtRegistro', 'quienEnvio', 'seccionesNovedad', 'exportarExcel'].map(f => sacarFuncion(fuenteNT, f, 'novedades-resultados.html')).join('\n'),
+        ['exportarExcel', 'seccionesNovedad'], {
+            __datos: [{ ...completa, fecha_registro: 1758000000000, resena: '+cmd|calc' }, { fecha: '2026-09-17', tipo_actividad: 'Inspección', resena: 'x', fecha_registro: 1757000000000 }],
+            __N: N, XLSX: falsoXLSX(a => { hojaN = a; }), alert: () => {}
+        });
+    NT.exportarExcel();
+    prueba('Excel de novedades: cada fila tiene tantas celdas como encabezados (aunque falten partes)',
+        hojaN.slice(3).map(f => f.length === hojaN[2].length), [true, true]);
+    prueba('Excel de novedades: una reseña que empieza con + no se abre como fórmula', hojaN.slice(3).some(f => f.includes("'+cmd|calc")), true);
+    prueba('Excel de novedades: los encabezados no se repiten', new Set(hojaN[2]).size, hojaN[2].length);
+}
+
+
+/* El resumen del panel (admin.html): una tarjeta por formulario. */
+grupo('Panel: el resumen de cada formulario');
+{
+    const fuenteAdmin = leer('admin.html');
+    const A = ejecutar(
+        sacarTrozo(fuenteAdmin, /const FORMULARIOS = \[[\s\S]*?\n        \];/, 'la lista de formularios', 'admin.html')[0] + '\n' +
+        sacarFuncion(fuenteAdmin, 'cuantasPersonas', 'admin.html') + '\n' + sacarFuncion(fuenteAdmin, 'resumenFormulario', 'admin.html'),
+        ['FORMULARIOS', 'cuantasPersonas', 'resumenFormulario']);
+    const reglas = JSON.parse(fs.readFileSync(path.join(RAIZ, '..', 'alcaldia-admin', 'firebase-rules.json'), 'utf-8')).rules;
+    prueba('el panel resume los tres formularios', A.FORMULARIOS.map(f => f.nodo), ['pc_informes', 'pc_novedades', 'pc_jornadas']);
+    prueba('cada tarjeta lee un nodo que existe en las reglas de la base', A.FORMULARIOS.filter(f => !reglas[f.nodo]).map(f => f.nodo), []);
+    prueba('cada tarjeta lleva a una página que existe', A.FORMULARIOS.filter(f => !fs.existsSync(path.join(RAIZ, f.enlace))).map(f => f.enlace), []);
+
+    /* 18/09/2026 a las 15:00 hora local de quien mira. */
+    const ahora = new Date(2026, 8, 18, 15, 0).getTime();
+    const hora = (d, h) => new Date(2026, 8, d, h, 0).getTime();
+    const lista = [{ fecha_registro: hora(18, 9) }, { fecha_registro: hora(18, 0) }, { fecha_registro: hora(17, 23) },
+                   { fecha_registro: hora(12, 10) }, { fecha_registro: hora(5, 8) }, { fecha_registro: hora(1, 8) }, {}];
+    const r = A.resumenFormulario(lista, ahora);
+    prueba('total cuenta todo, hasta lo que no trae fecha', r.total, 7);
+    prueba('hoy cuenta desde la medianoche', r.hoy, 2);
+    prueba('7 días cuenta lo de la última semana', r.semana, 4);
+    prueba('las barras: 14 días, el último es hoy', [r.dias.length, r.dias[13], r.dias[12]], [14, 2, 1]);
+    prueba('las barras: lo de hace 13 días entra, lo de hace 17 no', [r.dias[0], r.dias.reduce((a, b) => a + b, 0)], [1, 5]);
+
+    prueba('personas atendidas: cuenta en lista o en objeto y descarta las vacías',
+        [A.cuantasPersonas({ personas: [{ nombre: 'a' }, { nombre: 'b' }, null] }), A.cuantasPersonas({ personas: { 0: { nombre: 'a' }, 1: { edad: 3 } } }), A.cuantasPersonas({})],
+        [2, 1, 0]);
+    const jornadas = A.FORMULARIOS.find(f => f.clave === 'jornadas');
+    prueba('la tarjeta de jornadas suma las personas de todas las jornadas',
+        jornadas.destacada.calcular([{ personas: [{ nombre: 'a' }] }, { personas: [{ nombre: 'b' }, { nombre: 'c' }] }]), 3);
+    const novedades = A.FORMULARIOS.find(f => f.clave === 'novedades');
+    prueba('la tarjeta de novedades destaca las que siguen en curso',
+        novedades.destacada.calcular([{ estatus: 'En curso' }, { estatus: 'Finalizado' }, {}]), 1);
+}
+
+/* ==========================================================================
    RESUMEN
    ========================================================================== */
 console.log('\n' + '='.repeat(62));

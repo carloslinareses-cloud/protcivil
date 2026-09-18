@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novedades relevantes - Protección Civil Cristóbal Rojas</title>
+    <meta name="description" content="Formulario de Novedades relevantes de la Dirección de Protección Civil de la Alcaldía de Cristóbal Rojas.">
+    <style>
+        :root { --naranja-pc: #f7941d; --azul-pc: #1c3f94; --gris-fondo: #e9ecef; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 820px; margin: 20px auto 60px; padding: 0 14px; }
+        .volver { display: inline-block; color: var(--azul-pc); font-weight: 700; font-size: 14px; text-decoration: none; margin-bottom: 10px; min-height: 44px; line-height: 44px; }
+
+        .cabecera-form { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); text-align: center; margin-bottom: 16px; }
+        .cabecera-form img { height: 54px; object-fit: contain; margin: 0 10px; }
+        .cabecera-form h1 { color: var(--azul-pc); font-size: 20px; margin: 10px 0 2px; text-transform: uppercase; }
+        .cabecera-form p { color: #666; font-size: 13px; margin: 0; line-height: 1.5; }
+
+        .seccion { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .seccion h3 { margin: 0 0 4px; color: var(--azul-pc); font-size: 15px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .seccion h4 { margin: 14px 0 8px; color: #9a3412; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .seccion .pista { color: #64748b; font-size: 12.5px; margin: 0 0 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .campo { margin-bottom: 12px; }
+        .campo label { display: block; font-weight: 700; color: #334155; font-size: 13px; margin-bottom: 5px; }
+        .campo .obligatorio { color: #b91c1c; }
+        .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .fila3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .fila4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        @media (max-width: 560px) { .fila2, .fila3 { grid-template-columns: 1fr; } .fila4 { grid-template-columns: 1fr 1fr; } }
+        .fila2 > *, .fila3 > *, .fila4 > * { min-width: 0; }
+        input[type="text"], input[type="tel"], input[type="number"], input[type="date"], input[type="time"], select, textarea {
+            width: 100%; padding: 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: #f8fafc; font-family: inherit; min-height: 46px;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--azul-pc); background: #fff; }
+        textarea { min-height: 110px; resize: vertical; }
+        .fijos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .fijos span { background: #eff6ff; color: var(--azul-pc); border-radius: 20px; padding: 6px 12px; font-size: 13px; font-weight: 700; }
+        .situacion { background: #fff7ed; border-left: 4px solid var(--naranja-pc); border-radius: 6px; padding: 10px 12px; font-size: 13.5px; color: #7c2d12; line-height: 1.5; margin-bottom: 12px; }
+        .cne-slot { position: relative; }
+
+        .btn-enviar { width: 100%; background: var(--azul-pc); color: #fff; border: none; border-radius: 10px; padding: 18px; font-size: 17px; font-weight: 800; cursor: pointer; min-height: 52px; }
+        .btn-enviar:hover { background: #142e6e; }
+        .btn-enviar:disabled { opacity: .6; cursor: not-allowed; }
+        .msg { text-align: center; font-weight: 700; margin-top: 12px; font-size: 14px; min-height: 20px; }
+        .msg.err { color: #b91c1c; }
+        .aviso-borrador { display: none; background: #ecfdf5; color: #065f46; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
+        .aviso-borrador button { background: none; border: none; color: #b91c1c; font-weight: 700; cursor: pointer; text-decoration: underline; font-size: 13px; padding: 4px; }
+
+        .ok-screen { display: none; text-align: center; padding: 36px 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .ok-screen .check { font-size: 60px; }
+        .ok-screen h2 { color: #16a34a; font-size: 24px; margin: 10px 0; }
+        .ok-screen p { color: #475569; font-size: 15px; line-height: 1.6; }
+        .ok-botones { display: flex; flex-direction: column; gap: 10px; max-width: 360px; margin: 18px auto 0; }
+        .ok-botones a, .ok-botones button { border: none; border-radius: 10px; padding: 14px 18px; font-size: 15px; font-weight: 700; cursor: pointer; min-height: 50px; text-decoration: none; display: block; }
+        .b-whatsapp { background: #16a34a; color: #fff; }
+        .b-copiar { background: #0a2351; color: #fff; }
+        .b-otro { background: #e2e8f0; color: #0f172a; }
+
+        .pie { text-align: center; color: #64748b; font-size: 12px; padding: 18px 12px 30px; line-height: 1.6; }
+        .pie b { color: var(--azul-pc); }
+    </style>
+    <script src="autofresh.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div class="container">
+        <a class="volver" href="reportar-riesgo.html">← Otros formularios</a>
+        <div class="cabecera-form">
+            <img src="logos/cristobal-rojas.png" alt="Escudo Cristóbal Rojas">
+            <img src="logos/pc.png" alt="Protección Civil">
+            <h1>Novedades relevantes</h1>
+            <p>Dirección de Protección Civil y Administración de Desastres · Municipio Cristóbal Rojas<br>
+            Al enviarla queda registrada, y te arma el mensaje listo para mandarlo por WhatsApp.</p>
+        </div>
+
+        <div id="formWrap">
+            <div class="aviso-borrador" id="avisoBorrador">
+                Recuperamos lo que habías escrito antes y no se envió. <button type="button" id="btnDescartar">Empezar de cero</button>
+            </div>
+
+            <div class="seccion">
+                <h3>Datos generales</h3>
+                <div class="fijos"><span>ZEDAN: Capital</span><span>ZOEDAN: Miranda</span><span>Municipio: Cristóbal Rojas</span></div>
+                <div class="fila2">
+                    <div class="campo"><label for="n_parroquia">Parroquia</label>
+                        <select id="n_parroquia"><option value="">-- Seleccione --</option><option>Charallave</option><option>Las Brisas</option></select>
+                    </div>
+                    <div class="campo"><label for="n_fecha">Fecha <span class="obligatorio">*</span></label><input type="date" id="n_fecha"></div>
+                </div>
+                <div class="fila2">
+                    <div class="campo"><label for="n_hora_inicio">Hora de inicio</label><input type="time" id="n_hora_inicio"></div>
+                    <div class="campo"><label for="n_hora_fin">Hora finalizado</label><input type="time" id="n_hora_fin"></div>
+                </div>
+                <div class="fila2">
+                    <div class="campo"><label for="n_comuna">Comuna</label><input type="text" id="n_comuna"></div>
+                    <div class="campo"><label for="n_cuadrante">Cuadrante</label><input type="text" id="n_cuadrante"></div>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h3>La novedad</h3>
+                <div class="situacion" id="textoSituacion"></div>
+                <div class="campo">
+                    <label for="n_tipo">Tipo de actividad <span class="obligatorio">*</span></label>
+                    <input type="text" id="n_tipo" list="tiposActividad" placeholder="Ej: Traslado de paciente">
+                    <datalist id="tiposActividad">
+                        <option>Traslado de paciente</option>
+                        <option>Atención prehospitalaria</option>
+                        <option>Accidente de tránsito</option>
+                        <option>Incendio</option>
+                        <option>Rescate</option>
+                        <option>Inspección</option>
+                        <option>Apoyo a evento</option>
+                    </datalist>
+                </div>
+                <div class="campo">
+                    <label for="n_resena">Reseña <span class="obligatorio">*</span></label>
+                    <textarea id="n_resena" placeholder="Qué pasó, dónde, qué se hizo."></textarea>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h3>Paciente</h3>
+                <p class="pista">Si la novedad no tiene paciente, deja esta parte vacía.</p>
+                <div class="fila2">
+                    <div class="campo cne-slot"><label for="n_pac_cedula">C.I.</label>
+                        <input type="text" id="n_pac_cedula" inputmode="numeric" placeholder="Ej: 12345678" data-cne data-cne-nombre="#n_pac_nombre"></div>
+                    <div class="campo"><label for="n_pac_edad">Edad</label><input type="number" id="n_pac_edad" min="0" max="120" inputmode="numeric"></div>
+                </div>
+                <div class="campo"><label for="n_pac_nombre">Nombre y apellido</label><input type="text" id="n_pac_nombre"></div>
+                <div class="campo"><label for="n_pac_idx">IDX (impresión diagnóstica)</label><input type="text" id="n_pac_idx"></div>
+                <h4>Signos vitales</h4>
+                <div class="fila4">
+                    <div class="campo"><label for="n_pac_ta">T/A</label><input type="text" id="n_pac_ta" placeholder="120/80"></div>
+                    <div class="campo"><label for="n_pac_pulso">Pulso</label><input type="text" id="n_pac_pulso" inputmode="numeric"></div>
+                    <div class="campo"><label for="n_pac_spo2">SpO2</label><input type="text" id="n_pac_spo2" inputmode="numeric" placeholder="%"></div>
+                    <div class="campo"><label for="n_pac_temp">Temperatura</label><input type="text" id="n_pac_temp" inputmode="decimal" placeholder="°C"></div>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h3>Acompañante</h3>
+                <div class="fila2">
+                    <div class="campo cne-slot"><label for="n_aco_cedula">C.I.</label>
+                        <input type="text" id="n_aco_cedula" inputmode="numeric" data-cne data-cne-nombre="#n_aco_nombre"></div>
+                    <div class="campo"><label for="n_aco_telefono">Teléfono</label><input type="tel" id="n_aco_telefono" inputmode="tel" placeholder="0424-1234567"></div>
+                </div>
+                <div class="campo"><label for="n_aco_nombre">Nombre y apellido</label><input type="text" id="n_aco_nombre"></div>
+                <div class="campo"><label for="n_aco_direccion">Dirección</label><input type="text" id="n_aco_direccion"></div>
+            </div>
+
+            <div class="seccion">
+                <h3>Centro de salud y destino</h3>
+                <div class="campo"><label for="n_centro">Ubicación del centro hospitalario donde se encuentra el paciente</label><input type="text" id="n_centro"></div>
+                <div class="fila2">
+                    <div class="campo"><label for="n_med_refiere">Médico que refiere</label><input type="text" id="n_med_refiere"></div>
+                    <div class="campo"><label for="n_destino">Destino del paciente</label><input type="text" id="n_destino"></div>
+                </div>
+                <div class="fila2">
+                    <div class="campo"><label for="n_servicio">¿Qué servicio recibe?</label><input type="text" id="n_servicio"></div>
+                    <div class="campo"><label for="n_med_recibe">Médico que recibe</label><input type="text" id="n_med_recibe"></div>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h3>Personal actuante</h3>
+                <h4>Conductor</h4>
+                <div class="fila3">
+                    <div class="campo"><label for="n_con_nombre">Nombre y apellido</label><input type="text" id="n_con_nombre"></div>
+                    <div class="campo"><label for="n_con_cedula">C.I.</label><input type="text" id="n_con_cedula" inputmode="numeric"></div>
+                    <div class="campo"><label for="n_con_telefono">Teléfono</label><input type="tel" id="n_con_telefono" inputmode="tel"></div>
+                </div>
+                <h4>Paramédico</h4>
+                <div class="fila3">
+                    <div class="campo"><label for="n_par_nombre">Nombre y apellido</label><input type="text" id="n_par_nombre"></div>
+                    <div class="campo"><label for="n_par_cedula">C.I.</label><input type="text" id="n_par_cedula" inputmode="numeric"></div>
+                    <div class="campo"><label for="n_par_telefono">Teléfono</label><input type="tel" id="n_par_telefono" inputmode="tel"></div>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h3>Unidad y cierre</h3>
+                <div class="fila2">
+                    <div class="campo"><label for="n_unidad">Unidad</label><input type="text" id="n_unidad" value="Súper Duty"></div>
+                    <div class="campo"><label for="n_placa">Placa</label><input type="text" id="n_placa" value="A93CR9A" autocapitalize="characters"></div>
+                </div>
+                <div class="campo"><label for="n_nota">Nota</label><textarea id="n_nota" style="min-height:80px"></textarea></div>
+                <div class="campo"><label for="n_estatus">Estatus</label>
+                    <select id="n_estatus"><option>Finalizado</option><option>En curso</option></select>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <h3>¿Quién envía esta novedad?</h3>
+                <div class="fila2">
+                    <div class="campo"><label for="n_rep_nombre">Tu nombre <span class="obligatorio">*</span></label><input type="text" id="n_rep_nombre"></div>
+                    <div class="campo"><label for="n_rep_telefono">Tu teléfono <span class="obligatorio">*</span></label><input type="tel" id="n_rep_telefono" inputmode="tel" placeholder="0424-1234567"></div>
+                </div>
+            </div>
+
+            <div class="seccion">
+                <button type="button" class="btn-enviar" id="btnEnviar">Registrar novedad</button>
+                <div class="msg" id="msg"></div>
+            </div>
+        </div>
+
+        <div class="ok-screen" id="okScreen">
+            <div class="check">✅</div>
+            <h2>¡Novedad registrada!</h2>
+            <p>Ya quedó guardada en Protección Civil.<br>Ahora puedes mandarla por WhatsApp con el formato de siempre.</p>
+            <div class="ok-botones">
+                <a class="b-whatsapp" id="btnWhatsapp" target="_blank" rel="noopener">💬 Enviar por WhatsApp</a>
+                <button type="button" class="b-copiar" id="btnCopiarTexto">📋 Copiar el texto</button>
+                <button type="button" class="b-otro" id="btnOtra">Registrar otra novedad</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="pie">
+        <b>Dirección de Protección Civil y Administración de Desastres</b><br>
+        Alcaldía del Municipio Bolivariano Cristóbal Rojas · Charallave
+    </div>
+
+    <script src="novedades-texto.js"></script>
+    <script type="module">
+        /* Formulario PÚBLICO: no pide iniciar sesión. Solo puede CREAR
+           novedades; las reglas de la base no le permiten leer ni tocar lo
+           que ya está guardado. */
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+
+        const { SITUACION, textoWhatsappNovedad } = window.NovedadesTexto;
+        $('textoSituacion').textContent = 'Situación: ' + SITUACION;
+
+        const t = (id, max) => $(id).value.trim().slice(0, max);
+        const edad = (id) => {
+            const x = $(id).value;
+            if (x === '') return null;
+            const n = Math.round(Number(x));
+            return Number.isFinite(n) && n >= 0 && n <= 120 ? n : null;
+        };
+        /* Las reglas de la base solo aceptan cédulas con forma de cédula. */
+        const cedula = (id) => {
+            const x = $(id).value.trim().toUpperCase().replace(/[.\s]/g, '');
+            return /^([VE]?-?[0-9]{4,10})?$/.test(x) ? x : null;
+        };
+        /* Firebase no guarda los null: así una edad vacía simplemente no va. */
+        function sinVacios(obj) {
+            const r = {};
+            Object.entries(obj).forEach(([k, v]) => { if (v !== null && v !== undefined) r[k] = v; });
+            return r;
+        }
+
+        function armarPayload() {
+            return {
+                origen: 'publico',
+                fecha: $('n_fecha').value,
+                hora_inicio: $('n_hora_inicio').value,
+                hora_fin: $('n_hora_fin').value,
+                parroquia: $('n_parroquia').value,
+                comuna: t('n_comuna', 120),
+                cuadrante: t('n_cuadrante', 120),
+                tipo_actividad: t('n_tipo', 120),
+                resena: t('n_resena', 3000),
+                paciente: sinVacios({
+                    nombre: t('n_pac_nombre', 150), cedula: cedula('n_pac_cedula'), edad: edad('n_pac_edad'),
+                    idx: t('n_pac_idx', 300), ta: t('n_pac_ta', 20), pulso: t('n_pac_pulso', 20),
+                    spo2: t('n_pac_spo2', 20), temperatura: t('n_pac_temp', 20)
+                }),
+                acompanante: sinVacios({
+                    nombre: t('n_aco_nombre', 150), cedula: cedula('n_aco_cedula'),
+                    direccion: t('n_aco_direccion', 300), telefono: t('n_aco_telefono', 30)
+                }),
+                traslado: {
+                    centro_hospitalario: t('n_centro', 300), medico_refiere: t('n_med_refiere', 150),
+                    destino: t('n_destino', 300), servicio: t('n_servicio', 150), medico_recibe: t('n_med_recibe', 150)
+                },
+                conductor: sinVacios({ nombre: t('n_con_nombre', 150), cedula: cedula('n_con_cedula'), telefono: t('n_con_telefono', 30) }),
+                paramedico: sinVacios({ nombre: t('n_par_nombre', 150), cedula: cedula('n_par_cedula'), telefono: t('n_par_telefono', 30) }),
+                unidad: t('n_unidad', 60),
+                placa: t('n_placa', 20).toUpperCase(),
+                nota: t('n_nota', 2000),
+                estatus: $('n_estatus').value === 'En curso' ? 'En curso' : 'Finalizado',
+                reportado_por: { nombre: t('n_rep_nombre', 150), telefono: t('n_rep_telefono', 30) },
+                fecha_registro: Date.now()
+            };
+        }
+
+        /* Qué falta o está mal, en palabras claras. null si está todo bien. */
+        function problemaNovedad(d, crudo) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha)) return ['n_fecha', 'Falta la fecha.'];
+            if (d.tipo_actividad.length < 3) return ['n_tipo', 'Falta el tipo de actividad.'];
+            if (d.resena.length < 3) return ['n_resena', 'Falta la reseña: cuenta qué pasó.'];
+            for (const [id, nombre] of [['n_pac_cedula', 'del paciente'], ['n_aco_cedula', 'del acompañante'], ['n_con_cedula', 'del conductor'], ['n_par_cedula', 'del paramédico']]) {
+                if (crudo[id] && crudo[id].cedula === null) return [id, 'La cédula ' + nombre + ' no se entiende. Escribe solo los números (puede llevar V o E adelante).'];
+            }
+            if (crudo.n_pac_edad === false) return ['n_pac_edad', 'La edad del paciente debe ser un número entre 0 y 120.'];
+            if (!d.reportado_por.nombre) return ['n_rep_nombre', 'Falta tu nombre.'];
+            if (!d.reportado_por.telefono) return ['n_rep_telefono', 'Falta tu teléfono.'];
+            return null;
+        }
+
+        function err(texto) { $('msg').textContent = texto; $('msg').className = 'msg err'; }
+
+        /* ---- Borrador: lo escrito se guarda en el teléfono mientras se
+           llena. Si se va la señal o se cierra la pestaña, no se pierde. */
+        const CLAVE_BORRADOR = 'pc_borrador_novedad_v1';
+        const campos = () => [...document.querySelectorAll('#formWrap input, #formWrap select, #formWrap textarea')].filter(e => e.id);
+        function guardarBorrador() {
+            try {
+                const datos = {};
+                campos().forEach(e => { datos[e.id] = e.value; });
+                localStorage.setItem(CLAVE_BORRADOR, JSON.stringify({ guardado: Date.now(), datos }));
+            } catch (e) { /* sin almacenamiento (modo privado): se sigue sin borrador */ }
+        }
+        function recuperarBorrador() {
+            try {
+                const b = JSON.parse(localStorage.getItem(CLAVE_BORRADOR) || 'null');
+                if (!b || !b.datos || Date.now() - b.guardado > 7 * 24 * 3600e3) return false;
+                Object.entries(b.datos).forEach(([id, v]) => { const e = $(id); if (e && typeof v === 'string') e.value = v; });
+                return true;
+            } catch (e) { return false; }
+        }
+        function borrarBorrador() { try { localStorage.removeItem(CLAVE_BORRADOR); } catch (e) { } }
+
+        $('n_fecha').value = new Date(Date.now() - 4 * 3600e3).toISOString().slice(0, 10);
+        if (recuperarBorrador()) $('avisoBorrador').style.display = 'block';
+        $('formWrap').addEventListener('input', guardarBorrador);
+        $('formWrap').addEventListener('change', guardarBorrador);
+        $('btnDescartar').onclick = () => { borrarBorrador(); location.reload(); };
+
+        let textoFinal = '';
+        $('btnEnviar').addEventListener('click', async () => {
+            const d = armarPayload();
+            const crudo = {};
+            ['n_pac_cedula', 'n_aco_cedula', 'n_con_cedula', 'n_par_cedula'].forEach(id => {
+                if ($(id).value.trim()) crudo[id] = { cedula: cedula(id) };
+            });
+            if ($('n_pac_edad').value !== '' && edad('n_pac_edad') === null) crudo.n_pac_edad = false;
+            const problema = problemaNovedad(d, crudo);
+            if (problema) { err(problema[1]); $(problema[0]).focus(); return; }
+
+            $('msg').textContent = '';
+            $('btnEnviar').disabled = true;
+            $('btnEnviar').textContent = 'Registrando…';
+            try {
+                await set(push(ref(database, 'pc_novedades')), d);
+                borrarBorrador();
+                textoFinal = textoWhatsappNovedad(d);
+                $('btnWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(textoFinal);
+                $('formWrap').style.display = 'none';
+                $('okScreen').style.display = 'block';
+                window.scrollTo(0, 0);
+            } catch (e) {
+                /* Nunca decimos "registrada" si el servidor no confirmó. Lo
+                   escrito sigue en el borrador del teléfono. */
+                err('No se pudo registrar (' + (e.message || e.code || 'error') + '). Revisa tu conexión e intenta de nuevo: lo que escribiste no se pierde.');
+                $('btnEnviar').disabled = false;
+                $('btnEnviar').textContent = 'Registrar novedad';
+            }
+        });
+
+        $('btnCopiarTexto').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(textoFinal);
+                $('btnCopiarTexto').textContent = '✓ Copiado';
+                setTimeout(() => { $('btnCopiarTexto').textContent = '📋 Copiar el texto'; }, 1800);
+            } catch (e) {
+                prompt('Copia el texto:', textoFinal);
+            }
+        });
+        $('btnOtra').addEventListener('click', () => location.reload());
+    </script>
+    <script src="cne-dateas.js"></script>
+</body>
+</html>

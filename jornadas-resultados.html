@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornadas sociales - Protección Civil</title>
+    <style>
+        :root { --naranja-pc: #f7941d; --azul-pc: #1c3f94; --gris-fondo: #e9ecef; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 1150px; margin: 20px auto 60px; padding: 0 14px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+        .topbar a { color: var(--azul-pc); text-decoration: none; font-weight: 700; font-size: 14px; }
+        .topbar button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .panel { background: #fff; border-radius: 10px; padding: 22px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); }
+        .panel.compartir { margin-bottom: 16px; }
+        .compartir-cols { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+        .compartir-qr { flex: none; text-align: center; }
+        .compartir-qr img { width: 150px; height: 150px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+        .compartir-datos { flex: 1; min-width: 250px; }
+        .enlace-corto { font-size: 22px; font-weight: 800; color: var(--naranja-pc); margin-bottom: 10px; overflow-wrap: anywhere; }
+        .enlace-largo { font-size: 12px; color: #94a3b8; margin-top: 8px; overflow-wrap: anywhere; }
+        .compartir-botones { display: flex; gap: 8px; flex-wrap: wrap; }
+        .compartir-botones button, .compartir-botones a { border: none; border-radius: 8px; padding: 11px 16px; font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; min-height: 44px; }
+        .b-copiar { background: #0a2351; color: #fff; }
+        .b-whatsapp { background: #16a34a; color: #fff; }
+        .b-qr { background: #ea580c; color: #fff; }
+        h1 { color: var(--azul-pc); font-size: 20px; margin: 0 0 4px; }
+        p.sub { color: #666; font-size: 13px; margin: 0 0 18px; }
+        .cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        @media (max-width: 560px) { .cifras { grid-template-columns: 1fr; } }
+        .cifra { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
+        .cifra .num { font-size: 26px; font-weight: 800; color: var(--azul-pc); font-variant-numeric: tabular-nums; }
+        .cifra .lbl { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+        .herramientas { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+        .herramientas input, .herramientas select { padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; min-height: 44px; }
+        .herramientas input[type="text"] { flex: 1; min-width: 200px; }
+        .btn-excel { background: #15803d; color: #fff; border: none; padding: 11px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13.5px; min-height: 44px; }
+        .tabla-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        th { background: #eff6ff; color: var(--azul-pc); text-align: left; padding: 9px 8px; font-size: 11.5px; text-transform: uppercase; white-space: nowrap; }
+        td { padding: 9px 8px; border-bottom: 1px solid #f1f5f9; }
+        td.num { text-align: right; font-variant-numeric: tabular-nums; }
+        tr:hover td { background: #fafbfc; }
+        .btn-fila { border: none; border-radius: 6px; padding: 8px 10px; font-size: 12px; font-weight: 700; cursor: pointer; margin: 2px 4px 2px 0; min-height: 34px; }
+        .btn-ver { background: #eff6ff; color: var(--azul-pc); }
+        .btn-pdf { background: #fff7ed; color: #9a3412; }
+        .btn-del { background: #fee2e2; color: #b91c1c; }
+        .vacio { text-align: center; color: #999; padding: 40px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(8,15,30,.6); z-index: 9999; align-items: flex-start; justify-content: center; padding: 20px; overflow: auto; }
+        .modal.abierto { display: flex; }
+        .modal-card { background: #fff; border-radius: 12px; max-width: 900px; width: 100%; overflow: hidden; margin-top: 20px; }
+        .modal-hd { background: var(--azul-pc); color: #fff; padding: 14px 18px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .modal-hd button { background: rgba(255,255,255,.2); border: none; color: #fff; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 15px; flex: none; }
+        .modal-bd { padding: 16px 20px; max-height: 65vh; overflow: auto; }
+        .modal-bd table { font-size: 13px; }
+        .modal-meta { color: #475569; font-size: 13.5px; margin-bottom: 12px; line-height: 1.6; }
+        .modal-ft { padding: 14px 20px; border-top: 1px solid #f1f5f9; display: flex; gap: 8px; flex-wrap: wrap; }
+        .modal-ft button { flex: 1; text-align: center; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13.5px; border: none; cursor: pointer; min-width: 120px; min-height: 44px; }
+        .hidden { display: none !important; }
+        #loader { text-align: center; padding: 80px 20px; color: #777; }
+        #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
+    </style>
+    <script src="autofresh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div id="loader">Verificando acceso...</div>
+    <div id="acceso-restringido" class="hidden">🚫 Tu cuenta no tiene acceso a este sistema.</div>
+
+    <div class="container hidden" id="contenido">
+        <div class="topbar">
+            <a href="admin.html">← Volver al panel</a>
+            <button type="button" id="btnCerrarSesion">Cerrar sesión</button>
+        </div>
+
+        <div class="panel compartir">
+            <h1>📣 Compartir los formularios</h1>
+            <div class="compartir-cols">
+                <div class="compartir-qr"><img id="qrPublico" alt="Código QR de los formularios públicos"></div>
+                <div class="compartir-datos">
+                    <p class="sub" style="margin-bottom:8px">Es el mismo enlace de siempre: abre el menú con los tres formularios (reportar un riesgo, novedades relevantes y jornada social). No hace falta cuenta.</p>
+                    <div class="enlace-corto" id="textoCorto">—</div>
+                    <div class="compartir-botones">
+                        <button type="button" class="b-copiar" id="btnCopiar">📋 Copiar enlace</button>
+                        <a class="b-whatsapp" id="btnWhatsapp" target="_blank" rel="noopener">💬 WhatsApp</a>
+                        <a class="b-qr" id="btnDescargarQr" download="qr-formularios-proteccion-civil.png">⬇️ Descargar QR</a>
+                    </div>
+                    <div class="enlace-largo">Enlace completo: <span id="textoLargo"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h1>🩺 Jornadas sociales</h1>
+            <p class="sub">Cada jornada con la lista de personas atendidas.</p>
+            <div class="cifras">
+                <div class="cifra"><div class="num" id="cJornadas">0</div><div class="lbl">Jornadas</div></div>
+                <div class="cifra"><div class="num" id="cPersonas">0</div><div class="lbl">Personas atendidas</div></div>
+                <div class="cifra"><div class="num" id="cMes">0</div><div class="lbl">Atendidas este mes</div></div>
+            </div>
+            <div class="herramientas">
+                <input type="text" id="buscador" placeholder="Buscar por lugar, persona, cédula o comunidad...">
+                <select id="filtroOrden">
+                    <option value="reciente">Más recientes primero</option>
+                    <option value="antiguo">Más antiguas primero</option>
+                </select>
+                <button type="button" class="btn-excel" id="btnExcel">📊 Excel (todas las personas)</button>
+            </div>
+            <div class="tabla-scroll">
+                <table>
+                    <thead><tr><th>Fecha</th><th>Lugar</th><th style="text-align:right">Personas</th><th>Registró</th><th>Acciones</th></tr></thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+                <p class="vacio hidden" id="vacioMsg">No hay jornadas registradas todavía.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalVer">
+        <div class="modal-card">
+            <div class="modal-hd"><span id="modalTitulo">Jornada</span><button type="button" id="modalCerrar" aria-label="Cerrar">✕</button></div>
+            <div class="modal-bd" id="modalBody"></div>
+            <div class="modal-ft" id="modalFooter"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase, ref, get, child, onValue, remove, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+
+        let TODOS = [];
+        let esAdminPlus = false;
+
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+        function seguroExcel(v) {
+            if (typeof v !== 'string' || !v) return v;
+            return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
+        }
+        function fechaBonita(iso) {
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+            return m ? m[3] + '/' + m[2] + '/' + m[1] : '';
+        }
+        /* Firebase devuelve las listas como arreglo o como objeto {0:…,1:…}:
+           se aceptan las dos formas y se descarta lo que no sea una persona. */
+        function personasDe(j) {
+            const crudo = j.personas;
+            const lista = Array.isArray(crudo) ? crudo : (crudo && typeof crudo === 'object' ? Object.keys(crudo).sort((a, b) => a - b).map(k => crudo[k]) : []);
+            return lista.filter(p => p && typeof p === 'object' && p.nombre);
+        }
+        function quienRegistro(j) {
+            if (j.registrado_por && j.registrado_por.nombre) return j.registrado_por.nombre;
+            return (j.reportado_por && j.reportado_por.nombre) || 'Formulario público';
+        }
+
+        /* Las columnas de la hoja de papel, en su orden. Las usan la ficha,
+           el PDF y el Excel: una sola lista, para que nunca se descuadren. */
+        const COLUMNAS = [
+            ['Nombre y apellido', 'nombre', 62],
+            ['Edad', 'edad', 14],
+            ['C.I.', 'cedula', 26],
+            ['Teléfono', 'telefono', 30],
+            ['T/A', 'ta', 22],
+            ['Saturación', 'saturacion', 22],
+            ['Comunidad', 'comunidad', 65]
+        ];
+        const ANCHO_NUMERO = 10;   // columna N°: 10 + 241 = 251 mm útiles en carta horizontal
+
+        function aplicarFiltro() {
+            const q = $('buscador').value.trim().toLowerCase();
+            const lista = TODOS.filter(j => !q || [j.lugar, quienRegistro(j), ...personasDe(j).flatMap(p => [p.nombre, p.cedula, p.comunidad])]
+                .join(' ').toLowerCase().includes(q));
+            lista.sort((a, b) => (a.fecha || '').localeCompare(b.fecha || '') || (a.fecha_registro || 0) - (b.fecha_registro || 0));
+            if ($('filtroOrden').value === 'reciente') lista.reverse();
+            pintarTabla(lista);
+        }
+
+        function pintarCifras() {
+            const mes = new Date(Date.now() - 4 * 3600e3).toISOString().slice(0, 7);
+            $('cJornadas').textContent = TODOS.length;
+            $('cPersonas').textContent = TODOS.reduce((s, j) => s + personasDe(j).length, 0);
+            $('cMes').textContent = TODOS.filter(j => (j.fecha || '').startsWith(mes)).reduce((s, j) => s + personasDe(j).length, 0);
+        }
+
+        function pintarTabla(lista) {
+            const tb = $('tbody');
+            tb.innerHTML = '';
+            $('vacioMsg').classList.toggle('hidden', lista.length > 0);
+            lista.forEach(j => {
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td style="white-space:nowrap">' + esc(fechaBonita(j.fecha) || '-') + '</td>' +
+                    '<td>' + esc(j.lugar || '-') + '</td>' +
+                    '<td class="num"><b>' + personasDe(j).length + '</b></td>' +
+                    '<td>' + esc(quienRegistro(j)) + '</td>' +
+                    '<td style="white-space:nowrap">' +
+                        '<button class="btn-fila btn-ver" data-id="' + esc(j._id) + '" data-accion="ver">Ver</button>' +
+                        '<button class="btn-fila btn-pdf" data-id="' + esc(j._id) + '" data-accion="pdf">PDF</button>' +
+                        (esAdminPlus ? '<button class="btn-fila btn-del" data-id="' + esc(j._id) + '" data-accion="del">Eliminar</button>' : '') +
+                    '</td>';
+                tb.appendChild(tr);
+            });
+            tb.querySelectorAll('button[data-accion]').forEach(b => {
+                b.onclick = () => {
+                    const j = TODOS.find(x => x._id === b.dataset.id);
+                    if (!j) return;
+                    if (b.dataset.accion === 'ver') abrirModal(j);
+                    else if (b.dataset.accion === 'pdf') generarPdf(j);
+                    else if (b.dataset.accion === 'del') eliminar(j);
+                };
+            });
+        }
+
+        function abrirModal(j) {
+            const personas = personasDe(j);
+            $('modalTitulo').textContent = 'Jornada social · ' + (fechaBonita(j.fecha) || '');
+            let h = '<div class="modal-meta"><b>Lugar:</b> ' + esc(j.lugar || '-') + '<br><b>Registró:</b> ' + esc(quienRegistro(j)) +
+                ((j.reportado_por || {}).telefono ? ' · ' + esc(j.reportado_por.telefono) : '') +
+                '<br><b>Personas atendidas:</b> ' + personas.length + '</div>';
+            h += '<div class="tabla-scroll"><table><thead><tr><th>N°</th>' + COLUMNAS.map(c => '<th>' + esc(c[0]) + '</th>').join('') + '</tr></thead><tbody>';
+            personas.forEach((p, i) => {
+                h += '<tr><td>' + (i + 1) + '</td>' + COLUMNAS.map(c => '<td>' + esc(p[c[1]] == null ? '' : p[c[1]]) + '</td>').join('') + '</tr>';
+            });
+            h += '</tbody></table></div>';
+            $('modalBody').innerHTML = h;
+            $('modalFooter').innerHTML =
+                '<button type="button" id="btnModalPdf" style="background:#fff7ed;color:#9a3412">🖨️ PDF</button>' +
+                (esAdminPlus ? '<button type="button" id="btnModalDel" style="background:#fee2e2;color:#b91c1c">🗑️ Eliminar</button>' : '');
+            $('btnModalPdf').onclick = () => generarPdf(j);
+            const bd = $('btnModalDel'); if (bd) bd.onclick = () => eliminar(j);
+            $('modalVer').classList.add('abierto');
+        }
+        $('modalCerrar').onclick = () => $('modalVer').classList.remove('abierto');
+        $('modalVer').onclick = (e) => { if (e.target.id === 'modalVer') $('modalVer').classList.remove('abierto'); };
+
+        async function registrarBitacora(accion, id, resumen) {
+            const perfil = window.perfilOperadorPC;
+            if (!perfil) return;
+            try {
+                await set(push(ref(database, 'pc_bitacora')), {
+                    accion, informe_id: id, resumen,
+                    uid: perfil.uid, nombre: perfil.nombre || perfil.email, email: perfil.email, rol: perfil.rol,
+                    fecha: Date.now()
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function eliminar(j) {
+            const cual = 'la jornada en ' + (j.lugar || 'sin lugar') + ' del ' + (fechaBonita(j.fecha) || 'día sin fecha');
+            if (!confirm('¿Eliminar ' + cual + ' (' + personasDe(j).length + ' personas)? Esta acción no se puede deshacer.')) return;
+            try {
+                await remove(ref(database, 'pc_jornadas/' + j._id));
+                await registrarBitacora('eliminar_jornada', j._id, 'Eliminó ' + cual + ' (' + personasDe(j).length + ' personas)');
+                $('modalVer').classList.remove('abierto');
+            } catch (e) { alert('Error al eliminar: ' + e.message); }
+        }
+
+        /* PDF como la hoja de papel: carta horizontal, encabezado, lugar y
+           fecha, y la tabla. Los anchos suman 251 mm, lo que cabe. */
+        function generarPdf(j) {
+            if (!window.jspdf) { alert('La librería de PDF no cargó.'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'landscape' });
+            const pageW = 279.4, margenX = 14.2;
+            doc.setFillColor(28, 63, 148);
+            doc.rect(0, 0, pageW, 20, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text('REPUBLICA BOLIVARIANA DE VENEZUELA - ESTADO MIRANDA - MUNICIPIO CRISTOBAL ROJAS', pageW / 2, 8, { align: 'center' });
+            doc.text('DIRECCION DE PROTECCION CIVIL Y ADMINISTRACION DE DESASTRES', pageW / 2, 14, { align: 'center' });
+            doc.setTextColor(28, 63, 148);
+            doc.setFontSize(16);
+            doc.text('JORNADA SOCIAL', margenX, 30);
+            doc.setFontSize(10);
+            doc.setTextColor(40, 40, 40);
+            doc.text('Lugar: ' + (j.lugar || '-'), margenX, 37);
+            doc.text('Fecha: ' + (fechaBonita(j.fecha) || '-'), pageW - margenX, 30, { align: 'right' });
+            doc.text('Personas atendidas: ' + personasDe(j).length, pageW - margenX, 37, { align: 'right' });
+            const estilos = { 0: { cellWidth: ANCHO_NUMERO, halign: 'center' } };
+            COLUMNAS.forEach((c, i) => { estilos[i + 1] = { cellWidth: c[2] }; });
+            doc.autoTable({
+                startY: 42,
+                margin: { left: margenX, right: margenX },
+                head: [['N°', ...COLUMNAS.map(c => c[0])]],
+                body: personasDe(j).map((p, i) => [i + 1, ...COLUMNAS.map(c => p[c[1]] == null ? '' : String(p[c[1]]))]),
+                styles: { fontSize: 8.5, cellPadding: 1.8, overflow: 'linebreak' },
+                headStyles: { fillColor: [247, 148, 29], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                columnStyles: estilos
+            });
+            const y = Math.min(doc.lastAutoTable.finalY + 8, 200);
+            doc.setFontSize(8);
+            doc.setTextColor(110, 110, 110);
+            doc.text('Registró: ' + quienRegistro(j) + ((j.reportado_por || {}).telefono ? ' - Tel: ' + j.reportado_por.telefono : ''), margenX, y);
+            const total = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= total; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(160, 160, 160); doc.text('Página ' + i + ' de ' + total, pageW / 2, 210, { align: 'center' }); }
+            doc.save('Jornada_Social_' + (j.fecha || 'sin-fecha') + '_' + String(j.lugar || '').replace(/[^A-Za-z0-9áéíóúñÁÉÍÓÚÑ]+/g, '-').slice(0, 40) + '.pdf');
+        }
+
+        /* Excel: una fila por persona atendida, con la jornada a la que
+           pertenece. Encabezados, filas y anchos salen de COLUMNAS. */
+        function exportarExcel() {
+            const ordenadas = [...TODOS].sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+            const encabezados = ['Fecha', 'Lugar', 'N°', ...COLUMNAS.map(c => c[0]), 'Registró'];
+            const filas = [];
+            ordenadas.forEach(j => personasDe(j).forEach((p, i) => {
+                filas.push([fechaBonita(j.fecha), seguroExcel(j.lugar || ''), i + 1,
+                            ...COLUMNAS.map(c => seguroExcel(p[c[1]] == null ? '' : (typeof p[c[1]] === 'number' ? p[c[1]] : String(p[c[1]])))),
+                            seguroExcel(quienRegistro(j))]);
+            }));
+            if (!filas.length) { alert('No hay personas registradas para exportar.'); return; }
+            const aoa = [['JORNADAS SOCIALES - PROTECCIÓN CIVIL CRISTÓBAL ROJAS'],
+                         ['Generado el ' + new Date().toLocaleString('es-VE') + ' · ' + ordenadas.length + ' jornada(s), ' + filas.length + ' persona(s)'],
+                         encabezados, ...filas];
+            const ws = XLSX.utils.aoa_to_sheet(aoa);
+            ws['!cols'] = [{ wch: 12 }, { wch: 34 }, { wch: 5 }, ...COLUMNAS.map(c => ({ wch: Math.round(c[2] / 2.2) })), { wch: 24 }];
+            ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 2, c: 0 }, e: { r: 2 + filas.length, c: encabezados.length - 1 } }) };
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Personas atendidas');
+            XLSX.writeFile(wb, 'Jornadas_Sociales_ProteccionCivil_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+        }
+        $('btnExcel').addEventListener('click', exportarExcel);
+        $('buscador').addEventListener('input', aplicarFiltro);
+        $('filtroOrden').addEventListener('change', aplicarFiltro);
+
+        const URL_CORTO = 'https://tinyurl.com/reportarriesgocr';
+        const URL_FORM = location.origin + location.pathname.replace(/[^/]*$/, '') + 'reportar-riesgo.html';
+        (function prepararCompartir() {
+            $('textoCorto').textContent = URL_CORTO.replace('https://', '');
+            $('textoLargo').textContent = URL_FORM;
+            $('qrPublico').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(URL_CORTO);
+            $('btnDescargarQr').href = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&download=1&data=' + encodeURIComponent(URL_CORTO);
+            $('btnWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(
+                '🚨 PROTECCIÓN CIVIL (Alcaldía de Cristóbal Rojas) — Formularios: reportar un riesgo, novedades relevantes y jornada social: ' + URL_CORTO);
+            $('btnCopiar').addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(URL_CORTO);
+                    $('btnCopiar').textContent = '✓ Copiado';
+                    setTimeout(() => { $('btnCopiar').textContent = '📋 Copiar enlace'; }, 1800);
+                } catch (e) { prompt('Copia el enlace:', URL_CORTO); }
+            });
+        })();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { location.href = 'index.html'; return; }
+            let perfil = null;
+            try {
+                const snap = await get(child(ref(database), `pc_operadores/${user.uid}`));
+                if (snap.exists()) perfil = snap.val();
+            } catch (e) { perfil = null; }
+            $('loader').classList.add('hidden');
+            if (!perfil) { $('acceso-restringido').classList.remove('hidden'); return; }
+            if (perfil.cambio_obligatorio) { location.href = 'password.html'; return; }
+            window.perfilOperadorPC = { uid: user.uid, email: user.email, ...perfil };
+            esAdminPlus = perfil.rol === 'admin_plus';
+            $('contenido').classList.remove('hidden');
+            onValue(ref(database, 'pc_jornadas'), (snap) => {
+                TODOS = Object.entries(snap.val() || {}).map(([id, j]) => ({ _id: id, ...j }));
+                pintarCifras();
+                aplicarFiltro();
+            });
+        });
+
+        $('btnCerrarSesion').addEventListener('click', () => signOut(auth).then(() => location.href = 'index.html'));
+    </script>
+</body>
+</html>

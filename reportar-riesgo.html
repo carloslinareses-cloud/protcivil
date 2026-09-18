@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportar un riesgo - Protección Civil Cristóbal Rojas</title>
+    <title>Formularios - Protección Civil Cristóbal Rojas</title>
     <meta name="description" content="Formulario público de la Dirección de Protección Civil de la Alcaldía de Cristóbal Rojas para reportar una vivienda o estructura en riesgo.">
     <style>
         :root {
@@ -90,6 +90,16 @@
         .ok-screen p { color: #475569; font-size: 15px; line-height: 1.6; }
         .ok-screen button { margin-top: 20px; background: var(--azul-pc); color: #fff; border: none; border-radius: 10px; padding: 14px 22px; font-size: 15px; font-weight: 700; cursor: pointer; min-height: 48px; }
 
+        /* Menú: el mismo enlace de siempre abre primero la lista de formularios. */
+        .menu-lista { display: grid; gap: 14px; }
+        .menu-opcion { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 12px; padding: 18px; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1.5px solid #e2e8f0; border-left: 6px solid var(--naranja-pc); min-height: 84px; }
+        .menu-opcion:hover, .menu-opcion:focus-visible { border-color: var(--azul-pc); outline: none; }
+        .menu-opcion .icono { font-size: 34px; flex: none; }
+        .menu-opcion b { display: block; color: var(--azul-pc); font-size: 17px; margin-bottom: 3px; }
+        .menu-opcion span { color: #64748b; font-size: 13.5px; line-height: 1.4; }
+        .menu-opcion .flecha { margin-left: auto; color: #94a3b8; font-size: 24px; flex: none; }
+        .volver { display: inline-block; color: var(--azul-pc); font-weight: 700; font-size: 14px; text-decoration: none; margin-bottom: 10px; min-height: 44px; line-height: 44px; }
+
         .pie { text-align: center; color: #64748b; font-size: 12px; padding: 18px 12px 30px; line-height: 1.6; }
         .pie b { color: var(--azul-pc); }
     </style>
@@ -99,6 +109,35 @@
     <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
 
     <div class="container">
+        <div id="vistaMenu">
+            <div class="cabecera-form">
+                <img src="logos/cristobal-rojas.png" alt="Escudo Cristóbal Rojas">
+                <img src="logos/pc.png" alt="Protección Civil">
+                <h1>Formularios de Protección Civil</h1>
+                <p>Dirección de Protección Civil y Administración de Desastres · Municipio Cristóbal Rojas<br>
+                Elige el formulario que vas a llenar.</p>
+            </div>
+            <div class="menu-lista">
+                <a class="menu-opcion" href="#riesgo" id="irRiesgo">
+                    <span class="icono">🏚️</span>
+                    <div><b>Reportar un riesgo</b><span>Una vivienda o estructura en riesgo, con fotos.</span></div>
+                    <span class="flecha">›</span>
+                </a>
+                <a class="menu-opcion" href="novedades.html" id="irNovedades">
+                    <span class="icono">🚑</span>
+                    <div><b>Novedades relevantes</b><span>Traslados, atenciones y demás novedades del servicio. Te arma el mensaje para WhatsApp.</span></div>
+                    <span class="flecha">›</span>
+                </a>
+                <a class="menu-opcion" href="jornada-social.html" id="irJornada">
+                    <span class="icono">🩺</span>
+                    <div><b>Jornada social</b><span>La lista de personas atendidas en una jornada: nombre, edad, C.I., tensión y saturación.</span></div>
+                    <span class="flecha">›</span>
+                </a>
+            </div>
+        </div>
+
+        <div id="vistaRiesgo" hidden>
+        <a class="volver" href="#formularios">← Otros formularios</a>
         <div class="cabecera-form">
             <img src="logos/cristobal-rojas.png" alt="Escudo Cristóbal Rojas">
             <img src="logos/pc.png" alt="Protección Civil">
@@ -243,7 +282,27 @@
             <p>Protección Civil ya tiene tu reporte.<br>Un técnico va a revisar el caso y, si hace falta, te contactará al teléfono que dejaste.</p>
             <button id="btnOtro" type="button">Enviar otro reporte</button>
         </div>
+        </div>
     </div>
+
+    <script>
+        /* El enlace de siempre (tinyurl.com/reportarriesgocr) abre primero
+           el menú. "#riesgo" muestra el formulario de riesgo en la MISMA
+           página, sin recargarla: si alguien vuelve al menú a mitad de un
+           reporte, lo que escribió sigue ahí. */
+        (function () {
+            function mostrarVista() {
+                var enRiesgo = location.hash === '#riesgo';
+                document.getElementById('vistaMenu').hidden = enRiesgo;
+                document.getElementById('vistaRiesgo').hidden = !enRiesgo;
+                document.title = enRiesgo ? 'Reportar un riesgo - Protección Civil Cristóbal Rojas'
+                                          : 'Formularios - Protección Civil Cristóbal Rojas';
+                window.scrollTo(0, 0);
+            }
+            window.addEventListener('hashchange', mostrarVista);
+            mostrarVista();
+        })();
+    </script>
 
     <div class="pie">
         <b>Dirección de Protección Civil y Administración de Desastres</b><br>

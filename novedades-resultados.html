@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novedades relevantes - Protección Civil</title>
+    <style>
+        :root { --naranja-pc: #f7941d; --azul-pc: #1c3f94; --gris-fondo: #e9ecef; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 1150px; margin: 20px auto 60px; padding: 0 14px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+        .topbar a { color: var(--azul-pc); text-decoration: none; font-weight: 700; font-size: 14px; }
+        .topbar button { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .panel { background: #fff; border-radius: 10px; padding: 22px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); }
+        .panel.compartir { margin-bottom: 16px; }
+        .compartir-cols { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+        .compartir-qr { flex: none; text-align: center; }
+        .compartir-qr img { width: 150px; height: 150px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+        .compartir-datos { flex: 1; min-width: 250px; }
+        .enlace-corto { font-size: 22px; font-weight: 800; color: var(--naranja-pc); margin-bottom: 10px; overflow-wrap: anywhere; }
+        .enlace-largo { font-size: 12px; color: #94a3b8; margin-top: 8px; overflow-wrap: anywhere; }
+        .compartir-botones { display: flex; gap: 8px; flex-wrap: wrap; }
+        .compartir-botones button, .compartir-botones a { border: none; border-radius: 8px; padding: 11px 16px; font-size: 13.5px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; min-height: 44px; }
+        .b-copiar { background: #0a2351; color: #fff; }
+        .b-whatsapp { background: #16a34a; color: #fff; }
+        .b-qr { background: #ea580c; color: #fff; }
+        h1 { color: var(--azul-pc); font-size: 20px; margin: 0 0 4px; }
+        p.sub { color: #666; font-size: 13px; margin: 0 0 18px; }
+        .herramientas { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+        .herramientas input, .herramientas select { padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 14px; min-height: 44px; }
+        .herramientas input[type="text"] { flex: 1; min-width: 200px; }
+        .btn-excel { background: #15803d; color: #fff; border: none; padding: 11px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13.5px; min-height: 44px; }
+        .tabla-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        th { background: #eff6ff; color: var(--azul-pc); text-align: left; padding: 9px 8px; font-size: 11.5px; text-transform: uppercase; white-space: nowrap; }
+        td { padding: 9px 8px; border-bottom: 1px solid #f1f5f9; }
+        tr:hover td { background: #fafbfc; }
+        .btn-fila { border: none; border-radius: 6px; padding: 8px 10px; font-size: 12px; font-weight: 700; cursor: pointer; margin: 2px 4px 2px 0; min-height: 34px; }
+        .btn-ver { background: #eff6ff; color: var(--azul-pc); }
+        .btn-pdf { background: #fff7ed; color: #9a3412; }
+        .btn-wa { background: #dcfce7; color: #15803d; }
+        .btn-del { background: #fee2e2; color: #b91c1c; }
+        .etq { display: inline-block; font-size: 11.5px; font-weight: 800; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+        .etq-fin { background: #dcfce7; color: #15803d; }
+        .etq-curso { background: #fef3c7; color: #92400e; }
+        .vacio { text-align: center; color: #999; padding: 40px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(8,15,30,.6); z-index: 9999; align-items: flex-start; justify-content: center; padding: 20px; overflow: auto; }
+        .modal.abierto { display: flex; }
+        .modal-card { background: #fff; border-radius: 12px; max-width: 640px; width: 100%; overflow: hidden; margin-top: 20px; }
+        .modal-hd { background: var(--azul-pc); color: #fff; padding: 14px 18px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .modal-hd button { background: rgba(255,255,255,.2); border: none; color: #fff; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 15px; flex: none; }
+        .modal-bd { padding: 16px 20px; max-height: 65vh; overflow-y: auto; }
+        .modal-sec { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--naranja-pc); margin: 14px 0 6px; border-bottom: 2px solid #fdba74; padding-bottom: 3px; }
+        .modal-sec:first-child { margin-top: 0; }
+        .modal-row { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; font-size: 13.5px; border-bottom: 1px dashed #f1f5f9; }
+        .modal-row span { color: #64748b; }
+        .modal-row b { color: #0f172a; text-align: right; overflow-wrap: anywhere; }
+        .modal-ft { padding: 14px 20px; border-top: 1px solid #f1f5f9; display: flex; gap: 8px; flex-wrap: wrap; }
+        .modal-ft button, .modal-ft a { flex: 1; text-align: center; text-decoration: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13.5px; border: none; cursor: pointer; min-width: 120px; min-height: 44px; }
+        .hidden { display: none !important; }
+        #loader { text-align: center; padding: 80px 20px; color: #777; }
+        #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
+    </style>
+    <script src="autofresh.js"></script>
+    <script src="novedades-texto.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div id="loader">Verificando acceso...</div>
+    <div id="acceso-restringido" class="hidden">🚫 Tu cuenta no tiene acceso a este sistema.</div>
+
+    <div class="container hidden" id="contenido">
+        <div class="topbar">
+            <a href="admin.html">← Volver al panel</a>
+            <button type="button" id="btnCerrarSesion">Cerrar sesión</button>
+        </div>
+
+        <div class="panel compartir">
+            <h1>📣 Compartir los formularios</h1>
+            <div class="compartir-cols">
+                <div class="compartir-qr"><img id="qrPublico" alt="Código QR de los formularios públicos"></div>
+                <div class="compartir-datos">
+                    <p class="sub" style="margin-bottom:8px">Es el mismo enlace de siempre: abre el menú con los tres formularios (reportar un riesgo, novedades relevantes y jornada social). No hace falta cuenta.</p>
+                    <div class="enlace-corto" id="textoCorto">—</div>
+                    <div class="compartir-botones">
+                        <button type="button" class="b-copiar" id="btnCopiar">📋 Copiar enlace</button>
+                        <a class="b-whatsapp" id="btnWhatsapp" target="_blank" rel="noopener">💬 WhatsApp</a>
+                        <a class="b-qr" id="btnDescargarQr" download="qr-formularios-proteccion-civil.png">⬇️ Descargar QR</a>
+                    </div>
+                    <div class="enlace-largo">Enlace completo: <span id="textoLargo"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h1>🚑 Novedades relevantes</h1>
+            <p class="sub" id="totalTxt">Cargando...</p>
+            <div class="herramientas">
+                <input type="text" id="buscador" placeholder="Buscar por tipo, paciente, cédula, destino, unidad o quien envió...">
+                <select id="filtroEstatus">
+                    <option value="">Todos los estatus</option>
+                    <option>Finalizado</option>
+                    <option>En curso</option>
+                </select>
+                <select id="filtroOrden">
+                    <option value="reciente">Más recientes primero</option>
+                    <option value="antiguo">Más antiguas primero</option>
+                </select>
+                <button type="button" class="btn-excel" id="btnExcel">📊 Excel</button>
+            </div>
+            <div class="tabla-scroll">
+                <table>
+                    <thead><tr><th>Fecha</th><th>Tipo de actividad</th><th>Paciente</th><th>Destino</th><th>Unidad</th><th>Estatus</th><th>Envió</th><th>Acciones</th></tr></thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+                <p class="vacio hidden" id="vacioMsg">No hay novedades registradas todavía.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalVer">
+        <div class="modal-card">
+            <div class="modal-hd"><span id="modalTitulo">Novedad</span><button type="button" id="modalCerrar" aria-label="Cerrar">✕</button></div>
+            <div class="modal-bd" id="modalBody"></div>
+            <div class="modal-ft" id="modalFooter"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase, ref, get, child, onValue, remove, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+        const { SITUACION, horaBonita, fechaBonita, textoWhatsappNovedad } = window.NovedadesTexto;
+
+        let TODOS = [];
+        let esAdminPlus = false;
+
+        /* Escapa también la comilla simple: todo lo que se pinta aquí viene
+           de un formulario abierto al público y termina dentro del HTML y
+           de atributos de este tablero. */
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+        /* Excel: un texto que empieza con = + - o @ lo abre Excel como
+           fórmula. Estos datos los escribe cualquiera: se neutralizan. */
+        function seguroExcel(v) {
+            if (typeof v !== 'string' || !v) return v;
+            return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
+        }
+
+        function fmtRegistro(ts) {
+            if (!ts) return '-';
+            return new Date(ts).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function quienEnvio(r) {
+            if (r.registrado_por && r.registrado_por.nombre) return r.registrado_por.nombre;
+            return (r.reportado_por && r.reportado_por.nombre) || 'Formulario público';
+        }
+
+        function etiquetaEstatus(e) {
+            return e === 'En curso' ? '<span class="etq etq-curso">En curso</span>' : '<span class="etq etq-fin">' + esc(e || 'Finalizado') + '</span>';
+        }
+
+        function textoBusqueda(r) {
+            const p = r.paciente || {}, t = r.traslado || {}, c = r.conductor || {}, pm = r.paramedico || {};
+            return [r.tipo_actividad, r.resena, r.parroquia, r.comuna, r.cuadrante, p.nombre, p.cedula, p.idx, t.destino,
+                    t.centro_hospitalario, r.unidad, r.placa, c.nombre, pm.nombre, quienEnvio(r)].join(' ').toLowerCase();
+        }
+
+        function aplicarFiltro() {
+            const q = $('buscador').value.trim().toLowerCase();
+            const est = $('filtroEstatus').value;
+            const lista = TODOS.filter(r => (!q || textoBusqueda(r).includes(q)) && (!est || (r.estatus || 'Finalizado') === est));
+            lista.sort((a, b) => (a.fecha_registro || 0) - (b.fecha_registro || 0));
+            if ($('filtroOrden').value === 'reciente') lista.reverse();
+            pintarTabla(lista);
+        }
+
+        function pintarTabla(lista) {
+            const tb = $('tbody');
+            tb.innerHTML = '';
+            $('vacioMsg').classList.toggle('hidden', lista.length > 0);
+            lista.forEach(r => {
+                const p = r.paciente || {}, t = r.traslado || {};
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td style="white-space:nowrap">' + esc(fechaBonita(r.fecha) || fmtRegistro(r.fecha_registro)) + '</td>' +
+                    '<td>' + esc(r.tipo_actividad || '-') + '</td>' +
+                    '<td>' + esc(p.nombre || '-') + (p.cedula ? '<br><small style="color:#64748b">C.I. ' + esc(p.cedula) + '</small>' : '') + '</td>' +
+                    '<td>' + esc(t.destino || '-') + '</td>' +
+                    '<td>' + esc([r.unidad, r.placa].filter(Boolean).join(' · ') || '-') + '</td>' +
+                    '<td>' + etiquetaEstatus(r.estatus) + '</td>' +
+                    '<td>' + esc(quienEnvio(r)) + '</td>' +
+                    '<td style="white-space:nowrap">' +
+                        '<button class="btn-fila btn-ver" data-id="' + esc(r._id) + '" data-accion="ver">Ver</button>' +
+                        '<button class="btn-fila btn-wa" data-id="' + esc(r._id) + '" data-accion="wa">WhatsApp</button>' +
+                        '<button class="btn-fila btn-pdf" data-id="' + esc(r._id) + '" data-accion="pdf">PDF</button>' +
+                        (esAdminPlus ? '<button class="btn-fila btn-del" data-id="' + esc(r._id) + '" data-accion="del">Eliminar</button>' : '') +
+                    '</td>';
+                tb.appendChild(tr);
+            });
+            tb.querySelectorAll('button[data-accion]').forEach(b => {
+                b.onclick = () => {
+                    const r = TODOS.find(x => x._id === b.dataset.id);
+                    if (!r) return;
+                    if (b.dataset.accion === 'ver') abrirModal(r);
+                    else if (b.dataset.accion === 'wa') mandarWhatsapp(r);
+                    else if (b.dataset.accion === 'pdf') generarPdf(r);
+                    else if (b.dataset.accion === 'del') eliminar(r);
+                };
+            });
+        }
+
+        function mandarWhatsapp(r) {
+            window.open('https://wa.me/?text=' + encodeURIComponent(textoWhatsappNovedad(r)), '_blank', 'noopener');
+        }
+        async function copiarTexto(r, boton) {
+            const texto = textoWhatsappNovedad(r);
+            try {
+                await navigator.clipboard.writeText(texto);
+                if (boton) { boton.textContent = '✓ Copiado'; setTimeout(() => { boton.textContent = '📋 Copiar texto'; }, 1800); }
+            } catch (e) { prompt('Copia el texto:', texto); }
+        }
+
+        /* Las secciones de una novedad, en el orden de la hoja. Las usan la
+           ficha, el PDF y el Excel: una sola lista para no descuadrar. */
+        function seccionesNovedad(r) {
+            const p = r.paciente || {}, a = r.acompanante || {}, t = r.traslado || {}, c = r.conductor || {}, pm = r.paramedico || {};
+            return [
+                ['Datos generales', [['ZEDAN', 'Capital'], ['ZOEDAN', 'Miranda'], ['Municipio', 'Cristóbal Rojas'], ['Parroquia', r.parroquia],
+                    ['Fecha', fechaBonita(r.fecha)], ['Hora inicio', horaBonita(r.hora_inicio)], ['Hora finalizado', horaBonita(r.hora_fin)],
+                    ['Comuna', r.comuna], ['Cuadrante', r.cuadrante]]],
+                ['La novedad', [['Tipo de actividad', r.tipo_actividad], ['Reseña', r.resena]]],
+                ['Paciente', [['Nombre y apellido', p.nombre], ['C.I.', p.cedula], ['Edad', p.edad], ['IDX', p.idx],
+                    ['T/A', p.ta], ['Pulso', p.pulso], ['SpO2', p.spo2], ['Temperatura', p.temperatura]]],
+                ['Acompañante', [['Nombre y apellido', a.nombre], ['C.I.', a.cedula], ['Dirección', a.direccion], ['Teléfono', a.telefono]]],
+                ['Centro de salud y destino', [['Centro hospitalario', t.centro_hospitalario], ['Médico que refiere', t.medico_refiere],
+                    ['Destino del paciente', t.destino], ['Servicio que recibe', t.servicio], ['Médico que recibe', t.medico_recibe]]],
+                ['Personal actuante', [['Conductor', c.nombre], ['C.I. del conductor', c.cedula], ['Teléfono del conductor', c.telefono],
+                    ['Paramédico', pm.nombre], ['C.I. del paramédico', pm.cedula], ['Teléfono del paramédico', pm.telefono]]],
+                ['Unidad y cierre', [['Unidad', r.unidad], ['Placa', r.placa], ['Nota', r.nota], ['Estatus', r.estatus || 'Finalizado']]],
+                ['Registro', [['Enviado por', quienEnvio(r)], ['Teléfono de quien envió', (r.reportado_por || {}).telefono],
+                    ['Fecha de registro', fmtRegistro(r.fecha_registro)]]]
+            ];
+        }
+
+        function filaModal(k, v) { return '<div class="modal-row"><span>' + esc(k) + '</span><b>' + (esc(v) || '—') + '</b></div>'; }
+        function abrirModal(r) {
+            $('modalTitulo').textContent = (r.tipo_actividad || 'Novedad') + ' · ' + (fechaBonita(r.fecha) || '');
+            let h = '';
+            seccionesNovedad(r).forEach(([titulo, campos]) => {
+                h += '<div class="modal-sec">' + esc(titulo) + '</div>';
+                campos.forEach(([k, v]) => { h += filaModal(k, v); });
+            });
+            $('modalBody').innerHTML = h;
+            $('modalFooter').innerHTML =
+                '<button type="button" id="btnModalWa" style="background:#16a34a;color:#fff">💬 WhatsApp</button>' +
+                '<button type="button" id="btnModalCopiar" style="background:#0a2351;color:#fff">📋 Copiar texto</button>' +
+                '<button type="button" id="btnModalPdf" style="background:#fff7ed;color:#9a3412">🖨️ PDF</button>' +
+                (esAdminPlus ? '<button type="button" id="btnModalDel" style="background:#fee2e2;color:#b91c1c">🗑️ Eliminar</button>' : '');
+            $('btnModalWa').onclick = () => mandarWhatsapp(r);
+            $('btnModalCopiar').onclick = (e) => copiarTexto(r, e.currentTarget);
+            $('btnModalPdf').onclick = () => generarPdf(r);
+            const bd = $('btnModalDel'); if (bd) bd.onclick = () => eliminar(r);
+            $('modalVer').classList.add('abierto');
+        }
+        $('modalCerrar').onclick = () => $('modalVer').classList.remove('abierto');
+        $('modalVer').onclick = (e) => { if (e.target.id === 'modalVer') $('modalVer').classList.remove('abierto'); };
+
+        async function registrarBitacora(accion, id, resumen) {
+            const perfil = window.perfilOperadorPC;
+            if (!perfil) return;
+            try {
+                await set(push(ref(database, 'pc_bitacora')), {
+                    accion, informe_id: id, resumen,
+                    uid: perfil.uid, nombre: perfil.nombre || perfil.email, email: perfil.email, rol: perfil.rol,
+                    fecha: Date.now()
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function eliminar(r) {
+            const cual = (r.tipo_actividad || 'novedad') + ' del ' + (fechaBonita(r.fecha) || 'día sin fecha');
+            if (!confirm('¿Eliminar la novedad "' + cual + '"? Esta acción no se puede deshacer.')) return;
+            try {
+                await remove(ref(database, 'pc_novedades/' + r._id));
+                await registrarBitacora('eliminar_novedad', r._id, 'Eliminó la novedad "' + cual + '" (paciente: ' + ((r.paciente && r.paciente.nombre) || 'sin paciente') + ')');
+                $('modalVer').classList.remove('abierto');
+            } catch (e) { alert('Error al eliminar: ' + e.message); }
+        }
+
+        function generarPdf(r) {
+            if (!window.jspdf) { alert('La librería de PDF no cargó.'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+            const pageW = 216, pageH = 279, margenX = 16, anchoUtil = pageW - margenX * 2;
+            let y = 14;
+            doc.setFillColor(28, 63, 148);
+            doc.rect(0, 0, pageW, 22, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('REPUBLICA BOLIVARIANA DE VENEZUELA - ESTADO MIRANDA', pageW / 2, 8, { align: 'center' });
+            doc.text('MUNICIPIO CRISTOBAL ROJAS - DIRECCION DE PROTECCION CIVIL', pageW / 2, 14, { align: 'center' });
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text('NOVEDADES RELEVANTES', pageW / 2, 19.5, { align: 'center' });
+            y = 30;
+            doc.setTextColor(60, 60, 60);
+            doc.setFontSize(9);
+            const lineasSit = doc.splitTextToSize('Situación: ' + SITUACION, anchoUtil);
+            doc.text(lineasSit, margenX, y);
+            y += lineasSit.length * 4.4 + 3;
+
+            function seccion(titulo) {
+                if (y > pageH - 25) { doc.addPage(); y = 16; }
+                doc.setFillColor(247, 148, 29);
+                doc.rect(margenX, y, anchoUtil, 6.5, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9.5);
+                doc.text(titulo.toUpperCase(), margenX + 3, y + 4.6);
+                y += 10;
+            }
+            function campo(l, v) {
+                const lineas = doc.splitTextToSize(String(v == null || v === '' ? '-' : v), anchoUtil - 52);
+                if (y + lineas.length * 4.6 > pageH - 14) { doc.addPage(); y = 16; }
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                doc.setTextColor(80, 80, 80);
+                doc.text(String(l) + ':', margenX, y);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(20, 20, 20);
+                doc.text(lineas, margenX + 50, y);
+                y += Math.max(5.5, lineas.length * 4.6);
+            }
+            seccionesNovedad(r).forEach(([titulo, campos]) => {
+                seccion(titulo);
+                campos.forEach(([k, v]) => campo(k, v));
+                y += 2;
+            });
+            const total = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= total; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(160, 160, 160); doc.text('Página ' + i + ' de ' + total, pageW / 2, pageH - 6, { align: 'center' }); }
+            doc.save('Novedad_' + (r.fecha || 'sin-fecha') + '_' + String(r.tipo_actividad || '').replace(/[^A-Za-z0-9áéíóúñÁÉÍÓÚÑ]+/g, '-').slice(0, 40) + '.pdf');
+        }
+
+        function exportarExcel() {
+            if (!TODOS.length) { alert('No hay novedades para exportar.'); return; }
+            const ordenadas = [...TODOS].sort((a, b) => (a.fecha_registro || 0) - (b.fecha_registro || 0));
+            /* "Nombre y apellido" y "C.I." están en el paciente y en el
+               acompañante: si un título se repite, se le antepone a quién
+               pertenece, para que nadie confunda una columna con otra. */
+            const pares = [];
+            seccionesNovedad(ordenadas[0]).forEach(([titulo, campos]) => campos.forEach(([k]) => pares.push([titulo, k])));
+            const veces = {};
+            pares.forEach(([, k]) => { veces[k] = (veces[k] || 0) + 1; });
+            const encabezados = pares.map(([titulo, k]) => veces[k] > 1 ? titulo + ': ' + k : k);
+            const filas = ordenadas.map(r => {
+                const f = [];
+                seccionesNovedad(r).forEach(([, campos]) => campos.forEach(([, v]) => f.push(seguroExcel(v == null ? '' : typeof v === 'number' ? v : String(v)))));
+                return f;
+            });
+            const aoa = [['NOVEDADES RELEVANTES - PROTECCIÓN CIVIL CRISTÓBAL ROJAS'],
+                         ['Generado el ' + new Date().toLocaleString('es-VE') + ' · ' + filas.length + ' novedad(es)'],
+                         encabezados, ...filas];
+            const ws = XLSX.utils.aoa_to_sheet(aoa);
+            ws['!cols'] = encabezados.map(k => ({ wch: /Reseña|Nota|Centro|Dirección|Destino/.test(k) ? 40 : 18 }));
+            ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 2, c: 0 }, e: { r: 2 + filas.length, c: encabezados.length - 1 } }) };
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Novedades');
+            XLSX.writeFile(wb, 'Novedades_ProteccionCivil_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+        }
+        $('btnExcel').addEventListener('click', exportarExcel);
+        $('buscador').addEventListener('input', aplicarFiltro);
+        $('filtroEstatus').addEventListener('change', aplicarFiltro);
+        $('filtroOrden').addEventListener('change', aplicarFiltro);
+
+        /* ---- Compartir: el mismo enlace de siempre, que ahora abre el menú. */
+        const URL_CORTO = 'https://tinyurl.com/reportarriesgocr';
+        const URL_FORM = location.origin + location.pathname.replace(/[^/]*$/, '') + 'reportar-riesgo.html';
+        (function prepararCompartir() {
+            $('textoCorto').textContent = URL_CORTO.replace('https://', '');
+            $('textoLargo').textContent = URL_FORM;
+            $('qrPublico').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(URL_CORTO);
+            $('btnDescargarQr').href = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&download=1&data=' + encodeURIComponent(URL_CORTO);
+            $('btnWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(
+                '🚨 PROTECCIÓN CIVIL (Alcaldía de Cristóbal Rojas) — Formularios: reportar un riesgo, novedades relevantes y jornada social: ' + URL_CORTO);
+            $('btnCopiar').addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(URL_CORTO);
+                    $('btnCopiar').textContent = '✓ Copiado';
+                    setTimeout(() => { $('btnCopiar').textContent = '📋 Copiar enlace'; }, 1800);
+                } catch (e) { prompt('Copia el enlace:', URL_CORTO); }
+            });
+        })();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { location.href = 'index.html'; return; }
+            let perfil = null;
+            try {
+                const snap = await get(child(ref(database), `pc_operadores/${user.uid}`));
+                if (snap.exists()) perfil = snap.val();
+            } catch (e) { perfil = null; }
+            $('loader').classList.add('hidden');
+            if (!perfil) { $('acceso-restringido').classList.remove('hidden'); return; }
+            if (perfil.cambio_obligatorio) { location.href = 'password.html'; return; }
+            window.perfilOperadorPC = { uid: user.uid, email: user.email, ...perfil };
+            esAdminPlus = perfil.rol === 'admin_plus';
+            $('contenido').classList.remove('hidden');
+            onValue(ref(database, 'pc_novedades'), (snap) => {
+                TODOS = Object.entries(snap.val() || {}).map(([id, r]) => ({ _id: id, ...r }));
+                const enCurso = TODOS.filter(r => r.estatus === 'En curso').length;
+                $('totalTxt').textContent = TODOS.length + ' novedad(es) registrada(s)' + (enCurso ? ' · ' + enCurso + ' en curso' : '');
+                aplicarFiltro();
+            });
+        });
+
+        $('btnCerrarSesion').addEventListener('click', () => signOut(auth).then(() => location.href = 'index.html'));
+    </script>
+</body>
+</html>

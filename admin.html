@@ -19,6 +19,14 @@
         .header-titles { text-align: center; flex-grow: 1; padding: 0 20px; }
         .header-titles h1 { color: var(--azul-pc); margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; }
         .header-titles p { color: #555; margin: 5px 0 0 0; font-size: 13px; font-weight: bold; }
+        /* En el teléfono los dos escudos y el título no caben en una fila:
+           los escudos quedan arriba, a los lados, y el título debajo. */
+        @media (max-width: 560px) {
+            .gob-header { flex-wrap: wrap; }
+            .gob-header img { height: 52px; }
+            .header-titles { order: 3; flex-basis: 100%; padding: 10px 0 0; }
+            .header-titles h1 { font-size: 18px; }
+        }
         .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .quien-soy { font-size: 13px; color: #555; }
         .quien-soy b { color: var(--azul-pc); }
@@ -30,7 +38,25 @@
         h2 { text-align: center; color: var(--naranja-pc); margin-top: 10px; font-size: 22px; text-transform: uppercase; }
         p.sub-title { text-align: center; color: #666; font-size: 15px; margin-bottom: 30px; font-weight: bold; }
 
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 35px; }
+        /* Resumen en vivo: una tarjeta por formulario. */
+        .resumen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 35px; }
+        .resumen { display: block; background: #fff; border: 1px solid #e2e8f0; border-top: 5px solid var(--naranja-pc); border-radius: 10px; padding: 16px; text-decoration: none; color: inherit; box-shadow: 0 3px 10px rgba(0,0,0,.05); min-width: 0; }
+        .resumen:hover, .resumen:focus-visible { border-color: var(--azul-pc); outline: none; }
+        .resumen-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .resumen-hd .ico { font-size: 22px; }
+        .resumen-hd b { color: var(--azul-pc); font-size: 15px; flex: 1; }
+        .resumen-hd .ir { color: #94a3b8; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+        .resumen-cifras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .resumen-cifras div { background: #f8fafc; border-radius: 8px; padding: 8px 4px; text-align: center; min-width: 0; }
+        .resumen-cifras .n { font-size: 22px; font-weight: 900; color: var(--azul-pc); font-variant-numeric: tabular-nums; }
+        .resumen-cifras .l { font-size: 10.5px; color: #64748b; font-weight: 700; text-transform: uppercase; line-height: 1.2; }
+        .resumen-cifras .destacada { background: #fff7ed; }
+        .resumen-cifras .destacada .n { color: #c2410c; }
+        .barras { display: flex; align-items: flex-end; gap: 3px; height: 44px; margin-top: 12px; border-bottom: 1px solid #e2e8f0; }
+        .barras span { flex: 1; background: #bfdbfe; border-radius: 3px 3px 0 0; min-height: 2px; }
+        .barras span.hoy { background: var(--naranja-pc); }
+        .barras-pie { display: flex; justify-content: space-between; font-size: 10.5px; color: #94a3b8; margin-top: 3px; }
+        @media (max-width: 420px) { .resumen-cifras .n { font-size: 19px; } }
         .stat-box { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fdba74; border-radius: 8px; padding: 16px; text-align: center; }
         .stat-box .num { font-size: 28px; font-weight: 900; color: var(--azul-pc); font-variant-numeric: tabular-nums; }
         .stat-box .lbl { font-size: 12px; color: #78350f; font-weight: bold; text-transform: uppercase; margin-top: 4px; }
@@ -81,14 +107,10 @@
             <img src="logos/pc.png" alt="Protección Civil">
         </div>
 
-        <h2>Informes Técnicos de Riesgo</h2>
-        <p class="sub-title">Seleccione el módulo al que desea acceder</p>
+        <h2>Panel de Protección Civil</h2>
+        <p class="sub-title">Lo que ha llegado por cada formulario, en vivo. Toca una tarjeta para ver el detalle, el PDF y el Excel.</p>
 
-        <div class="stats-row">
-            <div class="stat-box"><div class="num" id="statTotal">-</div><div class="lbl">Informes totales</div></div>
-            <div class="stat-box"><div class="num" id="statHoy">-</div><div class="lbl">Registrados hoy</div></div>
-            <div class="stat-box"><div class="num" id="statSemana">-</div><div class="lbl">Últimos 7 días</div></div>
-        </div>
+        <div class="resumen-grid" id="resumenGrid"></div>
 
         <div class="dashboard-grid">
             <div class="card card-nuevo" onclick="location.href='informe-riesgo.html'">
@@ -103,10 +125,22 @@
                 <div class="card-desc">Buscar, ver, editar, imprimir en PDF o eliminar cualquier informe ya levantado.</div>
             </div>
 
+            <div class="card card-registrados" onclick="location.href='novedades-resultados.html'">
+                <span class="card-icon">🚑</span>
+                <div class="card-title">Novedades relevantes</div>
+                <div class="card-desc">Las novedades que manda el personal: ver cada una, reenviarla por WhatsApp con su formato, PDF y Excel.</div>
+            </div>
+
+            <div class="card card-registrados" onclick="location.href='jornadas-resultados.html'">
+                <span class="card-icon">🩺</span>
+                <div class="card-title">Jornadas sociales</div>
+                <div class="card-desc">Cada jornada con su lista de personas atendidas, cuántas van en el mes, PDF como la hoja de papel y Excel.</div>
+            </div>
+
             <div class="card card-publico" onclick="location.href='reportar-riesgo.html'">
                 <span class="card-icon">📣</span>
-                <div class="card-title">Formulario público</div>
-                <div class="card-desc">Verlo tal como lo ve la gente: sin cuenta, desde el teléfono, y con hasta 10 fotos. El enlace y el QR para compartirlo están en <b>Informes Registrados</b>, junto con todo lo que llegue.</div>
+                <div class="card-title">Formularios públicos</div>
+                <div class="card-desc">Verlos tal como los ve la gente: el mismo enlace de siempre abre el menú con los tres (riesgo, novedades y jornada social). El enlace y el QR para compartir están en cada tablero.</div>
             </div>
 
             <div class="card card-usuarios hidden" id="cardUsuarios" onclick="location.href='usuarios.html'">
@@ -146,6 +180,71 @@
 
         window.perfilOperadorPC = null;
 
+        /* Los formularios que se resumen arriba. Para agregar uno nuevo,
+           basta con otra entrada aquí: su nodo, a dónde lleva la tarjeta
+           y qué cifra propia se destaca. */
+        const FORMULARIOS = [
+            { clave: 'riesgo', nodo: 'pc_informes', titulo: 'Informes de riesgo', icono: '🏚️', enlace: 'informes-resultados.html',
+              destacada: { etiqueta: 'Del público sin código', calcular: lista => lista.filter(r => r.origen === 'publico' && !r.codigo).length } },
+            { clave: 'novedades', nodo: 'pc_novedades', titulo: 'Novedades relevantes', icono: '🚑', enlace: 'novedades-resultados.html',
+              destacada: { etiqueta: 'En curso', calcular: lista => lista.filter(r => r.estatus === 'En curso').length } },
+            { clave: 'jornadas', nodo: 'pc_jornadas', titulo: 'Jornadas sociales', icono: '🩺', enlace: 'jornadas-resultados.html',
+              destacada: { etiqueta: 'Personas atendidas', calcular: lista => lista.reduce((s, j) => s + cuantasPersonas(j), 0) } }
+        ];
+
+        function cuantasPersonas(j) {
+            const p = j && j.personas;
+            if (Array.isArray(p)) return p.filter(x => x && x.nombre).length;
+            if (p && typeof p === 'object') return Object.values(p).filter(x => x && x.nombre).length;
+            return 0;
+        }
+
+        /* Cuántos registros hay en total, hoy, en los últimos 7 días, y uno
+           por cada uno de los últimos 14 días (el último es hoy). "Hoy"
+           empieza a la medianoche del reloj de quien mira. */
+        function resumenFormulario(lista, ahora) {
+            const inicioHoy = new Date(ahora); inicioHoy.setHours(0, 0, 0, 0);
+            const dia = 24 * 3600 * 1000;
+            const dias = new Array(14).fill(0);
+            let hoy = 0, semana = 0;
+            lista.forEach(r => {
+                const t = Number(r && r.fecha_registro) || 0;
+                if (!t) return;
+                if (t >= inicioHoy.getTime()) hoy++;
+                if (t >= ahora - 7 * dia) semana++;
+                const hace = Math.floor((inicioHoy.getTime() + dia - 1 - t) / dia);
+                if (hace >= 0 && hace < 14) dias[13 - hace]++;
+            });
+            return { total: lista.length, hoy, semana, dias };
+        }
+
+        function pintarTarjetasResumen() {
+            $('resumenGrid').innerHTML = FORMULARIOS.map(f =>
+                '<a class="resumen" href="' + f.enlace + '">' +
+                    '<div class="resumen-hd"><span class="ico">' + f.icono + '</span><b>' + f.titulo + '</b><span class="ir">Ver todo ›</span></div>' +
+                    '<div class="resumen-cifras">' +
+                        '<div><div class="n" id="r_' + f.clave + '_total">–</div><div class="l">Total</div></div>' +
+                        '<div><div class="n" id="r_' + f.clave + '_hoy">–</div><div class="l">Hoy</div></div>' +
+                        '<div><div class="n" id="r_' + f.clave + '_semana">–</div><div class="l">7 días</div></div>' +
+                        '<div class="destacada"><div class="n" id="r_' + f.clave + '_extra">–</div><div class="l">' + f.destacada.etiqueta + '</div></div>' +
+                    '</div>' +
+                    '<div class="barras" id="r_' + f.clave + '_barras" aria-hidden="true"></div>' +
+                    '<div class="barras-pie"><span>hace 14 días</span><span>hoy</span></div>' +
+                '</a>').join('');
+        }
+
+        function pintarResumen(f, lista) {
+            const r = resumenFormulario(lista, Date.now());
+            $('r_' + f.clave + '_total').textContent = r.total;
+            $('r_' + f.clave + '_hoy').textContent = r.hoy;
+            $('r_' + f.clave + '_semana').textContent = r.semana;
+            $('r_' + f.clave + '_extra').textContent = f.destacada.calcular(lista);
+            const tope = Math.max(1, ...r.dias);
+            $('r_' + f.clave + '_barras').innerHTML = r.dias.map((n, i) =>
+                '<span' + (i === 13 ? ' class="hoy"' : '') + ' style="height:' + Math.round(4 + 96 * n / tope) + '%" title="' +
+                (i === 13 ? 'Hoy' : 'Hace ' + (13 - i) + ' día' + (13 - i === 1 ? '' : 's')) + ': ' + n + '"></span>').join('');
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) { location.href = 'index.html'; return; }
             let perfil = null;
@@ -169,14 +268,11 @@
                 $('cardUsuarios').classList.remove('hidden');
             }
 
-            onValue(ref(database, 'pc_informes'), (snap) => {
-                const datos = snap.val() || {};
-                const lista = Object.values(datos);
-                $('statTotal').textContent = lista.length;
-                const hoyInicio = new Date(); hoyInicio.setHours(0, 0, 0, 0);
-                const hace7 = Date.now() - 7 * 24 * 60 * 60 * 1000;
-                $('statHoy').textContent = lista.filter(r => (r.fecha_registro || 0) >= hoyInicio.getTime()).length;
-                $('statSemana').textContent = lista.filter(r => (r.fecha_registro || 0) >= hace7).length;
+            pintarTarjetasResumen();
+            FORMULARIOS.forEach(f => {
+                onValue(ref(database, f.nodo), (snap) => {
+                    pintarResumen(f, Object.values(snap.val() || {}));
+                });
             });
         });
 

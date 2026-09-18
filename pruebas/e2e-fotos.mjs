@@ -230,9 +230,9 @@ const direccionBase = process.env.BASE
 try {
     if (EN_LOCAL) {
         servidor = await servirCarpeta(CARPETA);
-        DIRECCION = 'http://127.0.0.1:' + servidor.address().port + '/reportar-riesgo.html';
+        DIRECCION = 'http://127.0.0.1:' + servidor.address().port + '/reportar-riesgo.html#riesgo';
     } else {
-        DIRECCION = direccionBase + '/reportar-riesgo.html';
+        DIRECCION = direccionBase + '/reportar-riesgo.html#riesgo';
     }
 
     console.log('\nQué voy a hacer:');
