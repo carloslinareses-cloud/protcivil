@@ -41,3 +41,20 @@ con un mensaje que dice qué no encontró y en qué archivo. Eso no es un fallo 
 un aviso de que hay que actualizarlas. Hay dos comprobaciones que se saltan solas si no encuentran
 la carpeta `alcaldia-admin` al lado de esta (ahí viven las reglas de Firebase, y se compara que
 el tablero filtre exactamente igual que ellas); cuando eso pasa lo dice con un `(omitida)`.
+
+## Asistencia con GPS: la base de datos (`asistencia-base.mjs`)
+
+La app de asistencia y su gestor web guardan todo en Supabase, esquema `protcivil`
+(el archivo es `sql/asistencia.sql`). Esta prueba manda ese archivo y
+`asistencia-base.sql` en **una sola transacción que siempre se deshace**: se instala todo,
+se prueba haciéndose pasar por el teléfono, por el jefe y por un intruso, y al final la base
+tira todo para atrás. No queda ni un dato de prueba en producción.
+
+```bash
+node pruebas/asistencia-base.mjs              # 80 pruebas
+node pruebas/asistencia-base.mjs --mutantes   # además rompe cada candado y exige que se note
+```
+
+Hace falta el token de Supabase guardado en la bóveda de Windows (`supabase-alcaldia` /
+`sbp_token`). **Hay que correrlas cada vez que se toque `sql/asistencia.sql`**, y volver a
+aplicar ese archivo en Supabase después.
