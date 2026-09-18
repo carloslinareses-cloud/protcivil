@@ -85,6 +85,8 @@
         #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
     </style>
     <script src="autofresh.js"></script>
+    <link rel="stylesheet" href="asistencia-gestor.css">
+    <script src="asistencia-gestor.js"></script>
 </head>
 <body>
     <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
@@ -107,6 +109,18 @@
             <img src="logos/pc.png" alt="Protección Civil">
         </div>
 
+        <!-- Elegir módulo: los formularios de siempre o la asistencia con GPS.
+             Solo se muestra a quien tiene acceso a la asistencia. -->
+        <div class="selector-wrap" id="selectorModulo" hidden>
+            <div class="selector-modulo" role="group" aria-label="Elegir módulo">
+                <button type="button" data-modulo="formularios" class="on" aria-pressed="true"><span aria-hidden="true">📋</span> Formularios</button>
+                <button type="button" data-modulo="asistencia" aria-pressed="false"><span aria-hidden="true">🕐</span> Asistencia</button>
+            </div>
+        </div>
+
+        <div id="vistaAsistencia" hidden></div>
+
+        <div id="vistaFormularios">
         <h2>Panel de Protección Civil</h2>
         <p class="sub-title">Lo que ha llegado por cada formulario, en vivo. Toca una tarjeta para ver el detalle, el PDF y el Excel.</p>
 
@@ -154,6 +168,7 @@
                 <div class="card-title">Auditoría del Sistema</div>
                 <div class="card-desc">Acceso Administrador Plus: qué se hizo, quién lo hizo y cuándo — hasta el mínimo detalle, sin excepción.</div>
             </div>
+        </div>
         </div>
     </div>
 
@@ -268,6 +283,7 @@
                 $('cardUsuarios').classList.remove('hidden');
             }
 
+            prepararSelectorModulo(user, perfil);
             pintarTarjetasResumen();
             FORMULARIOS.forEach(f => {
                 onValue(ref(database, f.nodo), (snap) => {
@@ -275,6 +291,40 @@
                 });
             });
         });
+
+        /* ---- Formularios | Asistencia ----
+           La asistencia se ve con la MISMA sesión de este panel: el módulo
+           manda la ficha de Firebase al puente pc-api, que comprueba el rol
+           de verdad. Aquí solo se decide si mostrar el botón. */
+        const ROLES_ASISTENCIA = ['admin_plus', 'admin'];
+        let asistenciaMontada = false;
+        function prepararSelectorModulo(user, perfil) {
+            if (!ROLES_ASISTENCIA.includes(perfil.rol) || !window.AsistenciaPC) return;
+            $('selectorModulo').hidden = false;
+            const botones = document.querySelectorAll('[data-modulo]');
+            function mostrar(modulo) {
+                const asis = modulo === 'asistencia';
+                botones.forEach(b => {
+                    const on = b.dataset.modulo === modulo;
+                    b.classList.toggle('on', on);
+                    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+                $('vistaFormularios').hidden = asis;
+                $('vistaAsistencia').hidden = !asis;
+                if (asis && !asistenciaMontada) {
+                    asistenciaMontada = true;
+                    window.AsistenciaPC.montar($('vistaAsistencia'), () => user.getIdToken());
+                }
+                if (!asis) {
+                    window.AsistenciaPC.detener();
+                    asistenciaMontada = false;
+                    $('vistaAsistencia').innerHTML = '';
+                    if (location.hash.startsWith('#asistencia') && history.replaceState) history.replaceState(null, '', location.pathname);
+                }
+            }
+            botones.forEach(b => b.onclick = () => mostrar(b.dataset.modulo));
+            if (location.hash.startsWith('#asistencia')) mostrar('asistencia');
+        }
 
         $('btnCerrarSesion').addEventListener('click', () => {
             signOut(auth).then(() => location.href = 'index.html');

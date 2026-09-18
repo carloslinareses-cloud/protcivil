@@ -1,0 +1,17 @@
+{
+  // Puente del panel de Protección Civil (Firebase) con la asistencia (Supabase).
+  // La clave de la cuenta puente va como secreto (PUENTE_CLAVE), nunca aquí.
+  "name": "pc-api",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  "routes": [{ "pattern": "pc-api.alcaldiadecharallave.com", "custom_domain": true }],
+  "vars": {
+    "SUPABASE_URL": "https://tfbzghjjfcaqmkzsxrrs.supabase.co",
+    "SUPABASE_ANON": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmYnpnaGpqZmNhcW1renN4cnJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjQ1NjQsImV4cCI6MjA5NDUwMDU2NH0.7TPSDGTjCeYu6m-H98tnkt_2v4kUidTdePAUaEZEwXU",
+    "PUENTE_CORREO": "puente-pc@alcaldiadecharallave.com",
+    // Quién VE la asistencia y quién puede CAMBIAR datos (roles de pc_operadores).
+    "ROLES_LEEN": "admin_plus,admin",
+    "ROLES_ESCRIBEN": "admin_plus"
+  },
+  "observability": { "enabled": true }
+}

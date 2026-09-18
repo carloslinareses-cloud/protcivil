@@ -444,6 +444,53 @@ begin
                          else 'FALLA cumplimiento de B: ' || coalesce(v_txt, 'sin fila') end;
 
   -- ================================================================
+  -- La cuenta PUENTE del panel de Protección Civil
+  -- ================================================================
+  perform set_config('role', 'postgres', true);
+  update protcivil.gestores set es_puente = true where user_id = v_carlos;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_carlos, 'role', 'authenticated')::text, true);
+  perform set_config('request.headers', '{"x-pc-actor": "QW5hIEplZmEgTsO6w7FleiAoYW5hQHBjKQ=="}', true);
+  perform set_config('role', 'authenticated', true);
+  r := protcivil.pc_admin_anotar_libro(v_est, 'novedad', 'Anotación que llega por el puente');
+  perform set_config('role', 'postgres', true);
+  select autor_nombre into v_txt from protcivil.libro_guardia where texto = 'Anotación que llega por el puente';
+  v_res := v_res || case when v_txt = 'Ana Jefa Núñez (ana@pc)' then 'OK por el puente, en el libro queda el nombre de la persona real'
+                         else 'FALLA por el puente quedó: ' || coalesce(v_txt, 'nada') end;
+  update protcivil.gestores set es_puente = false where user_id = v_carlos;
+  perform set_config('role', 'authenticated', true);
+  r := protcivil.pc_admin_anotar_libro(v_est, 'novedad', 'Anotación de una cuenta normal');
+  perform set_config('role', 'postgres', true);
+  select autor_nombre into v_txt from protcivil.libro_guardia where texto = 'Anotación de una cuenta normal';
+  v_res := v_res || case when v_txt = 'Carlos Linares' then 'OK una cuenta que no es el puente no puede fingir otro nombre con la cabecera'
+                         else 'FALLA una cuenta normal fingió el nombre: ' || coalesce(v_txt, 'nada') end;
+  perform set_config('request.headers', '', true);
+
+  -- ================================================================
+  -- ¿Puedo marcar desde aquí? y la versión de la app (teléfono)
+  -- ================================================================
+  perform set_config('request.jwt.claims', '', true);
+  perform set_config('role', 'anon', true);
+  r := protcivil.pc_donde_estoy(v_token_d, v_lat + 0.0002, v_lng, 10);
+  v_res := v_res || case when (r ->> 'puede')::boolean and r ->> 'estacion' = 'ZZ Estación de prueba' and (r ->> 'radio_m')::int = 80
+                         then 'OK "¿puedo marcar?" dentro de la estación dice que sí, con la estación y su radio'
+                         else 'FALLA ¿puedo marcar? dentro: ' || r::text end;
+  r := protcivil.pc_donde_estoy(v_token_d, v_lat + 0.01, v_lng, 10);
+  v_res := v_res || case when not (r ->> 'puede')::boolean and r ->> 'codigo' = 'fuera_de_zona' and (r ->> 'distancia_m')::int between 1000 and 1200
+                         then 'OK "¿puedo marcar?" a 1 km dice que no, y a cuántos metros está'
+                         else 'FALLA ¿puedo marcar? lejos: ' || r::text end;
+  r := protcivil.pc_donde_estoy('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', v_lat, v_lng, 10);
+  v_res := v_res || case when r ->> 'codigo' = 'sesion' then 'OK "¿puedo marcar?" sin sesión no responde nada'
+                         else 'FALLA ¿puedo marcar? sin sesión: ' || r::text end;
+  r := protcivil.pc_version_app();
+  v_res := v_res || case when (r ->> 'codigo')::int >= 1 and r ->> 'enlace' like 'https://%' then 'OK la versión de la app se consulta sin haber entrado'
+                         else 'FALLA versión de la app: ' || coalesce(r::text, 'nada') end;
+  r := protcivil.pc_estado(v_token_d);
+  v_res := v_res || case when ((r -> 'reglas') ->> 'tolerancia_gps_m')::int = 25 then 'OK la app recibe el margen del GPS que usa la base'
+                         else 'FALLA reglas de la app: ' || coalesce((r -> 'reglas')::text, 'nada') end;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_carlos, 'role', 'authenticated')::text, true);
+  perform set_config('role', 'authenticated', true);
+
+  -- ================================================================
   -- Lo que no se puede borrar ni cambiar (ni siquiera como dueño)
   -- ================================================================
   perform set_config('request.jwt.claims', '', true);

@@ -65,6 +65,9 @@ const MUTANTES = [
     ['la guardia olvidada inventa horas', 'set fin = inicio, cierre = \'automatico\'', 'set fin = inicio + interval \'24 hours\', cierre = \'automatico\''],
     ['24x48 mal calculado', "v_ciclo := make_interval(hours => g.horas_servicio + g.horas_descanso);",
         'v_ciclo := make_interval(hours => g.horas_descanso);'],
+    ['cualquier cuenta puede fingir el nombre con la cabecera', 'if v_g.es_puente then', 'if true then'],
+    ['"¿puedo marcar?" sin revisar la sesión', "  select * into v_ses from protcivil.sesion_de(p_token);\n  if v_ses.o_sesion_id is null then\n    return protcivil.fallo('sesion', 'Tu sesión venció o se cerró. Vuelve a entrar.');\n  end if;\n  select * into v_sitio",
+        "  select * into v_sitio"],
     ['llegar tarde cuenta como a tiempo', "when s.id is not null and s.inicio > gp.inicio + make_interval(mins => gp.tolerancia_min) then 'tarde'",
         "when false then 'tarde'"]
 ];

@@ -64,6 +64,13 @@ create table if not exists protcivil.config (
   actualizado_en              timestamptz not null default now()
 );
 insert into protcivil.config (id) values (1) on conflict (id) do nothing;
+-- Versión vigente de la app: la app la compara con la suya al abrir y, si
+-- hay una más nueva, avisa con el enlace de descarga.
+alter table protcivil.config add column if not exists app_version_codigo integer not null default 1;
+alter table protcivil.config add column if not exists app_version_nombre text not null default '1.0.0';
+alter table protcivil.config add column if not exists app_enlace text not null
+  default 'https://protcivil.alcaldiadecharallave.com/app-asistencia.html';
+alter table protcivil.config add column if not exists app_novedades text;
 
 -- Estaciones: los sitios donde se puede marcar.
 create table if not exists protcivil.estaciones (
@@ -260,6 +267,12 @@ create table if not exists protcivil.gestores (
   activo     boolean not null default true,
   creado_en  timestamptz not null default now()
 );
+-- La cuenta PUENTE es la que usa el servicio de Cloudflare (pc-api) para
+-- que el panel de Protección Civil (que entra con Firebase) llegue aquí
+-- sin una segunda clave. Solo ese servicio conoce su clave. Cuando la
+-- llamada viene por ella, el nombre de la persona real lo pone el servicio
+-- en la cabecera x-pc-actor, y es el que queda en la bitácora.
+alter table protcivil.gestores add column if not exists es_puente boolean not null default false;
 
 create table if not exists protcivil.bitacora (
   id            bigint generated always as identity primary key,
@@ -287,9 +300,29 @@ returns boolean language sql stable security definer set search_path = '' as $$
 $$;
 
 create or replace function protcivil.nombre_gestor()
-returns text language sql stable security definer set search_path = '' as $$
-  select g.nombre from protcivil.gestores g where g.user_id = auth.uid();
-$$;
+returns text language plpgsql stable security definer set search_path = '' as $$
+declare
+  v_g     protcivil.gestores;
+  v_actor text;
+begin
+  select * into v_g from protcivil.gestores g where g.user_id = auth.uid();
+  if not found then
+    return null;
+  end if;
+  /* Solo para la cuenta puente se lee la cabecera: a cualquier otra cuenta
+     no le sirve de nada mandarla. */
+  if v_g.es_puente then
+    begin
+      /* Viene en base64 (UTF-8): las cabeceras no llevan bien tildes ni ñ. */
+      v_actor := left(nullif(trim(convert_from(decode(
+                   (current_setting('request.headers', true))::json ->> 'x-pc-actor', 'base64'), 'UTF8')), ''), 150);
+    exception when others then
+      v_actor := null;
+    end;
+    return coalesce(v_actor, v_g.nombre);
+  end if;
+  return v_g.nombre;
+end $$;
 
 create or replace function protcivil.anotar(
   p_actor_tipo text, p_actor_id uuid, p_actor_nombre text, p_accion text, p_detalle jsonb default null)
@@ -771,7 +804,8 @@ begin
     'reglas', jsonb_build_object(
       'foto_obligatoria', v_cfg.foto_obligatoria, 'precision_maxima_m', v_cfg.precision_maxima_m,
       'permitir_sin_conexion', v_cfg.permitir_sin_conexion,
-      'horas_maximas_sin_conexion', v_cfg.horas_maximas_sin_conexion, 'exigir_zona', v_cfg.exigir_zona));
+      'horas_maximas_sin_conexion', v_cfg.horas_maximas_sin_conexion, 'exigir_zona', v_cfg.exigir_zona,
+      'tolerancia_gps_m', v_cfg.tolerancia_gps_m));
 end $$;
 
 -- Marcar entrada o salida.
@@ -930,6 +964,43 @@ begin
                            jsonb_build_object('nota', left(p_nota, 200)));
   return jsonb_build_object('ok', true, 'estado', v_e.estado, 'momento', v_e.momento);
 end $$;
+
+-- "¿Puedo marcar desde aquí?" — no escribe nada. La app lo pregunta con la
+-- mejor lectura del GPS para decir "estás a 40 m, acércate" ANTES de que la
+-- persona toque el botón. Lo calcula la MISMA función que después decide de
+-- verdad (verificar_sitio): lo que dice aquí es lo que va a pasar al marcar.
+create or replace function protcivil.pc_donde_estoy(
+  p_token text, p_lat double precision default null, p_lng double precision default null,
+  p_precision double precision default null)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare
+  v_ses   record;
+  v_sitio record;
+  v_radio integer;
+begin
+  select * into v_ses from protcivil.sesion_de(p_token);
+  if v_ses.o_sesion_id is null then
+    return protcivil.fallo('sesion', 'Tu sesión venció o se cerró. Vuelve a entrar.');
+  end if;
+  select * into v_sitio from protcivil.verificar_sitio(p_lat, p_lng, p_precision);
+  select e.radio_m into v_radio from protcivil.estaciones e where e.id = v_sitio.o_estacion_id;
+  return jsonb_build_object('ok', true,
+    'puede', v_sitio.o_codigo is null,
+    'codigo', v_sitio.o_codigo,
+    'mensaje', v_sitio.o_mensaje,
+    'estacion', v_sitio.o_estacion,
+    'distancia_m', round(v_sitio.o_distancia::numeric),
+    'radio_m', v_radio,
+    'dentro', v_sitio.o_dentro);
+end $$;
+
+-- La versión vigente de la app (no hace falta haber entrado).
+create or replace function protcivil.pc_version_app()
+returns jsonb language sql stable security definer set search_path = '' as $$
+  select jsonb_build_object('codigo', c.app_version_codigo, 'nombre', c.app_version_nombre,
+                            'enlace', c.app_enlace, 'novedades', c.app_novedades)
+    from protcivil.config c where c.id = 1;
+$$;
 
 create or replace function protcivil.pc_historial(p_token text, p_limite integer default 30)
 returns jsonb language plpgsql security definer set search_path = '' as $$
@@ -1360,7 +1431,9 @@ grant execute on function
   protcivil.pc_estado(text),
   protcivil.pc_marcar(text, text, double precision, double precision, double precision, text, boolean, uuid, boolean, timestamptz, boolean),
   protcivil.pc_cambiar_estado(text, text, double precision, double precision, double precision, text, uuid),
-  protcivil.pc_historial(text, integer)
+  protcivil.pc_historial(text, integer),
+  protcivil.pc_donde_estoy(text, double precision, double precision, double precision),
+  protcivil.pc_version_app()
   to anon, authenticated;
 grant execute on function
   protcivil.es_gestor(),

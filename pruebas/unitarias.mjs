@@ -1221,6 +1221,53 @@ grupo('Panel: el resumen de cada formulario');
         novedades.destacada.calcular([{ estatus: 'En curso' }, { estatus: 'Finalizado' }, {}]), 1);
 }
 
+
+/* El módulo de Asistencia del panel (asistencia-gestor.js): los cálculos
+   que terminan en los reportes de nómina y en la bitácora. */
+grupo('Asistencia en el panel: reportes, bitácora y claves');
+{
+    const ventanaG = { crypto: globalThis.crypto };
+    new Function('window', 'crypto', 'document', 'location', 'history', leer('asistencia-gestor.js'))(ventanaG, globalThis.crypto, {}, { hash: '' }, {});
+    const G = ventanaG.AsistenciaPC._prueba;
+    const funcs = [{ id: 'a', nombres: 'Ana', apellidos: 'Rojas', cedula: '1', condicion: 'fijo' }, { id: 'b', nombres: 'Luis', apellidos: 'Alba', cedula: '2', condicion: 'voluntario' }];
+    const detalle = [
+        { funcionario_id: 'a', estado: 'cumplio' }, { funcionario_id: 'a', estado: 'tarde' }, { funcionario_id: 'a', estado: 'falto' },
+        { funcionario_id: 'a', estado: 'programada' }, { funcionario_id: 'b', estado: 'en_curso' }];
+    const servicios = [
+        { funcionario_id: 'a', inicio: '2026-09-10T11:00:00Z', fin: '2026-09-11T11:00:00Z', estado: 'valido' },
+        { funcionario_id: 'a', inicio: '2026-09-13T11:00:00Z', fin: '2026-09-14T05:00:00Z', estado: 'por_revisar' },
+        { funcionario_id: 'a', inicio: '2026-09-16T11:00:00Z', fin: '2026-09-17T11:00:00Z', estado: 'anulado' },
+        { funcionario_id: 'b', inicio: '2026-09-18T11:00:00Z', fin: null, estado: 'valido' }];
+    const r = G.resumirReporte('2026-09-01', '2026-09-30', detalle, servicios, funcs);
+    const ana = r.resumen.find(p => p.id === 'a'), luis = r.resumen.find(p => p.id === 'b');
+    prueba('reporte: las guardias que aún no llegan no cuentan como programadas', ana.programadas, 3);
+    prueba('reporte: a tiempo, tarde y faltas por persona', [ana.cumplio, ana.tarde, ana.falto], [1, 1, 1]);
+    prueba('reporte: una guardia anulada no suma horas ni guardias', [ana.guardias, ana.horas], [2, 42]);
+    prueba('reporte: las guardias por revisar se señalan', ana.por_revisar, 1);
+    prueba('reporte: una guardia abierta cuenta como trabajada pero sin horas todavía', [luis.guardias, luis.horas], [1, 0]);
+    prueba('reporte: ordenado por apellido', r.resumen.map(p => p.nombre), ['Alba, Luis', 'Rojas, Ana']);
+    prueba('horas legibles', [G.horasBonitas(42), G.horasBonitas(7.5), G.horasBonitas(null)], ['42 h', '7 h 30 min', '—']);
+    prueba('sumar días cruza el fin de mes', G.sumarDias('2026-09-30', 1), '2026-10-01');
+    prueba('bitácora: GPS falso en palabras claras', G.describirAccion({ accion: 'gps_falso', detalle: {} }), 'Intentó marcar con GPS falso');
+    prueba('bitácora: marcaje rechazado dice por qué y a cuántos metros',
+        G.describirAccion({ accion: 'marcaje_rechazado', detalle: { motivo: 'fuera_de_zona', distancia_m: 420, estacion: 'Sede' } }),
+        'Intentó marcar y no se aceptó · fuera de la estación · Sede · a 420 m');
+    prueba('bitácora: los cambios de catálogo se entienden', G.describirAccion({ accion: 'estaciones_update', detalle: {} }), 'Cambió una estación');
+    const claves = Array.from({ length: 300 }, () => G.claveAlAzar());
+    prueba('clave al azar: siempre 6 números, nunca 123456 ni todos iguales',
+        claves.every(c => /^\d{6}$/.test(c) && c !== '123456' && !/^(\d)\1+$/.test(c)), true);
+    prueba('clave al azar: no se repite (300 claves distintas)', new Set(claves).size > 290, true);
+    /* Que salga "123456" al azar es casi imposible, así que se fuerza: un
+       generador que entrega primero justo las claves prohibidas. */
+    const cola = [123456, 111111, 654321, 482913];
+    const falsoAzar = { getRandomValues: (arr) => { arr[0] = cola.shift(); return arr; } };
+    const ventanaF = {};
+    new Function('window', 'crypto', 'document', 'location', 'history', leer('asistencia-gestor.js'))(ventanaF, falsoAzar, {}, { hash: '' }, {});
+    prueba('clave al azar: descarta 123456, 111111 y 654321 y sigue buscando', ventanaF.AsistenciaPC._prueba.claveAlAzar(), '482913');
+    prueba('el panel escapa todo lo que muestra', G.esc('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
+    prueba('el Excel de la asistencia tampoco abre fórmulas', G.seguroExcel('=1+1'), "'=1+1");
+}
+
 /* ==========================================================================
    RESUMEN
    ========================================================================== */
