@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>App de Asistencia · Protección Civil</title>
+<meta name="description" content="Descarga la aplicación con la que el personal de Protección Civil marca su guardia, y aprende a usarla paso a paso.">
+<meta name="theme-color" content="#13295e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%23f7941d'/%3E%3Cpath d='M20 7 L34 32 H6 Z' fill='%231c3f94'/%3E%3C/svg%3E">
+<style>
+/* Los colores de Protección Civil: el azul y el naranja del escudo. */
+:root{
+  --navy:#13295e; --navy-2:#1c3f94; --naranja:#f7941d; --naranja-ink:#a35b07;
+  --paper:#f5f7fb; --card:#ffffff; --rail:#eef2f9;
+  --ink:#101c33; --ink-soft:#4a5670; --ink-faint:#7b869c;
+  --line:#dfe5f0;
+  --ok-bg:#eef8f2; --ok-line:#a5cdb6; --ok-ink:#16653c;
+  --warn-bg:#fff6e8; --warn-line:#e6c489; --warn-ink:#8a5a06;
+  --bad-bg:#fdf1ef; --bad-line:#e2ab9c; --bad-ink:#96331e;
+  --verde:#15803d; --verde-2:#0f6e30;
+  --r:12px; --pad:18px;
+  --shadow:0 1px 2px rgba(16,28,51,.05), 0 8px 24px -14px rgba(16,28,51,.28);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0b1220; --card:#141d2f; --rail:#101827;
+    --ink:#e6ecf7; --ink-soft:#a7b2c8; --ink-faint:#7a8599; --line:#25314a;
+    --naranja-ink:#f5b35c;
+    --ok-bg:#122419; --ok-line:#356041; --ok-ink:#8dd3a6;
+    --warn-bg:#2a2113; --warn-line:#6d5626; --warn-ink:#e8c073;
+    --bad-bg:#2b1917; --bad-line:#7a453a; --bad-ink:#f0a898;
+    --verde:#17914a; --verde-2:#1aa354;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -16px rgba(0,0,0,.85);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0b1220; --card:#141d2f; --rail:#101827;
+  --ink:#e6ecf7; --ink-soft:#a7b2c8; --ink-faint:#7a8599; --line:#25314a;
+  --naranja-ink:#f5b35c;
+  --ok-bg:#122419; --ok-line:#356041; --ok-ink:#8dd3a6;
+  --warn-bg:#2a2113; --warn-line:#6d5626; --warn-ink:#e8c073;
+  --bad-bg:#2b1917; --bad-line:#7a453a; --bad-ink:#f0a898;
+  --verde:#17914a; --verde-2:#1aa354;
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -16px rgba(0,0,0,.85);
+}
+
+*{box-sizing:border-box}
+:root{color-scheme:light dark}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark}
+html,body{margin:0}
+body{
+  background:var(--paper); color:var(--ink); min-height:100dvh;
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:16px; line-height:1.55; -webkit-text-size-adjust:100%;
+  -webkit-tap-highlight-color:transparent;
+  overflow-wrap:anywhere;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 16px}
+
+/* ---------- cintillo y barra de arriba ---------- */
+.tricolor{height:4px; display:flex}
+.tricolor i{flex:1}
+.tricolor i:nth-child(1){background:#f4c20d}
+.tricolor i:nth-child(2){background:#1a4f8a}
+.tricolor i:nth-child(3){background:#cf142b}
+
+header.top{background:var(--navy); color:#fff; padding:12px 0}
+header.top .wrap{display:flex; align-items:center; gap:12px}
+.marca{display:flex; align-items:center; gap:11px; min-width:0}
+.pastilla{width:40px;height:40px;flex:none}
+.pastilla svg{display:block;width:100%;height:100%}
+.marca b{display:block; font-size:15px; font-weight:800; letter-spacing:-.01em; line-height:1.15}
+.marca > span > span{display:block; font-size:11.5px; color:#b8c6e2; font-weight:600}
+.top .der{margin-left:auto}
+button.tema{display:inline-flex; align-items:center; gap:6px; min-height:44px; font:inherit;
+  font-size:13px; font-weight:700; cursor:pointer; color:#cdd8ee;
+  background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.18);
+  padding:6px 13px; border-radius:99px; white-space:nowrap}
+button.tema:hover{background:rgba(255,255,255,.20); color:#fff}
+button.tema:focus-visible, a:focus-visible, summary:focus-visible{outline:3px solid var(--naranja); outline-offset:2px}
+
+/* ---------- cuerpo ---------- */
+main{padding:22px 0 60px}
+.tarjeta{background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+  padding:var(--pad); box-shadow:var(--shadow)}
+.tarjeta + .tarjeta{margin-top:16px}
+h1{font-size:clamp(1.35rem,5vw,1.75rem); margin:0 0 6px; letter-spacing:-.015em; line-height:1.2; text-wrap:balance}
+h2{font-size:1.1rem; margin:0; letter-spacing:-.01em; text-wrap:balance}
+h3{font-size:.98rem; margin:20px 0 8px; letter-spacing:-.01em}
+p{margin:0} p + p{margin-top:10px}
+.sub{color:var(--ink-soft); font-size:.95rem}
+strong{font-weight:750}
+
+/* titulo de seccion con su numero */
+.tit{display:flex; align-items:center; gap:11px; margin:0 0 14px;
+  padding-bottom:12px; border-bottom:1px solid var(--line)}
+.tit .num{flex:none; width:30px; height:30px; border-radius:50%;
+  background:var(--navy-2); color:#fff; display:grid; place-items:center;
+  font-size:14px; font-weight:800}
+
+/* ---------- portada ---------- */
+.portada{background:var(--navy); color:#fff;
+  border:1px solid rgba(255,255,255,.10); border-left:4px solid var(--naranja)}
+.portada .etq{display:block; font-size:11px; font-weight:800; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--naranja); margin-bottom:8px}
+.portada h1{color:#fff}
+.portada p{color:#c9d5ec; font-size:.97rem}
+
+/* ---------- el boton de descargar ---------- */
+.descarga{margin-top:18px}
+a.btn-apk{display:flex; align-items:center; justify-content:center; gap:12px;
+  width:100%; min-height:62px; padding:14px 16px;
+  background:var(--verde); color:#fff; text-decoration:none;
+  border:0; border-bottom:4px solid var(--naranja); border-radius:12px;
+  font-size:18px; font-weight:850; letter-spacing:.01em; text-align:center;
+  box-shadow:0 6px 18px -8px rgba(21,128,61,.75)}
+a.btn-apk:hover{background:var(--verde-2)}
+a.btn-apk:active{transform:translateY(1px)}
+a.btn-apk .ic{flex:none}
+.meta-apk{margin-top:9px; text-align:center; font-size:12.5px; color:#9fb0d0; line-height:1.5;
+  font-variant-numeric:tabular-nums}
+a.btn-apk-2{display:flex; align-items:center; justify-content:center; gap:9px;
+  width:100%; min-height:48px; margin-top:14px; padding:10px 14px;
+  border:1px solid var(--line); border-radius:10px; background:var(--rail);
+  color:var(--ink); text-decoration:none; font-size:15px; font-weight:750}
+a.btn-apk-2:hover{border-color:var(--navy-2)}
+a.btn-apk-2 svg{flex:none; color:var(--verde)}
+
+/* ---------- resumen de cuatro puntos ---------- */
+.resumen{display:grid; gap:9px; margin-top:18px}
+.resumen div{display:flex; gap:11px; align-items:flex-start;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.13);
+  border-radius:10px; padding:11px 13px; font-size:14px; color:#dde5f4; line-height:1.45}
+.resumen div span:first-child{flex:none; font-size:18px; line-height:1.25}
+.resumen b{color:#fff; font-weight:800}
+
+/* ---------- pasos numerados ---------- */
+ol.pasos{list-style:none; counter-reset:paso; margin:0; padding:0}
+ol.pasos > li{counter-increment:paso; position:relative;
+  padding:13px 14px 13px 52px; margin-bottom:9px;
+  background:var(--rail); border:1px solid var(--line); border-left:3px solid var(--navy-2);
+  border-radius:10px; font-size:15px; line-height:1.55}
+ol.pasos > li:last-child{margin-bottom:0}
+ol.pasos > li::before{content:counter(paso); position:absolute; left:12px; top:12px;
+  width:28px; height:28px; border-radius:50%; background:var(--navy-2); color:#fff;
+  display:grid; place-items:center; font-size:13.5px; font-weight:800}
+ol.pasos .nota{display:block; margin-top:6px; font-size:13px; color:var(--ink-soft); line-height:1.5}
+
+/* ---------- avisos ---------- */
+.aviso{border:1px solid; border-radius:10px; padding:13px 15px; font-size:.94rem;
+  margin-top:14px; line-height:1.55}
+.aviso b{display:block; margin-bottom:4px}
+.aviso.ok{background:var(--ok-bg); border-color:var(--ok-line); color:var(--ok-ink)}
+.aviso.warn{background:var(--warn-bg); border-color:var(--warn-line); color:var(--warn-ink)}
+.aviso.bad{background:var(--bad-bg); border-color:var(--bad-line); color:var(--bad-ink)}
+.aviso.neutro{background:var(--rail); border-color:var(--line); color:var(--ink-soft)}
+
+/* ---------- los tres estados de la guardia ---------- */
+.estados{display:grid; gap:9px; margin-top:12px}
+.estado{display:flex; gap:12px; align-items:flex-start; border:1px solid var(--line);
+  border-radius:11px; padding:12px 14px; background:var(--rail)}
+.estado .pill{flex:none; font-size:12px; font-weight:850; letter-spacing:.06em;
+  text-transform:uppercase; padding:4px 10px; border-radius:99px; color:#fff; background:var(--navy-2);
+  white-space:nowrap}
+.estado.emerg .pill{background:#c62828}
+.estado p{font-size:14.5px; color:var(--ink-soft)}
+.estado p b{color:var(--ink)}
+
+/* ---------- listas con viñeta propia ---------- */
+ul.puntos{list-style:none; margin:0; padding:0}
+ul.puntos li{position:relative; padding:0 0 0 26px; margin-top:11px; font-size:15px; line-height:1.55}
+ul.puntos li:first-child{margin-top:0}
+ul.puntos li::before{content:"›"; position:absolute; left:8px; top:-1px;
+  color:var(--naranja-ink); font-weight:900; font-size:17px}
+ul.puntos .nota{display:block; margin-top:5px; font-size:13px; color:var(--ink-soft); line-height:1.5}
+
+/* ---------- preguntas que se abren ---------- */
+details.pregunta{border:1px solid var(--line); border-radius:10px; background:var(--rail);
+  margin-top:10px; overflow:hidden}
+details.pregunta[open]{background:var(--card); border-color:var(--navy-2)}
+details.pregunta > summary{list-style:none; cursor:pointer; display:flex; gap:10px;
+  align-items:center; min-height:52px; padding:12px 14px;
+  font-size:15px; font-weight:750; color:var(--ink)}
+details.pregunta > summary::-webkit-details-marker{display:none}
+details.pregunta > summary::after{content:"+"; margin-left:auto; flex:none;
+  font-size:22px; font-weight:800; color:var(--ink-faint); line-height:1}
+details.pregunta[open] > summary::after{content:"–"; color:var(--naranja-ink)}
+details.pregunta .cuerpo{padding:0 14px 14px; font-size:14.5px; color:var(--ink-soft); line-height:1.6}
+details.pregunta .cuerpo b{color:var(--ink)}
+details.pregunta .cuerpo p + p{margin-top:9px}
+
+/* ---------- varios ---------- */
+/* <kbd> = lo que dice un boton del telefono. Se deja partir en varias
+   lineas: en 375 px si va con "nowrap" se sale de la pantalla. */
+kbd{display:inline; background:var(--rail); border:1px solid var(--line);
+  border-bottom-width:2px; border-radius:6px; padding:1px 7px; font:inherit;
+  font-size:13.5px; font-weight:750; color:var(--ink);
+  white-space:normal; overflow-wrap:anywhere;
+  box-decoration-break:clone; -webkit-box-decoration-break:clone}
+/* .frase = un mensaje largo que muestra el telefono. */
+.frase{font-style:italic; color:var(--ink-soft); font-weight:650}
+.cedula-ej{display:inline-block; background:var(--navy); color:#fff; border-radius:6px;
+  padding:2px 9px; font-weight:800; letter-spacing:.08em; font-variant-numeric:tabular-nums}
+a.volver{display:inline-flex; align-items:center; min-height:44px; margin-top:6px;
+  color:var(--navy-2); font-weight:750; font-size:15px; text-decoration:none}
+a.volver:hover{text-decoration:underline}
+:root[data-theme="dark"] a.volver{color:#9db9ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) a.volver{color:#9db9ee}}
+footer{border-top:1px solid var(--line); padding:20px 0 34px; color:var(--ink-faint);
+  font-size:13px; text-align:center; line-height:1.6}
+
+@media (max-width:560px){
+  .wrap{padding:0 16px}
+  main{padding:16px 0 46px}
+  .tarjeta{padding:15px}
+  .marca > span > span{display:none}
+  ol.pasos > li{padding:12px 12px 12px 48px; font-size:14.5px}
+  .estado{flex-direction:column; gap:6px}
+}
+@media (prefers-reduced-motion:reduce){ a.btn-apk:active{transform:none} }
+</style>
+<script>
+/* El modo claro u oscuro. Se aplica aqui arriba, antes de que se pinte
+   nada: si se hiciera al final, la pagina saldria un instante con el color
+   equivocado. */
+(function () {
+  var LLAVE = 'pc_tema';
+  var guardado = null;
+  try { guardado = localStorage.getItem(LLAVE); } catch (e) { guardado = null; }
+  if (guardado === 'claro' || guardado === 'oscuro') {
+    document.documentElement.setAttribute('data-theme', guardado === 'claro' ? 'light' : 'dark');
+  }
+  window.PCTEMA = {
+    actual: function () {
+      var e = document.documentElement.getAttribute('data-theme');
+      if (e === 'light') return 'claro';
+      if (e === 'dark') return 'oscuro';
+      try {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'oscuro' : 'claro';
+      } catch (x) { return 'claro'; }
+    },
+    poner: function (cual) {
+      document.documentElement.setAttribute('data-theme', cual === 'claro' ? 'light' : 'dark');
+      try { localStorage.setItem(LLAVE, cual); } catch (e) { /* modo privado */ }
+      var m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.setAttribute('content', cual === 'claro' ? '#13295e' : '#0b1220');
+    }
+  };
+})();
+</script>
+</head>
+<body>
+<div class="tricolor"><i></i><i></i><i></i></div>
+
+<header class="top">
+  <div class="wrap">
+    <div class="marca">
+      <span class="pastilla">
+        <!-- El distintivo internacional de protección civil: triángulo azul sobre naranja. -->
+        <svg viewBox="0 0 40 40" role="img" aria-label="Protección Civil">
+          <rect width="40" height="40" rx="10" fill="#f7941d"></rect>
+          <path d="M20 7 L34 32 H6 Z" fill="#1c3f94"></path>
+          <text x="20" y="28" text-anchor="middle" font-family="Segoe UI, sans-serif"
+                font-size="9" font-weight="800" fill="#fff">PC</text>
+        </svg>
+      </span>
+      <span>
+        <b>PC Asistencia</b>
+        <span>Protección Civil · Alcaldía de Cristóbal Rojas</span>
+      </span>
+    </div>
+    <div class="der">
+      <button class="tema" id="btnTema" type="button" aria-live="polite">
+        <span aria-hidden="true">☀</span><span class="tema-txt">Modo claro</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <!-- ═══════════ QUÉ ES Y PARA QUÉ SIRVE + DESCARGA ═══════════ -->
+    <section class="tarjeta portada">
+      <span class="etq">Personal de Protección Civil</span>
+      <h1>La app para marcar tu guardia</h1>
+      <p>
+        Es una aplicación para tu teléfono Android. Con ella marcas cuándo empiezas y cuándo
+        terminas tu guardia, y avisas si sales a una emergencia o a una comisión. Todo queda
+        guardado con la hora exacta y tú puedes revisar tus guardias anteriores cuando quieras.
+      </p>
+
+      <div class="resumen">
+        <div><span aria-hidden="true">🪪</span><span>Entras con <b>tu cédula y tu clave</b>. No hace falta correo.</span></div>
+        <div><span aria-hidden="true">📍</span><span>Se marca <b>estando en la estación</b>. Desde la casa no deja.</span></div>
+        <div><span aria-hidden="true">📷</span><span>Al marcar la entrada y la salida <b>te tomas una foto</b>.</span></div>
+        <div><span aria-hidden="true">📶</span><span>Si no hay señal, <b>igual puedes marcar</b>: se envía sola cuando vuelva.</span></div>
+      </div>
+
+      <div class="descarga">
+        <a class="btn-apk" href="descargas/PCAsistencia.apk" download="PCAsistencia.apk">
+          <svg class="ic" viewBox="0 0 24 24" width="26" height="26" fill="none"
+               stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12"></path><path d="M6.5 10.5L12 16l5.5-5.5"></path>
+            <path d="M4 20h16"></path>
+          </svg>
+          Descargar la aplicación
+        </a>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             ⬇⬇ ACTUALIZAR AL PUBLICAR UN APK NUEVO — SOLO ESTOS DOS DATOS ⬇⬇
+                · la versión  →  <span id="version-app">
+                · el peso     →  <span id="peso-app">
+             El archivo se reemplaza en  descargas/PCAsistencia.apk
+             Y en la base: protcivil.config (app_version_codigo y
+             app_version_nombre), o desde el panel: Asistencia → Ajustes.
+             Si cambian las novedades, están más abajo, en el recuadro
+             "LO NUEVO DE ESTA VERSIÓN".
+             ══════════════════════════════════════════════════════════════ -->
+        <p class="meta-apk">
+          Versión <span id="version-app">1.0.0</span> ·
+          <span id="peso-app">14,8 MB</span> ·
+          Necesitas Android 7.0 o más nuevo
+        </p>
+        <!-- ⬆⬆ FIN DEL HUECO DE VERSIÓN Y PESO ⬆⬆ -->
+      </div>
+    </section>
+
+    <!-- ═══════════ LO NUEVO DE ESTA VERSIÓN ═══════════ -->
+    <div class="aviso ok" style="margin:16px 0">
+      <b>Lo nuevo de esta versión</b>
+      Es la primera versión (septiembre de 2026). Cuando salga una nueva, la aplicación te
+      avisa sola y te trae a esta página para descargarla.
+    </div>
+
+    <!-- ═══════════ 1. INSTALACIÓN ═══════════ -->
+    <section class="tarjeta">
+      <div class="tit"><span class="num">1</span><h2>Cómo instalarla en tu teléfono</h2></div>
+
+      <ol class="pasos">
+        <li>
+          <strong>Toca el botón verde</strong> “Descargar la aplicación”, aquí arriba,
+          desde el navegador de tu teléfono.
+          <span class="nota">El archivo queda en la carpeta <kbd>Descargas</kbd> del teléfono,
+          con el nombre <kbd>PCAsistencia.apk</kbd></span>
+        </li>
+        <li>
+          <strong>Abre el archivo descargado.</strong> Toca el aviso que aparece abajo en la
+          pantalla, o busca en <kbd>Archivos</kbd> → <kbd>Descargas</kbd> y tócalo ahí.
+        </li>
+        <li>
+          <strong>Aquí es donde casi todo el mundo se traba.</strong> El teléfono va a mostrar
+          un mensaje parecido a <span class="frase">“Por seguridad, tu teléfono no permite
+          instalar aplicaciones de esta fuente”</span>, o hablará de
+          <span class="frase">“orígenes desconocidos”</span>.
+          <strong>No es un virus ni un error:</strong> Android avisa eso con toda aplicación que
+          no venga de la tienda Play Store, y esta es de la Alcaldía, no está en la tienda.
+          <span class="nota">Toca <kbd>Configuración</kbd> (o <kbd>Ajustes</kbd>) en ese mismo
+          mensaje → activa el interruptor <kbd>Permitir de esta fuente</kbd> → toca la flecha de
+          <kbd>Atrás</kbd> y vuelve a abrir el archivo.</span>
+        </li>
+        <li>
+          <strong>Toca <kbd>Instalar</kbd></strong> y espera. Tarda menos de un minuto.
+          Si sale otro aviso diciendo que la aplicación no se analizó, toca
+          <span class="frase">“Instalar de todas formas”</span>.
+        </li>
+        <li>
+          <strong>Abre la aplicación.</strong> En tu pantalla de aplicaciones aparece con el
+          nombre <kbd>PC Asistencia</kbd>, con un ícono naranja.
+        </li>
+      </ol>
+
+      <div class="aviso neutro">
+        <b>¿No te aparece el botón de descargar?</b>
+        Estás leyendo esta página desde la computadora o desde un navegador que bloquea la
+        descarga. Ábrela en el teléfono donde vas a usar la aplicación: es ahí donde tiene
+        que instalarse.
+      </div>
+    </section>
+
+    <!-- ═══════════ 2. CÓMO SE ENTRA ═══════════ -->
+    <section class="tarjeta">
+      <div class="tit"><span class="num">2</span><h2>Cómo entrar la primera vez</h2></div>
+
+      <ul class="puntos">
+        <li>
+          <strong>Tu usuario es tu número de cédula</strong>, escrito seguido:
+          sin la <strong>V</strong>, sin puntos y sin guiones.
+          Por ejemplo, así: <span class="cedula-ej">12345678</span>
+        </li>
+        <li>
+          <strong>Tu clave inicial te la entrega el jefe</strong>, en persona y en un papel.
+          No se manda por esta página ni por WhatsApp.
+        </li>
+        <li>
+          <strong>La primera vez que entres, la aplicación te obliga a cambiar esa clave</strong>
+          por una tuya. Hasta que no la cambies, no te deja hacer nada más. Es a propósito:
+          la clave del papel la conoce otra persona, así que todavía no es solo tuya.
+          <span class="nota">En <kbd>Clave que te entregaron</kbd> escribe la del papel. Después
+          escribe tu clave nueva dos veces y toca <kbd>Guardar mi clave y entrar</kbd>.</span>
+        </li>
+        <li>
+          <strong>Cómo tiene que ser tu clave nueva:</strong> de 6 caracteres o más, que no
+          sea tu cédula, y nada tan fácil como <kbd>123456</kbd> o el mismo número repetido
+          (<kbd>777777</kbd>).
+        </li>
+        <li>
+          <strong>La primera vez que entras, tu cuenta queda en ese teléfono.</strong> Desde
+          otro teléfono no se puede entrar a tu cuenta. Así nadie puede marcar por ti desde
+          el teléfono de otra persona.
+          <span class="nota">Si cambias de teléfono, pídele al jefe de guardia que
+          <strong>libere tu teléfono</strong> desde el panel. Después entras en el nuevo
+          y tu cuenta queda en ese.</span>
+        </li>
+      </ul>
+
+      <div class="aviso warn">
+        <b>Tu clave es tuya y de nadie más</b>
+        Todo lo que se marque con tu clave queda a tu nombre. Si crees que alguien la conoce,
+        pídele al jefe que te la restablezca.
+      </div>
+    </section>
+
+    <!-- ═══════════ 3. CÓMO SE MARCA LA GUARDIA ═══════════ -->
+    <section class="tarjeta">
+      <div class="tit"><span class="num">3</span><h2>Cómo se marca una guardia</h2></div>
+
+      <ol class="pasos">
+        <li>
+          <strong>Al llegar a la estación</strong>, abre la aplicación y toca
+          <kbd>Marcar entrada</kbd>. Se abre la cámara: tómate la foto y confírmala.
+          <span class="nota">Ahora la pantalla dice <span class="frase">“De guardia”</span> con
+          la hora en que empezaste. Si todavía no ves la hora, la entrada no se ha registrado.</span>
+        </li>
+        <li>
+          <strong>Durante la guardia</strong>, cada vez que sales de la estación o vuelves a ella,
+          toca el estado que corresponde. Así el jefe de guardia sabe dónde está cada quien.
+        </li>
+        <li>
+          <strong>Al terminar la guardia</strong>, toca <kbd>Marcar salida</kbd> y tómate
+          la foto otra vez.
+        </li>
+      </ol>
+
+      <div class="estados">
+        <div class="estado">
+          <span class="pill">En la estación</span>
+          <p><b>Estás en tu estación</b>, disponible. Es como queda al marcar la entrada.</p>
+        </div>
+        <div class="estado emerg">
+          <span class="pill">En emergencia</span>
+          <p><b>Saliste a atender una emergencia.</b> Si puedes, escribe a cuál vas, en
+          pocas palabras. Eso ayuda al jefe de guardia.</p>
+        </div>
+        <div class="estado">
+          <span class="pill">En comisión</span>
+          <p><b>Estás fuera en una tarea asignada</b> que no es una emergencia: un traslado,
+          una inspección, una diligencia.</p>
+        </div>
+      </div>
+
+      <div class="aviso neutro">
+        <b>No hay horario fijo</b>
+        La guardia empieza cuando marcas la entrada y termina cuando marcas la salida. En la
+        pestaña <kbd>Historial</kbd> ves tus guardias anteriores, con cuántas horas duró cada una.
+      </div>
+
+      <div class="aviso bad">
+        <b>Si se te olvida marcar la salida</b>
+        La aplicación no te deja marcar una entrada nueva mientras la guardia anterior siga
+        abierta. Si ya pasaron más de 30 horas, al marcar la entrada nueva la guardia anterior
+        <strong>se cierra sola con 0 horas</strong> y queda para que el jefe la revise. El
+        sistema no inventa la hora a la que te fuiste. Para que no se pierdan esas horas,
+        avísale al jefe ese mismo día.
+      </div>
+    </section>
+
+    <!-- ═══════════ 4. LA UBICACIÓN Y LA FOTO ═══════════ -->
+    <section class="tarjeta">
+      <div class="tit"><span class="num">4</span><h2>Hay que estar en la estación</h2></div>
+
+      <p style="font-size:15px">
+        <strong>Solo se puede marcar dentro de la estación.</strong> La aplicación te dice,
+        antes de que toques el botón, a cuántos metros estás. Si estás lejos, acércate y
+        espera a que el número baje.
+      </p>
+
+      <h3>Qué necesitas para que funcione</h3>
+      <ul class="puntos">
+        <li>
+          <strong>La ubicación (GPS) encendida.</strong> Es el mismo botón que usas para Waze o
+          Google Maps: bajas la cortinilla de arriba del teléfono y tocas
+          <kbd>Ubicación</kbd> hasta que quede prendida.
+        </li>
+        <li>
+          <strong>Los permisos de la aplicación.</strong> La primera vez te pide la ubicación
+          (toca <kbd>Mientras se usa la app</kbd>) y la cámara (toca <kbd>Permitir</kbd>).
+          <span class="nota">Si dijiste que no, se arregla en <kbd>Ajustes</kbd> →
+          <kbd>Aplicaciones</kbd> → <kbd>PC Asistencia</kbd> → <kbd>Permisos</kbd>. La ubicación
+          tiene que quedar en <strong>Precisa</strong>, no en Aproximada.</span>
+        </li>
+      </ul>
+
+      <div class="aviso warn">
+        <b>Si te dice que la ubicación llegó imprecisa</b>
+        Dentro de un edificio el GPS tarda más y a veces se equivoca por mucho. Sal un momento
+        a un sitio donde se vea el cielo, espera diez o quince segundos con la aplicación
+        abierta y vuelve a intentarlo. Casi siempre con eso basta.
+      </div>
+
+      <div class="aviso ok">
+        <b>Esto no es para vigilarte</b>
+        La aplicación <strong>no te sigue durante el día</strong>. Solo usa el GPS mientras la
+        tienes abierta. Lo único que se guarda es el sitio donde estabas al marcar la entrada,
+        al marcar la salida y al cambiar de estado. <strong>Las fotos se borran solas a los
+        120 días.</strong>
+      </div>
+    </section>
+
+    <!-- ═══════════ 5. SIN SEÑAL ═══════════ -->
+    <section class="tarjeta">
+      <div class="tit"><span class="num">5</span><h2>Si no hay señal</h2></div>
+
+      <ul class="puntos">
+        <li>
+          <strong>Puedes marcar la entrada y la salida sin señal.</strong> El marcaje queda
+          guardado en el teléfono y la aplicación te dice que está pendiente de envío.
+        </li>
+        <li>
+          <strong>Se envía solo</strong> en cuanto el teléfono vuelva a tener datos o wifi,
+          aunque tengas la aplicación cerrada.
+        </li>
+        <li>
+          <strong>La hora que queda es la verdadera.</strong> Cambiar la hora del teléfono no
+          sirve de nada: la aplicación lleva su propia cuenta del tiempo. Si el teléfono se
+          apagó entre medio, el marcaje queda marcado para que el jefe lo revise.
+        </li>
+        <li>
+          <strong>Tiene un límite de 48 horas.</strong> Un marcaje que tarde más que eso en
+          enviarse ya no se acepta. Busca señal antes.
+        </li>
+        <li>
+          <strong>Para cambiar tu estado</strong> (emergencia, comisión) sí hace falta señal.
+        </li>
+      </ul>
+    </section>
+
+    <!-- ═══════════ 6. SI ALGO FALLA ═══════════ -->
+    <section class="tarjeta">
+      <div class="tit"><span class="num">6</span><h2>Si algo falla</h2></div>
+      <p class="sub" style="margin-bottom:4px">Toca cada pregunta para ver la respuesta.</p>
+
+      <details class="pregunta">
+        <summary>No me deja marcar</summary>
+        <div class="cuerpo">
+          <p>Lee el mensaje que salió en la pantalla, porque ahí está el motivo. Casi siempre
+          es uno de estos:</p>
+          <p><b>1. “Estás a tantos metros de la estación”.</b> No estás en el sitio, o el GPS
+          todavía no se ha afinado. Acércate, sal donde se vea el cielo, espera unos segundos
+          e inténtalo otra vez.</p>
+          <p><b>2. “La ubicación llegó muy imprecisa”.</b> El teléfono está dando una ubicación
+          aproximada, no la del GPS. Enciende la ubicación, sal a un sitio despejado y espera
+          un momento.</p>
+          <p><b>3. “Ya marcaste tu entrada el…”.</b> Tienes una guardia abierta. Marca primero
+          la salida.</p>
+          <p><b>4. “Falta la foto”.</b> La foto es obligatoria. Si la cámara no abre, revisa que
+          la aplicación tenga permiso de cámara.</p>
+          <p><b>5. “El teléfono está usando una ubicación falsa”.</b> Tienes encendida una
+          aplicación de GPS falso. Apágala y vuelve a intentar. Ese intento queda anotado.</p>
+          <p><b>6. “Todavía no hay estaciones cargadas”.</b> Falta registrar las estaciones en
+          el sistema. Avísale al jefe de guardia.</p>
+        </div>
+      </details>
+
+      <details class="pregunta">
+        <summary>Dice que mi cuenta está en otro teléfono</summary>
+        <div class="cuerpo">
+          <p>Tu cuenta quedó en el primer teléfono con el que entraste. Pídele al <b>jefe de
+          guardia</b> que libere tu teléfono desde el panel. Después entra en el nuevo y tu
+          cuenta queda en ese.</p>
+        </div>
+      </details>
+
+      <details class="pregunta">
+        <summary>Se me olvidó la clave, o dice “Demasiados intentos”</summary>
+        <div class="cuerpo">
+          <p>Si escribiste mal la clave varias veces seguidas, la aplicación te bloquea
+          <b>15 minutos</b>. Espera y vuelve a intentarlo con calma.</p>
+          <p>Si de verdad no la recuerdas, pídele al <b>jefe</b> que te la restablezca. Te da
+          una clave provisional y, al entrar con ella, la aplicación te pide de nuevo que pongas
+          una tuya. Nadie puede ver tu clave, ni el jefe: el sistema solo la puede reemplazar.</p>
+        </div>
+      </details>
+
+      <details class="pregunta">
+        <summary>Dice “Tu sesión venció”</summary>
+        <div class="cuerpo">
+          <p>Por seguridad, si pasas 30 días sin usar la aplicación te pide entrar de nuevo con tu
+          cédula y tu clave. Lo que tenías marcado no se pierde.</p>
+        </div>
+      </details>
+
+      <details class="pregunta">
+        <summary>La aplicación se cerró, se ve rara o me pide actualizar</summary>
+        <div class="cuerpo">
+          <p>Ciérrala por completo y vuelve a abrirla. Si sigue igual, o si te dice que hay una
+          versión nueva, vuelve a esta página desde el teléfono, descarga otra vez el archivo e
+          instálalo encima. <b>No pierdes nada</b>: tus guardias están guardadas en el sistema.</p>
+          <p>Si tenías marcajes <b>pendientes de envío</b> (sin señal), espera a que se envíen
+          antes de reinstalar.</p>
+        </div>
+      </details>
+
+      <div class="aviso neutro">
+        <b>Si nada de esto lo resuelve</b>
+        Habla con el <strong>jefe de guardia</strong>. Dile qué estabas haciendo, a qué hora y
+        qué decía el mensaje que te salió. Con eso lo revisa enseguida.
+      </div>
+    </section>
+
+    <!-- ═══════════ CIERRE ═══════════ -->
+    <section class="tarjeta">
+      <h2>¿Listo para instalarla?</h2>
+      <p class="sub" style="margin-top:6px">Es el mismo botón del principio de la página.</p>
+      <a class="btn-apk-2" href="descargas/PCAsistencia.apk" download="PCAsistencia.apk">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v12"></path><path d="M6.5 10.5L12 16l5.5-5.5"></path>
+          <path d="M4 20h16"></path>
+        </svg>
+        Descargar la aplicación (Android)
+      </a>
+      <a class="volver" href="index.html">← Volver al sistema de Protección Civil</a>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    Alcaldía del Municipio Bolivariano Cristóbal Rojas · Protección Civil<br>
+    PC Asistencia · <span id="pie"></span>
+  </div>
+</footer>
+
+<script>
+/* El boton de cambiar entre modo claro y oscuro. */
+(function () {
+  var boton = document.getElementById('btnTema');
+  if (!boton || !window.PCTEMA) return;
+
+  function pintar() {
+    var ahora = window.PCTEMA.actual();
+    var icono = boton.querySelector('span[aria-hidden]');
+    var texto = boton.querySelector('.tema-txt');
+    /* El boton ofrece lo CONTRARIO de lo que se esta viendo. */
+    if (ahora === 'oscuro') {
+      if (icono) icono.textContent = '☀';
+      if (texto) texto.textContent = 'Modo claro';
+      boton.setAttribute('aria-label', 'Cambiar a modo claro');
+    } else {
+      if (icono) icono.textContent = '☾';
+      if (texto) texto.textContent = 'Modo oscuro';
+      boton.setAttribute('aria-label', 'Cambiar a modo oscuro');
+    }
+  }
+
+  boton.addEventListener('click', function () {
+    window.PCTEMA.poner(window.PCTEMA.actual() === 'oscuro' ? 'claro' : 'oscuro');
+    pintar();
+  });
+
+  pintar();
+
+  /* El año del pie, para no dejarlo escrito a mano. */
+  var pie = document.getElementById('pie');
+  if (pie) pie.textContent = new Date().getFullYear();
+})();
+</script>
+<script src="autofresh.js"></script>
+</body>
+</html>

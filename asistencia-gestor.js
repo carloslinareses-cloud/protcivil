@@ -248,6 +248,8 @@
                 return '<button type="button" role="tab" data-pestana="' + p[0] + '">' + p[1] + '</button>';
             }).join('') + '</div>' +
             (st.yo.puede_escribir ? '' : '<div class="aviso info">Tu cuenta puede ver la asistencia, pero no cambiarla.</div>') +
+            '<a class="pc-enlace-app" href="app-asistencia.html" target="_blank" rel="noopener">' +
+                '📲 App del personal: descarga e instrucciones para instalarla</a>' +
             '<div id="pcAviso"></div><div id="pcZona"></div>';
         $$('[data-pestana]').forEach(function (b) {
             b.onclick = function () { abrir(b.dataset.pestana); };

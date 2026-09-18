@@ -11,6 +11,8 @@
 #vistaAsistencia .pestanas { display: flex; gap: 6px; overflow-x: auto; border-bottom: 2px solid #e2e8f0; margin-bottom: 18px; padding-bottom: 0; scrollbar-width: thin; }
 #vistaAsistencia .pestanas button { flex: none; border: none; background: none; padding: 11px 14px; font: inherit; font-weight: 800; font-size: 13.5px; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; min-height: 44px; }
 #vistaAsistencia .pestanas button.on { color: var(--azul-pc); border-bottom-color: var(--naranja-pc); }
+#vistaAsistencia .pc-enlace-app { display: flex; align-items: center; min-height: 44px; margin: -8px 0 14px; padding: 8px 12px; border: 1px dashed #f7941d; border-radius: 8px; background: #fff7ed; color: #9a3412; font-weight: 700; font-size: 13.5px; text-decoration: none; }
+#vistaAsistencia .pc-enlace-app:hover { background: #ffedd5; }
 #vistaAsistencia h3 { color: var(--azul-pc); font-size: 17px; margin: 0 0 4px; }
 #vistaAsistencia .sub { color: #64748b; font-size: 13px; margin: 0 0 14px; }
 #vistaAsistencia .fila-herr { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
