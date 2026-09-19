@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de asistencia (visitas) - Protección Civil</title>
+    <style>
+        :root { --naranja-pc: #f7941d; --azul-pc: #1c3f94; --gris-fondo: #e9ecef; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 1250px; margin: 20px auto 60px; padding: 0 14px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+        .topbar a { color: var(--azul-pc); text-decoration: none; font-weight: 700; font-size: 14px; min-height: 44px; display: inline-flex; align-items: center; }
+        .topbar button { background: #333; color: #fff; border: none; padding: 10px 16px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; min-height: 44px; }
+        .panel { background: #fff; border-radius: 10px; padding: 22px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); margin-bottom: 16px; }
+        .compartir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+        @media (max-width: 900px) { .compartir-grid { grid-template-columns: 1fr; } }
+        .compartir { border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; min-width: 0; }
+        .compartir h2 { width: 100%; margin: 0; color: var(--azul-pc); font-size: 15px; text-transform: uppercase; }
+        .compartir-qr img { width: 150px; height: 150px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+        .compartir-datos { flex: 1; min-width: 200px; }
+        .enlace-corto { font-size: 19px; font-weight: 800; color: #ea580c; margin-bottom: 10px; overflow-wrap: anywhere; }
+        .enlace-largo { font-size: 12px; color: #94a3b8; margin-top: 8px; overflow-wrap: anywhere; }
+        .compartir-botones { display: flex; gap: 8px; flex-wrap: wrap; }
+        .compartir-botones button, .compartir-botones a { border: none; border-radius: 8px; padding: 11px 14px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; color: #fff; }
+        .b-copiar { background: #0a2351; } .b-whatsapp { background: #16a34a; } .b-qr { background: #ea580c; }
+        h1 { color: var(--azul-pc); font-size: 20px; margin: 0 0 4px; }
+        p.sub { color: #666; font-size: 13px; margin: 0 0 16px; }
+        .en-vivo { color: #16a34a; font-size: 12px; font-weight: 800; margin-left: 8px; }
+        .en-vivo::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; margin-right: 5px; vertical-align: 1px; }
+        .cifras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        @media (max-width: 700px) { .cifras { grid-template-columns: 1fr 1fr; } }
+        .cifra { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
+        .cifra .num { font-size: 26px; font-weight: 800; color: var(--azul-pc); font-variant-numeric: tabular-nums; }
+        .cifra .lbl { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+        .herramientas { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; align-items: end; }
+        @media (max-width: 900px) { .herramientas { grid-template-columns: 1fr 1fr; } .herramientas .ancho { grid-column: 1 / -1; } }
+        .herramientas label { display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px; }
+        .herramientas input, .herramientas select { width: 100%; padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 16px; min-height: 44px; font-family: inherit; }
+        .botones { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        .btn-excel, .btn-pdf-lista, .btn-limpiar { color: #fff; border: none; padding: 11px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13.5px; min-height: 44px; }
+        .btn-excel { background: #15803d; } .btn-pdf-lista { background: var(--azul-pc); } .btn-limpiar { background: #64748b; }
+        .btn-excel:disabled, .btn-pdf-lista:disabled { opacity: .6; cursor: wait; }
+        .info { font-size: 12.5px; color: #64748b; margin: 0 0 8px; }
+        .tabla-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        th { background: #eff6ff; color: var(--azul-pc); text-align: left; padding: 9px 8px; font-size: 11.5px; text-transform: uppercase; white-space: nowrap; }
+        td { padding: 9px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        td.num { text-align: right; font-variant-numeric: tabular-nums; }
+        tr:hover td { background: #fafbfc; }
+        .pill { display: inline-block; border-radius: 99px; padding: 2px 9px; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+        .p-char { background: #eff6ff; color: var(--azul-pc); } .p-bri { background: #fff7ed; color: #9a3412; }
+        .btn-del { background: #fee2e2; color: #b91c1c; border: none; border-radius: 6px; padding: 8px 10px; font-size: 12px; font-weight: 700; cursor: pointer; min-height: 36px; }
+        .paginacion { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+        .paginacion button { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; font-size: 13px; cursor: pointer; font-weight: 600; min-height: 44px; }
+        .paginacion button[disabled] { opacity: .4; cursor: default; }
+        .vacio { text-align: center; color: #999; padding: 40px; }
+        .hidden { display: none !important; }
+        #loader { text-align: center; padding: 80px 20px; color: #777; }
+        #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
+    </style>
+    <script src="autofresh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div id="loader">Verificando acceso...</div>
+    <div id="acceso-restringido" class="hidden">🚫 Tu cuenta no tiene acceso a este sistema.</div>
+
+    <div class="container hidden" id="contenido">
+        <div class="topbar">
+            <a href="admin.html">← Volver al panel</a>
+            <button type="button" id="btnCerrarSesion">Cerrar sesión</button>
+        </div>
+
+        <div class="panel">
+            <h1>📣 Compartir el control de asistencia</h1>
+            <p class="sub" style="margin:0">Cada sede tiene su enlace y su QR: se pueden imprimir y pegar en la recepción. No hace falta cuenta. También están en el menú del enlace de siempre de los formularios.</p>
+            <div class="compartir-grid" id="compartir"></div>
+        </div>
+
+        <div class="panel">
+            <h1>📝 Control de asistencia (visitas) <span class="en-vivo">en vivo</span></h1>
+            <p class="sub">Cada persona que visita las sedes de Protección Civil, en Charallave y Las Brisas del Tuy.</p>
+            <div class="cifras">
+                <div class="cifra"><div class="num" id="cTotal">0</div><div class="lbl">Visitas</div></div>
+                <div class="cifra"><div class="num" id="cHoy">0</div><div class="lbl">Hoy</div></div>
+                <div class="cifra"><div class="num" id="cCharallave">0</div><div class="lbl">Charallave</div></div>
+                <div class="cifra"><div class="num" id="cBrisas">0</div><div class="lbl">Las Brisas del Tuy</div></div>
+            </div>
+            <div class="herramientas">
+                <div class="ancho"><label for="buscador">Buscar</label><input type="search" id="buscador" placeholder="Nombre, cédula, teléfono, motivo…" autocomplete="off"></div>
+                <div><label for="filtroSede">Sede</label><select id="filtroSede"><option value="">Las dos</option><option value="Charallave">Charallave</option><option value="Las Brisas del Tuy">Las Brisas del Tuy</option></select></div>
+                <div><label for="filtroDesde">Desde</label><input type="date" id="filtroDesde"></div>
+                <div><label for="filtroHasta">Hasta</label><input type="date" id="filtroHasta"></div>
+                <div><label for="filtroOrden">Orden</label><select id="filtroOrden"><option value="reciente">Más recientes</option><option value="antiguo">Más antiguas</option></select></div>
+            </div>
+            <div class="botones">
+                <button type="button" class="btn-excel" id="btnExcel">📊 Excel</button>
+                <button type="button" class="btn-pdf-lista" id="btnPdf">📄 PDF como la hoja de papel</button>
+                <button type="button" class="btn-limpiar" id="btnLimpiar">✕ Quitar filtros</button>
+            </div>
+            <p class="info" id="info"></p>
+            <div class="tabla-scroll">
+                <table>
+                    <thead><tr id="thead"></tr></thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+                <p class="vacio hidden" id="vacioMsg">No hay visitas con estos filtros.</p>
+            </div>
+            <div class="paginacion" id="paginacion"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getDatabase, ref, get, child, onValue, remove, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+
+        let TODOS = [], esAdminPlus = false, pagina = 1;
+        const TAM = 50;
+
+        /* Las dos sedes: el nombre que se guarda, su enlace corto y su enlace largo. */
+        const SEDES = [
+            { nombre: 'Charallave', corto: 'https://tinyurl.com/asistenciapccharallave', largo: 'https://protcivil.alcaldiadecharallave.com/visitas.html?sede=charallave' },
+            { nombre: 'Las Brisas del Tuy', corto: 'https://tinyurl.com/asistenciapcbrisas', largo: 'https://protcivil.alcaldiadecharallave.com/visitas.html?sede=brisas' }
+        ];
+
+        /* Las columnas de la hoja de papel, en su orden. Las usan la tabla, el
+           PDF y el Excel: una sola lista, para que nunca se descuadren. El
+           tercer dato es el ancho en el PDF (mm). */
+        const COLUMNAS = [
+            ['Nombre y apellido', 'nombre', 42],
+            ['Edad', 'edad', 14],
+            ['C.I.', 'cedula', 20],
+            ['Teléfono', 'telefono', 24],
+            ['Motivo de la visita', 'motivo', 42],
+            ['Dirección de procedencia', 'direccion', 42],
+            ['Correo electrónico', 'correo', 34]
+        ];
+        const ANCHO_NUMERO = 9, ANCHO_FECHA = 24;   // 9 + 24 + 218 = 251 mm útiles en carta horizontal
+
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+        function seguroExcel(v) {
+            if (typeof v !== 'string' || !v) return v;
+            return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
+        }
+        /* Día AAAA-MM-DD en la hora de quien mira (Venezuela). */
+        function diaLocal(ms) {
+            const d = new Date(ms), p = n => String(n).padStart(2, '0');
+            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+        }
+        function fechaHora(ms) {
+            if (!ms) return '';
+            const d = new Date(ms), p = n => String(n).padStart(2, '0');
+            let h = d.getHours(); const ap = h >= 12 ? 'p. m.' : 'a. m.'; h = h % 12 || 12;
+            return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + h + ':' + p(d.getMinutes()) + ' ' + ap;
+        }
+        function fechaDeFiltro(iso) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+
+        /* Filtra y ordena. Filtros: { q, sede, desde, hasta, orden }. */
+        function filtrar(lista, f) {
+            const q = String(f.q || '').trim().toLowerCase();
+            const salida = lista.filter(r => {
+                const dia = diaLocal(Number(r.fecha_registro) || 0);
+                if (f.sede && r.parroquia !== f.sede) return false;
+                if (f.desde && dia < f.desde) return false;
+                if (f.hasta && dia > f.hasta) return false;
+                if (q && ![r.parroquia, ...COLUMNAS.map(c => r[c[1]])].filter(x => x != null).join(' ').toLowerCase().includes(q)) return false;
+                return true;
+            });
+            salida.sort((a, b) => (Number(a.fecha_registro) || 0) - (Number(b.fecha_registro) || 0));
+            if (f.orden !== 'antiguo') salida.reverse();
+            return salida;
+        }
+        const leerFiltros = () => ({ q: $('buscador').value, sede: $('filtroSede').value, desde: $('filtroDesde').value, hasta: $('filtroHasta').value, orden: $('filtroOrden').value });
+
+        function pintarCifras() {
+            const hoy = diaLocal(Date.now());
+            $('cTotal').textContent = TODOS.length;
+            $('cHoy').textContent = TODOS.filter(r => diaLocal(Number(r.fecha_registro) || 0) === hoy).length;
+            $('cCharallave').textContent = TODOS.filter(r => r.parroquia === 'Charallave').length;
+            $('cBrisas').textContent = TODOS.filter(r => r.parroquia === 'Las Brisas del Tuy').length;
+        }
+
+        function pintarTabla() {
+            const lista = filtrar(TODOS, leerFiltros());
+            $('info').textContent = lista.length === TODOS.length ? `Mostrando las ${lista.length} visita(s).` : `Mostrando ${lista.length} de ${TODOS.length} visita(s) con los filtros aplicados.`;
+            $('thead').innerHTML = '<th>N°</th><th>Fecha y hora</th><th>Sede</th>' + COLUMNAS.map(c => '<th>' + esc(c[0]) + '</th>').join('') + (esAdminPlus ? '<th></th>' : '');
+            const tot = Math.max(1, Math.ceil(lista.length / TAM));
+            if (pagina > tot) pagina = tot;
+            const pag = lista.slice((pagina - 1) * TAM, pagina * TAM);
+            $('vacioMsg').classList.toggle('hidden', pag.length > 0);
+            $('tbody').innerHTML = pag.map((r, i) => '<tr>' +
+                '<td class="num">' + ((pagina - 1) * TAM + i + 1) + '</td>' +
+                '<td style="white-space:nowrap">' + esc(fechaHora(r.fecha_registro)) + '</td>' +
+                '<td><span class="pill ' + (r.parroquia === 'Charallave' ? 'p-char' : 'p-bri') + '">' + esc(r.parroquia || '-') + '</span></td>' +
+                COLUMNAS.map(c => '<td>' + esc(r[c[1]] == null ? '' : r[c[1]]) + '</td>').join('') +
+                (esAdminPlus ? '<td><button class="btn-del" type="button" data-id="' + esc(r._id) + '">Eliminar</button></td>' : '') +
+                '</tr>').join('');
+            $('tbody').querySelectorAll('.btn-del').forEach(b => b.onclick = () => eliminar(TODOS.find(x => x._id === b.dataset.id)));
+            $('paginacion').innerHTML = tot <= 1 ? '' : '<button type="button" id="pgPrev"' + (pagina === 1 ? ' disabled' : '') + '>‹ Anterior</button>' +
+                '<span style="font-size:13px;color:#475569">Página ' + pagina + ' de ' + tot + '</span>' +
+                '<button type="button" id="pgNext"' + (pagina === tot ? ' disabled' : '') + '>Siguiente ›</button>';
+            if ($('pgPrev')) $('pgPrev').onclick = () => { pagina--; pintarTabla(); };
+            if ($('pgNext')) $('pgNext').onclick = () => { pagina++; pintarTabla(); };
+        }
+
+        async function registrarBitacora(accion, id, resumen) {
+            const perfil = window.perfilOperadorPC;
+            if (!perfil) return;
+            try {
+                await set(push(ref(database, 'pc_bitacora')), {
+                    accion, informe_id: id, resumen,
+                    uid: perfil.uid, nombre: perfil.nombre || perfil.email, email: perfil.email, rol: perfil.rol, fecha: Date.now()
+                });
+            } catch (e) { console.error(e); }
+        }
+        async function eliminar(r) {
+            if (!r) return;
+            const cual = 'la visita de ' + (r.nombre || 'sin nombre') + ' (' + (r.parroquia || '') + ', ' + fechaHora(r.fecha_registro) + ')';
+            if (!confirm('¿Eliminar ' + cual + '? Esta acción no se puede deshacer.')) return;
+            try {
+                await remove(ref(database, 'pc_visitas/' + r._id));
+                await registrarBitacora('eliminar_visita', r._id, 'Eliminó ' + cual);
+            } catch (e) { alert('Error al eliminar: ' + e.message); }
+        }
+
+        /* Excel: una fila por visita. Encabezados, filas y anchos salen de
+           COLUMNAS (trampa 10.1: si no cuadran, los datos se corren). */
+        function exportarExcel(lista) {
+            if (!lista.length) { alert('No hay visitas que exportar con los filtros actuales.'); return null; }
+            const encabezados = ['N°', 'Fecha', 'Hora', 'Sede', ...COLUMNAS.map(c => c[0])];
+            const anchos = [6, 12, 11, 20, ...COLUMNAS.map(c => Math.round(c[2] / 1.6))];
+            const filas = lista.map((r, i) => {
+                const fh = fechaHora(r.fecha_registro).split(' ');
+                return [i + 1, fh[0] || '', fh.slice(1).join(' '), r.parroquia || '',
+                    ...COLUMNAS.map(c => r[c[1]] == null ? '' : (typeof r[c[1]] === 'number' ? r[c[1]] : seguroExcel(String(r[c[1]]))))];
+            });
+            const aoa = [['CONTROL DE ASISTENCIA - PROTECCIÓN CIVIL Y ADMINISTRACIÓN DE DESASTRES CRISTÓBAL ROJAS'],
+                         ['Generado el ' + fechaHora(Date.now()) + ' · ' + filas.length + ' visita(s)'],
+                         encabezados, ...filas];
+            const ws = XLSX.utils.aoa_to_sheet(aoa);
+            ws['!cols'] = anchos.map(w => ({ wch: w }));
+            ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: encabezados.length - 1 } }, { s: { r: 1, c: 0 }, e: { r: 1, c: encabezados.length - 1 } }];
+            ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 2, c: 0 }, e: { r: 2 + filas.length, c: encabezados.length - 1 } }) };
+            const azul = '1C3F94', borde = { style: 'thin', color: { rgb: 'CBD5E1' } }, b4 = { top: borde, bottom: borde, left: borde, right: borde };
+            for (let c = 0; c < encabezados.length; c++) {
+                const pon = (rr, s) => { const a = XLSX.utils.encode_cell({ r: rr, c }); if (!ws[a]) ws[a] = { t: 's', v: '' }; ws[a].s = s; };
+                pon(0, { font: { bold: true, sz: 13, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: azul } }, alignment: { horizontal: 'center' } });
+                pon(1, { font: { italic: true, sz: 10, color: { rgb: '64748B' } }, alignment: { horizontal: 'center' } });
+                pon(2, { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: 'F7941D' } }, alignment: { horizontal: 'center', wrapText: true }, border: b4 });
+                for (let rr = 3; rr < aoa.length; rr++) pon(rr, { alignment: { vertical: 'top', wrapText: true }, border: b4 });
+            }
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Visitas');
+            guardarXlsx(wb, 'Control_Asistencia_ProteccionCivil_' + diaLocal(Date.now()) + '.xlsx');
+            return aoa;
+        }
+
+        /* SheetJS no sabe congelar el encabezado: se abre el .xlsx, se le pone
+           el <pane> a la hoja y se vuelve a cerrar. Si algo falla, se guarda normal. */
+        function guardarXlsx(wb, nombre) {
+            try {
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const m = /^[A-Za-z]+(\d+)/.exec(String(ws['!autofilter'].ref));
+                const y = m ? Number(m[1]) : 0;
+                const cfb = XLSX.CFB.read(new Uint8Array(XLSX.write(wb, { bookType: 'xlsx', type: 'array' })), { type: 'array' });
+                let n = 0;
+                (cfb.FullPaths || []).forEach(function (ruta, i) {
+                    if (!/\/xl\/worksheets\/sheet1\.xml$/.test(ruta) || !y) return;
+                    const ent = cfb.FileIndex[i];
+                    const celda = 'A' + (y + 1);
+                    let xml = new TextDecoder('utf-8').decode(new Uint8Array(ent.content));
+                    const antes = xml;
+                    xml = xml.replace(/(<sheetView[^>]*?)\/>/, '$1><pane ySplit="' + y + '" topLeftCell="' + celda + '" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="' + celda + '" sqref="' + celda + '"/></sheetView>');
+                    if (xml === antes) return;
+                    const b = new TextEncoder().encode(xml); ent.content = b; ent.size = b.length; n++;
+                });
+                if (!n) throw new Error('sin congelar');
+                const blob = new Blob([XLSX.CFB.write(cfb, { type: 'array', fileType: 'zip' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
+                document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+            } catch (e) { XLSX.writeFile(wb, nombre); }
+        }
+
+        /* El PDF como la hoja de papel: carta horizontal, logos, título, la
+           sede y la tabla. Una sección por sede. Los anchos suman 251 mm. */
+        const LOGOS = {};
+        async function cargarLogo(ruta) {
+            if (LOGOS[ruta] !== undefined) return LOGOS[ruta];
+            try {
+                const blob = await (await fetch(ruta)).blob();
+                LOGOS[ruta] = await new Promise((ok, mal) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = mal; fr.readAsDataURL(blob); });
+            } catch (e) { LOGOS[ruta] = null; }
+            return LOGOS[ruta];
+        }
+        function _safePdf(s) {
+            if (s == null) return '';
+            let out = '';
+            for (const ch of String(s).normalize('NFC')) {
+                const c = ch.codePointAt(0);
+                if (c === 0x201C || c === 0x201D) out += '"'; else if (c === 0x2018 || c === 0x2019) out += "'";
+                else if (c === 0x2013 || c === 0x2014) out += '-'; else if (c < 32 || c === 127) out += ' ';
+                else if (c <= 255) out += ch;
+            }
+            return out.replace(/ {2,}/g, ' ').trim();
+        }
+        async function generarPdf(lista, f) {
+            if (!window.jspdf || !window.jspdf.jsPDF) { alert('La librería de PDF no cargó. Recarga la página.'); return; }
+            if (!lista.length) { alert('No hay visitas que exportar con los filtros actuales.'); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'landscape' });
+            const pageW = 279.4, margenX = 14.2;
+            const escudo = await cargarLogo('logos/cristobal-rojas.png');
+            const periodo = (f.desde || f.hasta) ? 'Del ' + (fechaDeFiltro(f.desde) || 'inicio') + ' al ' + (fechaDeFiltro(f.hasta) || 'hoy') : 'Todas las fechas';
+            const sedes = ['Charallave', 'Las Brisas del Tuy'].filter(s => lista.some(r => r.parroquia === s));
+            sedes.forEach((sede, k) => {
+                if (k > 0) doc.addPage();
+                // Como la hoja de papel: de la primera visita a la última.
+                const filas = lista.filter(r => r.parroquia === sede).sort((a, b) => (Number(a.fecha_registro) || 0) - (Number(b.fecha_registro) || 0));
+                const cabecera = () => {
+                    if (escudo) try { doc.addImage(escudo, 'PNG', margenX, 6, 24, 18); } catch (e) {}
+                    // Distintivo de protección civil dibujado (el logo en foto sale gris).
+                    const xp = pageW - margenX - 19, yp = 6, tp = 19;
+                    doc.setFillColor(247, 148, 29); doc.roundedRect(xp, yp, tp, tp, 3, 3, 'F');
+                    doc.setFillColor(28, 63, 148); doc.triangle(xp + tp / 2, yp + 2.5, xp + tp - 2.2, yp + tp - 2.8, xp + 2.2, yp + tp - 2.8, 'F');
+                    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.text('PC', xp + tp / 2, yp + tp - 5, { align: 'center' });
+                    doc.setTextColor(28, 63, 148); doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(14); doc.text('CONTROL DE ASISTENCIA', pageW / 2, 11, { align: 'center' });
+                    doc.setFontSize(11); doc.text(_safePdf('PROTECCIÓN CIVIL Y ADMINISTRACIÓN DE DESASTRES'), pageW / 2, 17, { align: 'center' });
+                    doc.text(_safePdf('CRISTÓBAL ROJAS, PARROQUIA ' + sede.toUpperCase()), pageW / 2, 23, { align: 'center' });
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(90, 90, 90);
+                    doc.text(_safePdf(periodo + ' · ' + filas.length + ' visita(s)'), pageW / 2, 28.5, { align: 'center' });
+                };
+                const estilos = { 0: { cellWidth: ANCHO_NUMERO, halign: 'center' }, 1: { cellWidth: ANCHO_FECHA } };
+                COLUMNAS.forEach((c, i) => { estilos[i + 2] = { cellWidth: c[2] }; });
+                doc.autoTable({
+                    startY: 32, margin: { top: 32, left: margenX, right: margenX, bottom: 14 },
+                    head: [['N°', 'Fecha y hora', ...COLUMNAS.map(c => _safePdf(c[0]))]],
+                    body: filas.map((r, i) => [String(i + 1), _safePdf(fechaHora(r.fecha_registro)), ...COLUMNAS.map(c => _safePdf(r[c[1]] == null ? '' : r[c[1]]))]),
+                    styles: { fontSize: 8, cellPadding: 1.6, overflow: 'linebreak', lineColor: [203, 213, 225], lineWidth: 0.2 },
+                    headStyles: { fillColor: [28, 63, 148], textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
+                    alternateRowStyles: { fillColor: [248, 250, 252] },
+                    columnStyles: estilos, theme: 'grid', didDrawPage: cabecera
+                });
+            });
+            const total = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= total; i++) { doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(160, 160, 160); doc.text(_safePdf('Protección Civil Cristóbal Rojas · Generado el ' + fechaHora(Date.now()) + ' · Página ' + i + ' de ' + total), pageW / 2, 210, { align: 'center' }); }
+            doc.save('Control_Asistencia_' + (f.sede ? f.sede.replace(/\s+/g, '_') : 'Charallave_y_Las_Brisas') + '_' + diaLocal(Date.now()) + '.pdf');
+        }
+
+        $('btnExcel').addEventListener('click', () => exportarExcel(filtrar(TODOS, leerFiltros())));
+        $('btnPdf').addEventListener('click', async () => {
+            const b = $('btnPdf'); b.disabled = true; const t = b.textContent; b.textContent = 'Generando…';
+            try { await generarPdf(filtrar(TODOS, leerFiltros()), leerFiltros()); }
+            catch (e) { alert('No se pudo generar el PDF: ' + (e.message || e)); }
+            finally { b.disabled = false; b.textContent = t; }
+        });
+        ['buscador', 'filtroSede', 'filtroDesde', 'filtroHasta', 'filtroOrden'].forEach(id => $(id).addEventListener('input', () => { pagina = 1; pintarTabla(); }));
+        $('btnLimpiar').addEventListener('click', () => { ['buscador', 'filtroSede', 'filtroDesde', 'filtroHasta'].forEach(id => $(id).value = ''); $('filtroOrden').value = 'reciente'; pagina = 1; pintarTabla(); });
+
+        (function prepararCompartir() {
+            $('compartir').innerHTML = SEDES.map((s, i) =>
+                '<div class="compartir"><h2>Parroquia ' + esc(s.nombre) + '</h2>' +
+                '<div class="compartir-qr"><img alt="Código QR del control de asistencia de ' + esc(s.nombre) + '" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(s.corto) + '"></div>' +
+                '<div class="compartir-datos"><div class="enlace-corto">' + esc(s.corto.replace('https://', '')) + '</div>' +
+                '<div class="compartir-botones">' +
+                    '<button type="button" class="b-copiar" data-copiar="' + i + '">📋 Copiar enlace</button>' +
+                    '<a class="b-whatsapp" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent('📝 PROTECCIÓN CIVIL CRISTÓBAL ROJAS — Control de asistencia, parroquia ' + s.nombre + ': registra tu visita aquí: ' + s.corto) + '">💬 WhatsApp</a>' +
+                    '<a class="b-qr" download="qr-asistencia-' + (i ? 'las-brisas' : 'charallave') + '.png" href="https://api.qrserver.com/v1/create-qr-code/?size=600x600&download=1&data=' + encodeURIComponent(s.corto) + '">⬇️ Descargar QR</a>' +
+                '</div><div class="enlace-largo">Enlace completo: ' + esc(s.largo) + '</div></div></div>').join('');
+            $('compartir').querySelectorAll('[data-copiar]').forEach(b => b.addEventListener('click', async () => {
+                const url = SEDES[Number(b.dataset.copiar)].corto;
+                try { await navigator.clipboard.writeText(url); b.textContent = '✓ Copiado'; setTimeout(() => { b.textContent = '📋 Copiar enlace'; }, 1800); }
+                catch (e) { prompt('Copia el enlace:', url); }
+            }));
+        })();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { location.href = 'index.html'; return; }
+            let perfil = null;
+            try {
+                const snap = await get(child(ref(database), `pc_operadores/${user.uid}`));
+                if (snap.exists()) perfil = snap.val();
+            } catch (e) { perfil = null; }
+            $('loader').classList.add('hidden');
+            if (!perfil) { $('acceso-restringido').classList.remove('hidden'); return; }
+            if (perfil.cambio_obligatorio) { location.href = 'password.html'; return; }
+            window.perfilOperadorPC = { uid: user.uid, email: user.email, ...perfil };
+            esAdminPlus = perfil.rol === 'admin_plus';
+            $('contenido').classList.remove('hidden');
+            onValue(ref(database, 'pc_visitas'), (snap) => {
+                TODOS = Object.entries(snap.val() || {}).map(([id, r]) => ({ _id: id, ...r }));
+                pintarCifras();
+                pintarTabla();
+            }, (e) => { $('info').textContent = 'No se pudieron leer las visitas: ' + e.message; });
+        });
+
+        $('btnCerrarSesion').addEventListener('click', () => signOut(auth).then(() => location.href = 'index.html'));
+    </script>
+</body>
+</html>

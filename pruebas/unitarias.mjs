@@ -1194,7 +1194,7 @@ grupo('Panel: el resumen de cada formulario');
         sacarFuncion(fuenteAdmin, 'cuantasPersonas', 'admin.html') + '\n' + sacarFuncion(fuenteAdmin, 'resumenFormulario', 'admin.html'),
         ['FORMULARIOS', 'cuantasPersonas', 'resumenFormulario']);
     const reglas = JSON.parse(fs.readFileSync(path.join(RAIZ, '..', 'alcaldia-admin', 'firebase-rules.json'), 'utf-8')).rules;
-    prueba('el panel resume los tres formularios', A.FORMULARIOS.map(f => f.nodo), ['pc_informes', 'pc_novedades', 'pc_jornadas']);
+    prueba('el panel resume los cuatro formularios', A.FORMULARIOS.map(f => f.nodo), ['pc_informes', 'pc_novedades', 'pc_jornadas', 'pc_visitas']);
     prueba('cada tarjeta lee un nodo que existe en las reglas de la base', A.FORMULARIOS.filter(f => !reglas[f.nodo]).map(f => f.nodo), []);
     prueba('cada tarjeta lleva a una página que existe', A.FORMULARIOS.filter(f => !fs.existsSync(path.join(RAIZ, f.enlace))).map(f => f.enlace), []);
 
@@ -1219,6 +1219,83 @@ grupo('Panel: el resumen de cada formulario');
     const novedades = A.FORMULARIOS.find(f => f.clave === 'novedades');
     prueba('la tarjeta de novedades destaca las que siguen en curso',
         novedades.destacada.calcular([{ estatus: 'En curso' }, { estatus: 'Finalizado' }, {}]), 1);
+    const visitasA = A.FORMULARIOS.find(f => f.clave === 'visitas');
+    prueba('la tarjeta del control de asistencia separa Charallave y Las Brisas del Tuy',
+        visitasA.destacada.calcular([{ parroquia: 'Charallave' }, { parroquia: 'Charallave' }, { parroquia: 'Las Brisas del Tuy' }, {}]), '2 · 1');
+}
+
+
+/* Control de asistencia de las visitas (visitas.html y visitas-resultados.html):
+   las dos hojas de papel de Protección Civil, Charallave y Las Brisas del Tuy. */
+grupo('Control de asistencia (visitas): formulario y tablero');
+{
+    const fuenteV = leer('visitas.html');
+    const V = ejecutar(sacarTrozo(fuenteV, /const SEDES = \{[^}]*\};/, 'las sedes', 'visitas.html')[0] + '\n' +
+        ['sedeDe', 'limpiarVisita'].map(f => sacarFuncion(fuenteV, f, 'visitas.html')).join('\n'), ['SEDES', 'sedeDe', 'limpiarVisita']);
+    prueba('el enlace de Charallave abre Charallave', V.sedeDe('?sede=charallave'), 'charallave');
+    prueba('el enlace de Las Brisas abre Las Brisas', V.sedeDe('?sede=brisas'), 'brisas');
+    prueba('sin sede, o con una que no existe, se pregunta', [V.sedeDe(''), V.sedeDe('?sede=otra'), V.sedeDe('?sede=__proto__'), V.sedeDe('?sede=toString')], [null, null, null, null]);
+    const reglasV = JSON.parse(fs.readFileSync(path.join(RAIZ, '..', 'alcaldia-admin', 'firebase-rules.json'), 'utf-8')).rules;
+    const regexParroquia = reglasV.pc_visitas && reglasV.pc_visitas['$id'].parroquia['.validate'];
+    prueba('la base acepta exactamente los nombres de sede que manda el formulario',
+        Object.values(V.SEDES).map(n => regexParroquia.includes(n)), [true, true]);
+    const bienV = V.limpiarVisita({ nombre: '  Ana   Rojas ', edad: '30', cedula: 'v-12.345.678', telefono: '0414-1234567', correo: ' Ana@Correo.COM ', direccion: 'Sector La Peña', motivo: ' Solicitar  inspección ' });
+    prueba('una visita bien llenada queda limpia', bienV.visita,
+        { nombre: 'Ana Rojas', cedula: 'V-12345678', telefono: '0414-1234567', correo: 'ana@correo.com', direccion: 'Sector La Peña', motivo: 'Solicitar inspección', edad: 30 });
+    prueba('y sin problemas', [bienV.problema, bienV.campo], [null, null]);
+    prueba('lo que se deja en blanco no se manda', Object.keys(V.limpiarVisita({ nombre: 'Ana', motivo: 'Consulta', cedula: '', correo: '  ' }).visita).sort(), ['motivo', 'nombre']);
+    prueba('vacía: pide el nombre y lleva a ese campo', [V.limpiarVisita({}).problema, V.limpiarVisita({}).campo], ['Falta el nombre y apellido.', 'v_nombre']);
+    prueba('sin motivo lo pide', [V.limpiarVisita({ nombre: 'Ana' }).problema, V.limpiarVisita({ nombre: 'Ana' }).campo], ['Falta el motivo de la visita.', 'v_motivo']);
+    prueba('una cédula con letras se señala', V.limpiarVisita({ nombre: 'Ana', motivo: 'x y z', cedula: 'abc' }).campo, 'v_cedula');
+    prueba('una edad de 130 años se señala', V.limpiarVisita({ nombre: 'Ana', motivo: 'x y z', edad: '130' }).campo, 'v_edad');
+    prueba('un correo sin @ se señala', V.limpiarVisita({ nombre: 'Ana', motivo: 'x y z', correo: 'ana.correo.com' }).campo, 'v_correo');
+    prueba('un nombre larguísimo se recorta al tope de la base', V.limpiarVisita({ nombre: 'a'.repeat(400), motivo: 'xyz' }).visita.nombre.length, 150);
+    prueba('un motivo larguísimo se recorta al tope de la base', V.limpiarVisita({ nombre: 'Ana', motivo: 'm'.repeat(900) }).visita.motivo.length, 300);
+
+    const fuenteVT = leer('visitas-resultados.html');
+    const codigoVT = sacarTrozo(fuenteVT, /const SEDES = \[[\s\S]*?\];/, 'las sedes', 'visitas-resultados.html')[0] + '\n' +
+        sacarTrozo(fuenteVT, /const COLUMNAS = \[[\s\S]*?\];/, 'las columnas', 'visitas-resultados.html')[0] + '\n' +
+        sacarTrozo(fuenteVT, /const ANCHO_NUMERO = \d+, ANCHO_FECHA = \d+;/, 'los anchos fijos', 'visitas-resultados.html')[0] + '\n' +
+        ['esc', 'seguroExcel', 'diaLocal', 'fechaHora', 'filtrar', 'exportarExcel', 'guardarXlsx'].map(f => sacarFuncion(fuenteVT, f, 'visitas-resultados.html')).join('\n');
+    let colsV = null, guardado = null;
+    const VT = ejecutar(codigoVT, ['SEDES', 'COLUMNAS', 'ANCHO_NUMERO', 'ANCHO_FECHA', 'filtrar', 'exportarExcel', 'esc'], {
+        XLSX: { utils: { aoa_to_sheet: () => { const ws = {}; colsV = ws; return ws; }, encode_range: () => 'A3:K9', encode_cell: () => 'A1',
+                         book_new: () => ({ SheetNames: [], Sheets: {} }), book_append_sheet: (wb, ws, n) => { wb.SheetNames.push(n); wb.Sheets[n] = ws; } },
+                write: () => { throw new Error('sin zip en la prueba'); }, writeFile: (wb, n) => { guardado = n; }, CFB: {} },
+        alert: () => {}, document: {}, URL: {}, Blob: function () {}, TextDecoder, TextEncoder
+    });
+    prueba('el tablero y el formulario usan los mismos nombres de sede', VT.SEDES.map(s => s.nombre), Object.values(V.SEDES));
+    prueba('los enlaces del tablero abren la sede correcta',
+        VT.SEDES.map(s => V.sedeDe(new URL(s.largo).search)), ['charallave', 'brisas']);
+    prueba('las columnas del PDF suman 251 mm (lo que cabe en carta horizontal)',
+        VT.ANCHO_NUMERO + VT.ANCHO_FECHA + VT.COLUMNAS.reduce((s, c) => s + c[2], 0), 251);
+    prueba('ninguna columna del PDF es tan angosta que parta el título', VT.COLUMNAS.filter(c => c[2] < 14).map(c => c[0]), []);
+    prueba('el teléfono tiene los 23 mm que necesita "0424-1234567"', VT.COLUMNAS.find(c => c[1] === 'telefono')[2] >= 23, true);
+    prueba('las columnas son las de la hoja de papel, en su orden', VT.COLUMNAS.map(c => c[0]),
+        ['Nombre y apellido', 'Edad', 'C.I.', 'Teléfono', 'Motivo de la visita', 'Dirección de procedencia', 'Correo electrónico']);
+
+    const h = (d, hh) => new Date(2026, 8, d, hh, 0).getTime();
+    const visitasP = [
+        { _id: 'a', parroquia: 'Charallave', nombre: 'Ana Rojas', motivo: '=HIPERVINCULO("x")', edad: 30, fecha_registro: h(18, 9) },
+        { _id: 'b', parroquia: 'Las Brisas del Tuy', nombre: '@Beto', cedula: 'V-1234567', motivo: 'Inspección', fecha_registro: h(19, 10) },
+        { _id: 'c', parroquia: 'Charallave', nombre: 'Carla', motivo: 'Constancia', correo: 'carla@x.com', fecha_registro: h(17, 8) }
+    ];
+    prueba('filtrar por sede', VT.filtrar(visitasP, { sede: 'Charallave' }).map(r => r._id), ['a', 'c']);
+    prueba('filtrar por fechas (desde y hasta cuentan el día entero)', VT.filtrar(visitasP, { desde: '2026-09-18', hasta: '2026-09-18' }).map(r => r._id), ['a']);
+    prueba('buscar por cédula o correo', [VT.filtrar(visitasP, { q: '1234567' }).map(r => r._id), VT.filtrar(visitasP, { q: 'CARLA@' }).map(r => r._id)], [['b'], ['c']]);
+    prueba('las más recientes primero, o las más antiguas', [VT.filtrar(visitasP, {}).map(r => r._id), VT.filtrar(visitasP, { orden: 'antiguo' }).map(r => r._id)], [['b', 'a', 'c'], ['c', 'a', 'b']]);
+    const aoaV = VT.exportarExcel(VT.filtrar(visitasP, { orden: 'antiguo' }));
+    const encV = aoaV[2];
+    prueba('Excel: una fila por visita', aoaV.length - 3, 3);
+    prueba('Excel: cada fila tiene tantas celdas como encabezados', aoaV.slice(3).filter(f => f.length !== encV.length).length, 0);
+    prueba('Excel: tantos anchos como encabezados', colsV['!cols'].length, encV.length);
+    prueba('Excel: numera y trae la sede', [aoaV[3][0], aoaV[3][3], aoaV[5][3]], [1, 'Charallave', 'Las Brisas del Tuy']);
+    prueba('Excel: un motivo que empieza con = no se abre como fórmula', aoaV.slice(3).some(f => String(f[encV.indexOf('Motivo de la visita')]).startsWith("'=")), true);
+    prueba('Excel: un nombre que empieza con @ no se abre como fórmula', aoaV.slice(3).some(f => f.includes("'@Beto")), true);
+    prueba('Excel: la edad sale como número', aoaV[4][encV.indexOf('Edad')], 30);
+    prueba('Excel: si no se puede congelar el encabezado, se guarda igual', /^Control_Asistencia_ProteccionCivil_\d{4}-\d{2}-\d{2}\.xlsx$/.test(guardado || ''), true);
+    prueba('Excel: sin visitas no genera un archivo vacío', VT.exportarExcel([]), null);
+    prueba('el tablero escapa lo que escribe el público', VT.esc('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
 }
 
 

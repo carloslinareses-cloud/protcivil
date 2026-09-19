@@ -85,7 +85,7 @@
             <div class="compartir-cols">
                 <div class="compartir-qr"><img id="qrPublico" alt="Código QR de los formularios públicos"></div>
                 <div class="compartir-datos">
-                    <p class="sub" style="margin-bottom:8px">Es el mismo enlace de siempre: abre el menú con los tres formularios (reportar un riesgo, novedades relevantes y jornada social). No hace falta cuenta.</p>
+                    <p class="sub" style="margin-bottom:8px">Es el mismo enlace de siempre: abre el menú con los formularios (reportar un riesgo, novedades relevantes, jornada social y control de asistencia). No hace falta cuenta.</p>
                     <div class="enlace-corto" id="textoCorto">—</div>
                     <div class="compartir-botones">
                         <button type="button" class="b-copiar" id="btnCopiar">📋 Copiar enlace</button>
@@ -404,7 +404,7 @@
             $('qrPublico').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(URL_CORTO);
             $('btnDescargarQr').href = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&download=1&data=' + encodeURIComponent(URL_CORTO);
             $('btnWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(
-                '🚨 PROTECCIÓN CIVIL (Alcaldía de Cristóbal Rojas) — Formularios: reportar un riesgo, novedades relevantes y jornada social: ' + URL_CORTO);
+                '🚨 PROTECCIÓN CIVIL (Alcaldía de Cristóbal Rojas) — Formularios: reportar un riesgo, novedades relevantes, jornada social y control de asistencia: ' + URL_CORTO);
             $('btnCopiar').addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(URL_CORTO);

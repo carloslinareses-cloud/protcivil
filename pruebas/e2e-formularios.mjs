@@ -113,8 +113,8 @@ try {
     let p = await paginaNueva();
     await p.goto(BASE + '/reportar-riesgo.html', { waitUntil: 'networkidle0' });
     prueba('al entrar se ve el menú, no el formulario de riesgo', [await visible(p, '#vistaMenu'), await visible(p, '#vistaRiesgo')], [true, false]);
-    prueba('el menú ofrece los tres formularios', await p.$$eval('.menu-opcion b', bs => bs.map(b => b.textContent)),
-        ['Reportar un riesgo', 'Novedades relevantes', 'Jornada social']);
+    prueba('el menú ofrece los cinco formularios', await p.$$eval('.menu-opcion b', bs => bs.map(b => b.textContent)),
+        ['Reportar un riesgo', 'Novedades relevantes', 'Jornada social', 'Control de asistencia · Charallave', 'Control de asistencia · Las Brisas del Tuy']);
     await revisarTelefono(p, 'Menú');
     await p.click('#irRiesgo');
     await p.waitForFunction(() => !document.getElementById('vistaRiesgo').hidden);
@@ -209,6 +209,49 @@ try {
     }
     await p.close();
 
+    /* ---------------- Control de asistencia (visitas) ---------------- */
+    console.log('\nControl de asistencia (visitas.html)');
+    p = await paginaNueva();
+    await p.goto(BASE + '/reportar-riesgo.html', { waitUntil: 'networkidle0' });
+    await Promise.all([p.waitForNavigation({ waitUntil: 'networkidle0' }), p.click('#irVisitasBrisas')]);
+    prueba('desde el menú, "Las Brisas del Tuy" abre su hoja', [p.url().endsWith('/visitas.html?sede=brisas'), await texto(p, '#tituloParroquia')], [true, 'Parroquia Las Brisas del Tuy']);
+    await p.goto(BASE + '/visitas.html', { waitUntil: 'networkidle0' });
+    prueba('sin decir la sede, pregunta en cuál se está', [await visible(p, '#eligeSede'), await visible(p, '#formWrap')], [true, false]);
+    await p.goto(BASE + '/visitas.html?sede=charallave', { waitUntil: 'networkidle0' });
+    await p.evaluate(() => localStorage.clear());
+    await p.reload({ waitUntil: 'networkidle0' });
+    prueba('el enlace de Charallave dice su parroquia', await texto(p, '#tituloParroquia'), 'Parroquia Charallave');
+    await revisarTelefono(p, 'Control de asistencia');
+    await p.click('#btnEnviar');
+    prueba('vacío: pide el nombre y apellido', await texto(p, '#msg'), 'Falta el nombre y apellido.');
+    prueba('y deja el cursor en ese campo', await p.evaluate(() => document.activeElement.id), 'v_nombre');
+    await poner(p, '#v_nombre', 'ZZ Visitante de prueba');
+    await p.click('#btnEnviar');
+    prueba('luego pide el motivo de la visita', await texto(p, '#msg'), 'Falta el motivo de la visita.');
+    await poner(p, '#v_motivo', MARCA);
+    await poner(p, '#v_correo', 'correo-sin-arroba');
+    await p.click('#btnEnviar');
+    prueba('un correo sin @ se señala', /correo no se entiende/.test(await texto(p, '#msg')), true);
+    await poner(p, '#v_correo', 'zz.prueba@example.com');
+    await poner(p, '#v_edad', '37');
+    await p.reload({ waitUntil: 'networkidle0' });
+    prueba('al recargar, lo escrito vuelve (borrador en el teléfono)', [await p.$eval('#v_nombre', e => e.value), await p.$eval('#v_motivo', e => e.value)], ['ZZ Visitante de prueba', MARCA]);
+    prueba('y avisa que lo recuperó', await visible(p, '#avisoBorrador'), true);
+    const lectura = await fetch('https://alcaldia-admin-default-rtdb.firebaseio.com/pc_visitas.json?shallow=true');
+    prueba('alguien sin cuenta NO puede leer las visitas de otros', lectura.status, 401);
+    if (ESCRIBIR) {
+        await p.click('#btnEnviar');
+        await p.waitForFunction(() => getComputedStyle(document.getElementById('okScreen')).display === 'block', { timeout: 20000 });
+        escritos.push(['pc_visitas', 'motivo', MARCA]);
+        prueba('se registra y dice de quién y en qué sede', /ZZ Visitante de prueba.*Charallave/.test(await texto(p, '#okTexto')), true);
+        prueba('al registrarse se borra el borrador', await p.evaluate(() => localStorage.getItem('pc_borrador_visita_v1')), null);
+        await p.click('#btnOtra');
+        prueba('"Registrar otra visita" deja el formulario limpio para el siguiente', [await visible(p, '#formWrap'), await p.$eval('#v_nombre', e => e.value)], [true, '']);
+    } else {
+        saltar('registrar una visita de verdad', 'falta PERMITIR_ESCRIBIR=si');
+    }
+    await p.close();
+
     console.log('\nErrores sueltos de las páginas');
     prueba('ninguna página soltó un error', errores, []);
 } finally {
@@ -228,6 +271,8 @@ try {
             const r = Object.values(snap.val() || {})[0] || {};
             if (nodo === 'pc_jornadas') prueba('la jornada guardó 1 persona con su edad como número', [r.total, (r.personas || [])[0] && r.personas[0].edad], [1, 44]);
             if (nodo === 'pc_novedades') prueba('la novedad quedó marcada como del público', r.origen, 'publico');
+            if (nodo === 'pc_visitas') prueba('la visita guardó su sede, que es del público, la edad como número y el correo',
+                [r.parroquia, r.origen, r.edad, r.correo, typeof r.fecha_registro], ['Charallave', 'publico', 37, 'zz.prueba@example.com', 'number']);
             for (const id of Object.keys(snap.val() || {})) await db.ref(nodo + '/' + id).remove();
             const queda = await db.ref(nodo).orderByChild(campo).equalTo(valor).once('value');
             prueba(nodo + ': no quedó nada de prueba', queda.numChildren(), 0);

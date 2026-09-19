@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de asistencia - Protección Civil Cristóbal Rojas</title>
+    <meta name="description" content="Control de asistencia de las visitas a Protección Civil y Administración de Desastres, Alcaldía de Cristóbal Rojas (parroquias Charallave y Las Brisas del Tuy).">
+    <style>
+        :root { --naranja-pc: #f7941d; --azul-pc: #1c3f94; --gris-fondo: #e9ecef; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--gris-fondo); padding-top: 30px; }
+        .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
+        .container { max-width: 720px; margin: 20px auto 60px; padding: 0 14px; }
+        .volver { display: inline-block; color: var(--azul-pc); font-weight: 700; font-size: 14px; text-decoration: none; margin-bottom: 10px; min-height: 44px; line-height: 44px; }
+
+        .cabecera-form { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); border-top: 6px solid var(--naranja-pc); text-align: center; margin-bottom: 16px; }
+        .cabecera-form img { height: 54px; object-fit: contain; margin: 0 10px; }
+        .cabecera-form h1 { color: var(--azul-pc); font-size: 20px; margin: 10px 0 4px; text-transform: uppercase; letter-spacing: .5px; }
+        .cabecera-form .institucion { color: #334155; font-size: 13.5px; font-weight: 700; margin: 0 0 6px; text-transform: uppercase; line-height: 1.45; }
+        .cabecera-form .institucion b { color: var(--naranja-pc); }
+        .cabecera-form p { color: #666; font-size: 13px; margin: 0; line-height: 1.5; }
+
+        .seccion { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .seccion h3 { margin: 0 0 12px; color: var(--azul-pc); font-size: 15px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; }
+        .campo { margin-bottom: 12px; min-width: 0; }
+        .campo label { display: block; font-weight: 700; color: #334155; font-size: 13px; margin-bottom: 5px; }
+        .campo .obligatorio { color: #b91c1c; }
+        .campo .ayuda { color: #64748b; font-size: 12px; margin-top: 4px; }
+        .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 560px) { .fila2 { grid-template-columns: 1fr; } }
+        .fila2 > * { min-width: 0; }
+        input[type="text"], input[type="tel"], input[type="number"], input[type="email"], textarea {
+            width: 100%; padding: 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: #f8fafc; font-family: inherit; min-height: 46px;
+        }
+        textarea { resize: vertical; min-height: 74px; }
+        input:focus, textarea:focus { outline: none; border-color: var(--azul-pc); background: #fff; }
+        .cne-slot { position: relative; }
+
+        .sedes { display: grid; gap: 12px; }
+        .sede { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 12px; padding: 18px; text-decoration: none; color: inherit; border: 1.5px solid #e2e8f0; border-left: 6px solid var(--naranja-pc); min-height: 72px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .sede:hover, .sede:focus-visible { border-color: var(--azul-pc); outline: none; }
+        .sede b { color: var(--azul-pc); font-size: 17px; }
+        .sede .flecha { margin-left: auto; color: #94a3b8; font-size: 24px; }
+
+        .btn-enviar { width: 100%; background: var(--azul-pc); color: #fff; border: none; border-radius: 10px; padding: 18px; font-size: 17px; font-weight: 800; cursor: pointer; min-height: 52px; }
+        .btn-enviar:hover { background: #142e6e; }
+        .btn-enviar:disabled { opacity: .6; cursor: not-allowed; }
+        .msg { text-align: center; font-weight: 700; margin-top: 12px; font-size: 14px; min-height: 20px; }
+        .msg.err { color: #b91c1c; }
+        .aviso-borrador { display: none; background: #ecfdf5; color: #065f46; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 14px; }
+        .aviso-borrador button { background: none; border: none; color: #b91c1c; font-weight: 700; cursor: pointer; text-decoration: underline; font-size: 13px; padding: 4px; min-height: 44px; }
+
+        .ok-screen { display: none; text-align: center; padding: 36px 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .ok-screen .check { font-size: 60px; }
+        .ok-screen h2 { color: #16a34a; font-size: 24px; margin: 10px 0; }
+        .ok-screen p { color: #475569; font-size: 15px; line-height: 1.6; }
+        .ok-screen button { margin-top: 20px; background: var(--azul-pc); color: #fff; border: none; border-radius: 10px; padding: 14px 22px; font-size: 15px; font-weight: 700; cursor: pointer; min-height: 48px; }
+
+        .pie { text-align: center; color: #64748b; font-size: 12px; padding: 18px 12px 30px; line-height: 1.6; }
+        .pie b { color: var(--azul-pc); }
+        [hidden] { display: none !important; }
+    </style>
+    <script src="autofresh.js"></script>
+</head>
+<body>
+    <div class="cintillo-gob">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+
+    <div class="container">
+        <a class="volver" href="reportar-riesgo.html">← Otros formularios</a>
+        <div class="cabecera-form">
+            <img src="logos/cristobal-rojas.png" alt="Escudo Cristóbal Rojas">
+            <img src="logos/pc.png" alt="Protección Civil">
+            <h1>Control de asistencia</h1>
+            <p class="institucion">Protección Civil y Administración de Desastres<br>Cristóbal Rojas, <b id="tituloParroquia">parroquia por elegir</b></p>
+            <p>Registro de las personas que visitan la sede. Se llena uno por cada visitante.</p>
+        </div>
+
+        <!-- Si se entra sin decir la sede, se pregunta. -->
+        <div id="eligeSede" hidden>
+            <div class="seccion">
+                <h3>¿En qué sede estás?</h3>
+                <div class="sedes">
+                    <a class="sede" href="visitas.html?sede=charallave"><span>📝</span><b>Parroquia Charallave</b><span class="flecha">›</span></a>
+                    <a class="sede" href="visitas.html?sede=brisas"><span>📝</span><b>Parroquia Las Brisas del Tuy</b><span class="flecha">›</span></a>
+                </div>
+            </div>
+        </div>
+
+        <div id="formWrap" hidden>
+            <div class="aviso-borrador" id="avisoBorrador">
+                Recuperamos la visita que estabas llenando y no se envió. <button type="button" id="btnDescartar">Empezar de cero</button>
+            </div>
+
+            <div class="seccion">
+                <h3>La persona que visita</h3>
+                <div class="fila2">
+                    <div class="campo cne-slot"><label for="v_cedula">C.I.</label><input type="text" id="v_cedula" inputmode="numeric" autocomplete="off" data-cne data-cne-nombre="#v_nombre"></div>
+                    <div class="campo"><label for="v_edad">Edad</label><input type="number" id="v_edad" min="0" max="120" inputmode="numeric"></div>
+                </div>
+                <div class="campo"><label for="v_nombre">Nombre y apellido <span class="obligatorio">*</span></label><input type="text" id="v_nombre" autocomplete="name"></div>
+                <div class="fila2">
+                    <div class="campo"><label for="v_telefono">Teléfono</label><input type="tel" id="v_telefono" inputmode="tel" placeholder="0424-1234567" autocomplete="tel"></div>
+                    <div class="campo"><label for="v_correo">Correo electrónico</label><input type="email" id="v_correo" inputmode="email" placeholder="nombre@correo.com" autocomplete="email"></div>
+                </div>
+                <div class="campo"><label for="v_direccion">Dirección de procedencia</label><input type="text" id="v_direccion" placeholder="Sector, calle o comunidad de donde viene"></div>
+            </div>
+
+            <div class="seccion">
+                <h3>La visita</h3>
+                <div class="campo"><label for="v_motivo">Motivo de la visita <span class="obligatorio">*</span></label><textarea id="v_motivo" rows="2" maxlength="300"></textarea></div>
+            </div>
+
+            <div class="seccion">
+                <button type="button" class="btn-enviar" id="btnEnviar">Registrar la visita</button>
+                <div class="msg" id="msg" role="status"></div>
+            </div>
+        </div>
+
+        <div class="ok-screen" id="okScreen">
+            <div class="check">✅</div>
+            <h2>¡Visita registrada!</h2>
+            <p id="okTexto">Protección Civil ya tiene el registro.</p>
+            <button id="btnOtra" type="button">Registrar otra visita</button>
+        </div>
+    </div>
+
+    <div class="pie">
+        <b>Dirección de Protección Civil y Administración de Desastres</b><br>
+        Alcaldía del Municipio Bolivariano Cristóbal Rojas
+    </div>
+
+    <script type="module">
+        /* Formulario PÚBLICO: no pide iniciar sesión. Solo puede CREAR
+           visitas; las reglas de la base no le permiten leer ni tocar lo
+           que ya está guardado. */
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",
+            authDomain: "alcaldia-admin.firebaseapp.com",
+            databaseURL: "https://alcaldia-admin-default-rtdb.firebaseio.com",
+            projectId: "alcaldia-admin",
+            storageBucket: "alcaldia-admin.firebasestorage.app",
+            messagingSenderId: "945828226894",
+            appId: "1:945828226894:web:0efeebeb270357e6f5201f",
+            measurementId: "G-P4QSQR0XGE"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const $ = (id) => document.getElementById(id);
+
+        /* Las dos sedes, igual que en las hojas de papel. El nombre es el que
+           se guarda y el que aceptan las reglas de la base. */
+        const SEDES = { charallave: 'Charallave', brisas: 'Las Brisas del Tuy' };
+
+        /* La sede sale del enlace (?sede=charallave o ?sede=brisas). */
+        function sedeDe(busqueda) {
+            const s = new URLSearchParams(busqueda || '').get('sede');
+            return s && Object.prototype.hasOwnProperty.call(SEDES, s) ? s : null;
+        }
+
+        /* Un visitante tal como se guarda: sin espacios de más, con tope de
+           largo, la edad como número, y la cédula y el correo solo si tienen
+           forma de cédula y de correo. Dice también qué está mal y en qué
+           campo, para llevar a la persona ahí. Lo vacío no se manda. */
+        function limpiarVisita(crudo) {
+            const t = (v, max) => String(v == null ? '' : v).trim().replace(/\s+/g, ' ').slice(0, max);
+            const v = {
+                nombre: t(crudo.nombre, 150),
+                cedula: t(crudo.cedula, 15).toUpperCase().replace(/[.\s]/g, ''),
+                telefono: t(crudo.telefono, 30),
+                correo: t(crudo.correo, 150).toLowerCase(),
+                direccion: t(crudo.direccion, 200),
+                motivo: t(crudo.motivo, 300)
+            };
+            let problema = null, campo = null;
+            const falla = (texto, cual) => { if (!problema) { problema = texto; campo = cual; } };
+            if (v.nombre.length < 2) falla('Falta el nombre y apellido.', 'v_nombre');
+            if (v.cedula && !/^[VE]?-?[0-9]{4,10}$/.test(v.cedula)) falla('La cédula no se entiende: solo números, puede llevar V o E.', 'v_cedula');
+            const e = String(crudo.edad == null ? '' : crudo.edad).trim();
+            if (e !== '') {
+                const n = Math.round(Number(e));
+                if (Number.isFinite(n) && n >= 0 && n <= 120) v.edad = n;
+                else falla('La edad debe ser un número entre 0 y 120.', 'v_edad');
+            }
+            if (v.correo && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.correo)) falla('El correo no se entiende. Revísalo o déjalo en blanco.', 'v_correo');
+            if (v.motivo.length < 3) falla('Falta el motivo de la visita.', 'v_motivo');
+            Object.keys(v).forEach(k => { if (v[k] === '') delete v[k]; });
+            return { visita: v, problema, campo };
+        }
+
+        const CAMPOS = ['cedula', 'edad', 'nombre', 'telefono', 'correo', 'direccion', 'motivo'];
+        const leerCampos = () => Object.fromEntries(CAMPOS.map(c => [c, $('v_' + c).value]));
+
+        /* ---- Borrador en el teléfono: si se va la señal, no se pierde ---- */
+        const CLAVE_BORRADOR = 'pc_borrador_visita_v1';
+        let SEDE = null;
+        function guardarBorrador() {
+            try { localStorage.setItem(CLAVE_BORRADOR, JSON.stringify({ guardado: Date.now(), sede: SEDE, campos: leerCampos() })); }
+            catch (e) { /* sin almacenamiento (modo privado): se sigue sin borrador */ }
+        }
+        function recuperarBorrador() {
+            try {
+                const b = JSON.parse(localStorage.getItem(CLAVE_BORRADOR) || 'null');
+                if (!b || b.sede !== SEDE || Date.now() - b.guardado > 24 * 3600e3) return false;
+                if (!CAMPOS.some(c => String((b.campos || {})[c] || '').trim())) return false;
+                CAMPOS.forEach(c => { $('v_' + c).value = (b.campos || {})[c] || ''; });
+                return true;
+            } catch (e) { return false; }
+        }
+        function borrarBorrador() { try { localStorage.removeItem(CLAVE_BORRADOR); } catch (e) { } }
+
+        SEDE = sedeDe(location.search);
+        if (!SEDE) {
+            $('eligeSede').hidden = false;
+        } else {
+            $('tituloParroquia').textContent = 'Parroquia ' + SEDES[SEDE];
+            document.title = 'Control de asistencia ' + SEDES[SEDE] + ' - Protección Civil';
+            $('formWrap').hidden = false;
+            if (recuperarBorrador()) $('avisoBorrador').style.display = 'block';
+            $('formWrap').addEventListener('input', guardarBorrador);
+            $('formWrap').addEventListener('change', guardarBorrador);
+        }
+        $('btnDescartar').onclick = () => {
+            if (!confirm('¿Borrar lo que estabas llenando y empezar de cero?')) return;
+            borrarBorrador();
+            CAMPOS.forEach(c => { $('v_' + c).value = ''; });
+            $('avisoBorrador').style.display = 'none';
+        };
+
+        function err(texto, campo) {
+            $('msg').textContent = texto; $('msg').className = 'msg err';
+            if (campo && $(campo)) $(campo).focus();
+        }
+
+        $('btnEnviar').addEventListener('click', async () => {
+            const r = limpiarVisita(leerCampos());
+            if (r.problema) { err(r.problema, r.campo); return; }
+            $('msg').textContent = '';
+            $('btnEnviar').disabled = true;
+            $('btnEnviar').textContent = 'Registrando…';
+            try {
+                await set(push(ref(database, 'pc_visitas')), {
+                    origen: 'publico', parroquia: SEDES[SEDE], ...r.visita, fecha_registro: Date.now()
+                });
+                borrarBorrador();
+                $('okTexto').textContent = 'Quedó registrada la visita de ' + r.visita.nombre + ' a la sede de ' + SEDES[SEDE] + '.';
+                $('formWrap').hidden = true;
+                $('okScreen').style.display = 'block';
+                window.scrollTo(0, 0);
+            } catch (e) {
+                /* Nunca decimos "registrada" si el servidor no confirmó. Lo
+                   escrito sigue en la pantalla y guardado en el teléfono. */
+                err('No se pudo registrar (' + (e.message || e.code || 'error') + '). Revisa tu conexión e intenta de nuevo: lo escrito sigue guardado en este teléfono.');
+            } finally {
+                $('btnEnviar').disabled = false;
+                $('btnEnviar').textContent = 'Registrar la visita';
+            }
+        });
+        $('btnOtra').addEventListener('click', () => {
+            CAMPOS.forEach(c => { $('v_' + c).value = ''; });
+            $('okScreen').style.display = 'none';
+            $('formWrap').hidden = false;
+            $('avisoBorrador').style.display = 'none';
+            window.scrollTo(0, 0);
+            $('v_cedula').focus();
+        });
+    </script>
+    <script src="cne-dateas.js"></script>
+</body>
+</html>
