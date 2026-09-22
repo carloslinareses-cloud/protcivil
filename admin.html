@@ -154,7 +154,13 @@
             <div class="card card-publico" onclick="location.href='reportar-riesgo.html'">
                 <span class="card-icon">📣</span>
                 <div class="card-title">Formularios públicos</div>
-                <div class="card-desc">Verlos tal como los ve la gente: el mismo enlace de siempre abre el menú con todos (riesgo, novedades, jornada social y el control de asistencia de Charallave y Las Brisas del Tuy). El enlace y el QR para compartir están en cada tablero.</div>
+                <div class="card-desc">Verlos tal como los ve la gente: el mismo enlace de siempre abre el menú con todos, incluidos los puntos de La Peñita y el Terminal. El enlace y el QR para compartir están en cada tablero.</div>
+            </div>
+
+            <div class="card card-registrados" onclick="location.href='puntos-atencion-resultados.html'">
+                <span class="card-icon">🩺</span>
+                <div class="card-title">Puntos de La Peñita y el Terminal</div>
+                <div class="card-desc">Personas atendidas en ambos puntos, con nombre, edad, C.I., teléfono, tensión arterial y comunidad. Incluye búsqueda, filtros, PDF como las hojas originales y Excel completo.</div>
             </div>
 
             <div class="card card-usuarios hidden" id="cardUsuarios" onclick="location.href='usuarios.html'">
@@ -206,7 +212,9 @@
             { clave: 'jornadas', nodo: 'pc_jornadas', titulo: 'Jornadas sociales', icono: '🩺', enlace: 'jornadas-resultados.html',
               destacada: { etiqueta: 'Personas atendidas', calcular: lista => lista.reduce((s, j) => s + cuantasPersonas(j), 0) } },
             { clave: 'visitas', nodo: 'pc_visitas', titulo: 'Control de asistencia (visitas)', icono: '📝', enlace: 'visitas-resultados.html',
-              destacada: { etiqueta: 'Charallave · Las Brisas', calcular: lista => lista.filter(r => r.parroquia === 'Charallave').length + ' · ' + lista.filter(r => r.parroquia === 'Las Brisas del Tuy').length } }
+              destacada: { etiqueta: 'Charallave · Las Brisas', calcular: lista => lista.filter(r => r.parroquia === 'Charallave').length + ' · ' + lista.filter(r => r.parroquia === 'Las Brisas del Tuy').length } },
+            { clave: 'puntos', nodo: 'pc_puntos_atencion', titulo: 'Puntos de atención', icono: '🩺', enlace: 'puntos-atencion-resultados.html',
+              destacada: { etiqueta: 'La Peñita · Terminal', calcular: lista => lista.filter(r => r.punto === 'Punto de La Peñita').length + ' · ' + lista.filter(r => r.punto === 'Punto del Terminal').length } }
         ];
 
         function cuantasPersonas(j) {

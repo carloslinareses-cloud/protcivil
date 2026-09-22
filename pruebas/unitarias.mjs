@@ -1194,7 +1194,7 @@ grupo('Panel: el resumen de cada formulario');
         sacarFuncion(fuenteAdmin, 'cuantasPersonas', 'admin.html') + '\n' + sacarFuncion(fuenteAdmin, 'resumenFormulario', 'admin.html'),
         ['FORMULARIOS', 'cuantasPersonas', 'resumenFormulario']);
     const reglas = JSON.parse(fs.readFileSync(path.join(RAIZ, '..', 'alcaldia-admin', 'firebase-rules.json'), 'utf-8')).rules;
-    prueba('el panel resume los cuatro formularios', A.FORMULARIOS.map(f => f.nodo), ['pc_informes', 'pc_novedades', 'pc_jornadas', 'pc_visitas']);
+    prueba('el panel resume los cinco formularios', A.FORMULARIOS.map(f => f.nodo), ['pc_informes', 'pc_novedades', 'pc_jornadas', 'pc_visitas', 'pc_puntos_atencion']);
     prueba('cada tarjeta lee un nodo que existe en las reglas de la base', A.FORMULARIOS.filter(f => !reglas[f.nodo]).map(f => f.nodo), []);
     prueba('cada tarjeta lleva a una página que existe', A.FORMULARIOS.filter(f => !fs.existsSync(path.join(RAIZ, f.enlace))).map(f => f.enlace), []);
 

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro en punto de atención - Protección Civil</title>
+    <meta name="description" content="Registro de personas atendidas en los puntos de La Peñita y el Terminal de Protección Civil Cristóbal Rojas.">
+    <style>
+        :root { --naranja:#f7941d; --azul:#1c3f94; --fondo:#e9ecef; }
+        * { box-sizing:border-box; }
+        body { font-family:'Segoe UI',Arial,sans-serif; margin:0; background:var(--fondo); padding-top:30px; color:#172033; }
+        .cintillo { position:fixed; inset:0 0 auto; z-index:10; background:#1a1a1a; color:#fff; text-align:center; padding:6px 4px; font-size:11px; font-weight:800; letter-spacing:1px; }
+        .container { max-width:720px; margin:20px auto 60px; padding:0 14px; }
+        .volver { display:inline-block; color:var(--azul); font-weight:750; font-size:14px; text-decoration:none; min-height:44px; line-height:44px; }
+        .cabecera { background:#fff; border-radius:11px; padding:20px; text-align:center; border-top:6px solid var(--naranja); box-shadow:0 3px 12px #00000014; margin-bottom:16px; }
+        .cabecera img { height:54px; object-fit:contain; margin:0 8px; }
+        .cabecera h1 { margin:10px 0 5px; color:var(--azul); font-size:20px; text-transform:uppercase; }
+        .cabecera .institucion { color:#334155; font-size:13.5px; font-weight:750; text-transform:uppercase; line-height:1.45; margin:0 0 6px; }
+        .cabecera .institucion b { color:var(--naranja); }
+        .cabecera p { color:#64748b; font-size:13px; margin:0; }
+        .seccion { background:#fff; border-radius:11px; padding:18px; margin-bottom:16px; box-shadow:0 2px 8px #0000000f; }
+        .seccion h2 { margin:0 0 12px; color:var(--azul); font-size:15px; text-transform:uppercase; border-bottom:2px solid #f1f5f9; padding-bottom:8px; }
+        .fila2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .campo { margin-bottom:13px; min-width:0; }
+        label { display:block; font-size:13px; font-weight:750; color:#334155; margin-bottom:5px; }
+        .obligatorio { color:#b91c1c; }
+        input { width:100%; min-height:46px; padding:11px 12px; border:1.5px solid #cbd5e1; border-radius:8px; background:#f8fafc; font:inherit; font-size:16px; }
+        input:focus { outline:none; border-color:var(--azul); background:#fff; }
+        .puntos { display:grid; gap:12px; }
+        .punto { display:flex; align-items:center; gap:12px; min-height:72px; padding:16px; border:1.5px solid #e2e8f0; border-left:6px solid var(--naranja); border-radius:11px; text-decoration:none; color:#334155; background:#fff; }
+        .punto b { color:var(--azul); font-size:17px; } .punto span:last-child { margin-left:auto; font-size:24px; color:#94a3b8; }
+        .borrador { display:none; margin-bottom:14px; padding:10px 12px; border-radius:8px; background:#ecfdf5; color:#065f46; font-size:13px; }
+        .borrador button { min-height:44px; border:0; background:none; color:#b91c1c; font-weight:750; text-decoration:underline; cursor:pointer; }
+        .btn { width:100%; min-height:52px; border:0; border-radius:10px; padding:15px; color:#fff; background:var(--azul); font-size:17px; font-weight:800; cursor:pointer; }
+        .btn:disabled { opacity:.6; cursor:wait; }
+        .msg { min-height:20px; margin-top:10px; text-align:center; font-weight:750; font-size:14px; }.msg.err{color:#b91c1c}
+        .ok { display:none; text-align:center; background:#fff; border-radius:11px; padding:36px 20px; box-shadow:0 2px 8px #0001; }.ok .check{font-size:60px}.ok h2{color:#15803d}.ok p{color:#475569;line-height:1.6}.ok button{min-height:48px;margin-top:15px;padding:12px 20px;border:0;border-radius:9px;background:var(--azul);color:#fff;font-weight:750;cursor:pointer}
+        .pie { padding:10px 12px 30px; text-align:center; color:#64748b; font-size:12px; line-height:1.6; }.pie b{color:var(--azul)}
+        [hidden]{display:none!important}
+        @media(max-width:560px){.fila2{grid-template-columns:1fr}.container{padding:0 12px}.seccion{padding:16px}}
+    </style>
+    <script src="autofresh.js"></script>
+</head>
+<body>
+    <div class="cintillo">REPÚBLICA BOLIVARIANA DE VENEZUELA | ESTADO MIRANDA | ALCALDÍA DE CRISTÓBAL ROJAS</div>
+    <main class="container">
+        <a class="volver" href="reportar-riesgo.html">← Otros formularios</a>
+        <header class="cabecera">
+            <img src="logos/cristobal-rojas.png" alt="Escudo Cristóbal Rojas"><img src="logos/pc.png" alt="Protección Civil">
+            <h1>Control de personas atendidas</h1>
+            <p class="institucion">Protección Civil y Administración de Desastres<br><b id="tituloPunto">Punto por elegir</b></p>
+            <p>Se llena un registro por cada persona atendida.</p>
+        </header>
+
+        <section id="eligePunto" class="seccion" hidden>
+            <h2>¿En qué punto estás?</h2>
+            <div class="puntos">
+                <a class="punto" href="puntos-atencion.html?punto=penita"><span>🩺</span><b>Punto de La Peñita</b><span>›</span></a>
+                <a class="punto" href="puntos-atencion.html?punto=terminal"><span>🩺</span><b>Punto del Terminal</b><span>›</span></a>
+            </div>
+        </section>
+
+        <div id="formWrap" hidden>
+            <div id="avisoBorrador" class="borrador">Recuperamos el registro que estabas llenando y no se envió. <button id="descartar" type="button">Empezar de cero</button></div>
+            <section class="seccion">
+                <h2>Datos de la persona</h2>
+                <div class="fila2">
+                    <div class="campo"><label for="cedula">C.I. <span class="obligatorio">*</span></label><input id="cedula" inputmode="numeric" autocomplete="off" maxlength="15" data-cne data-cne-nombre="#nombre"></div>
+                    <div class="campo"><label for="edad">Edad <span class="obligatorio">*</span></label><input id="edad" type="number" min="0" max="120" inputmode="numeric"></div>
+                </div>
+                <div class="campo"><label for="nombre">Nombre y apellido <span class="obligatorio">*</span></label><input id="nombre" autocomplete="name" maxlength="150"></div>
+                <div class="fila2">
+                    <div class="campo"><label for="telefono">Teléfono <span class="obligatorio">*</span></label><input id="telefono" inputmode="tel" autocomplete="tel" maxlength="30" placeholder="0424-1234567"></div>
+                    <div class="campo"><label for="ta">T/A <span class="obligatorio">*</span></label><input id="ta" inputmode="numeric" maxlength="20" placeholder="Ejemplo: 120/80"></div>
+                </div>
+                <div class="campo"><label for="comunidad">Comunidad <span class="obligatorio">*</span></label><input id="comunidad" maxlength="200" placeholder="Comunidad donde vive"></div>
+            </section>
+            <section class="seccion"><button id="enviar" class="btn" type="button">Registrar persona atendida</button><div id="msg" class="msg" role="status"></div></section>
+        </div>
+
+        <section id="ok" class="ok"><div class="check">✅</div><h2>¡Registro guardado!</h2><p id="okTexto"></p><button id="otra" type="button">Registrar otra persona</button></section>
+    </main>
+    <footer class="pie"><b>Dirección de Protección Civil y Administración de Desastres</b><br>Alcaldía del Municipio Bolivariano Cristóbal Rojas</footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        const firebaseConfig={apiKey:"AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",authDomain:"alcaldia-admin.firebaseapp.com",databaseURL:"https://alcaldia-admin-default-rtdb.firebaseio.com",projectId:"alcaldia-admin",storageBucket:"alcaldia-admin.firebasestorage.app",messagingSenderId:"945828226894",appId:"1:945828226894:web:0efeebeb270357e6f5201f",measurementId:"G-P4QSQR0XGE"};
+        const database=getDatabase(initializeApp(firebaseConfig)),$=id=>document.getElementById(id);
+        const PUNTOS={penita:'Punto de La Peñita',terminal:'Punto del Terminal'};
+        const CAMPOS=['cedula','edad','nombre','telefono','ta','comunidad'];
+        let PUNTO=null;
+        function puntoDe(){const p=new URLSearchParams(location.search).get('punto');return Object.hasOwn(PUNTOS,p)?p:null;}
+        function leer(){return Object.fromEntries(CAMPOS.map(c=>[c,$(c).value]));}
+        function limpiar(crudo){
+            const t=(v,max)=>String(v??'').trim().replace(/\s+/g,' ').slice(0,max);
+            const persona={nombre:t(crudo.nombre,150),cedula:t(crudo.cedula,15).toUpperCase().replace(/[.\s]/g,''),telefono:t(crudo.telefono,30),ta:t(crudo.ta,20),comunidad:t(crudo.comunidad,200)};
+            let problema='',campo='';const falla=(m,c)=>{if(!problema){problema=m;campo=c;}};
+            const e=String(crudo.edad??'').trim(),n=Number(e);
+            if(persona.cedula.length<4||!/^[VE]?-?[0-9]{4,10}$/.test(persona.cedula))falla('Escribe una cédula válida, solo con números; puede llevar V o E.','cedula');
+            if(!e||!Number.isInteger(n)||n<0||n>120)falla('La edad debe ser un número entre 0 y 120.','edad');else persona.edad=n;
+            if(persona.nombre.length<2)falla('Escribe el nombre y apellido.','nombre');
+            if(persona.telefono.length<7)falla('Escribe un teléfono válido.','telefono');
+            if(!/^\d{2,3}\s*\/\s*\d{2,3}$/.test(persona.ta))falla('Escribe la tensión arterial con el formato 120/80.','ta');
+            if(persona.comunidad.length<2)falla('Escribe la comunidad donde vive.','comunidad');
+            return{persona,problema,campo};
+        }
+        const clave=()=>`pc_borrador_punto_${PUNTO}_v1`;
+        function guardar(){try{localStorage.setItem(clave(),JSON.stringify({fecha:Date.now(),campos:leer()}));}catch(e){}}
+        function borrar(){try{localStorage.removeItem(clave());}catch(e){}}
+        function recuperar(){try{const b=JSON.parse(localStorage.getItem(clave())||'null');if(!b||Date.now()-b.fecha>86400000)return false;CAMPOS.forEach(c=>$(c).value=b.campos?.[c]||'');return CAMPOS.some(c=>String($(c).value).trim());}catch(e){return false;}}
+        function error(m,c){$('msg').textContent=m;$('msg').className='msg err';if(c)$(c).focus();}
+        PUNTO=puntoDe();
+        if(!PUNTO)$('eligePunto').hidden=false;else{$('tituloPunto').textContent=PUNTOS[PUNTO];document.title=PUNTOS[PUNTO]+' - Protección Civil';$('formWrap').hidden=false;if(recuperar())$('avisoBorrador').style.display='block';$('formWrap').addEventListener('input',guardar);}
+        $('descartar').addEventListener('click',()=>{if(!confirm('¿Borrar lo escrito y empezar de cero?'))return;borrar();CAMPOS.forEach(c=>$(c).value='');$('avisoBorrador').style.display='none';});
+        $('enviar').addEventListener('click',async()=>{
+            const r=limpiar(leer());if(r.problema)return error(r.problema,r.campo);
+            $('enviar').disabled=true;$('enviar').textContent='Registrando…';$('msg').textContent='';
+            try{await set(push(ref(database,'pc_puntos_atencion')),{origen:'publico',punto:PUNTOS[PUNTO],...r.persona,fecha_registro:Date.now()});borrar();$('okTexto').textContent=`Quedó registrado ${r.persona.nombre} en ${PUNTOS[PUNTO]}.`;$('formWrap').hidden=true;$('ok').style.display='block';scrollTo(0,0);}
+            catch(e){error('No se pudo registrar ('+(e.message||e.code||'error')+'). Revisa la conexión e intenta de nuevo: lo escrito sigue guardado en este teléfono.');}
+            finally{$('enviar').disabled=false;$('enviar').textContent='Registrar persona atendida';}
+        });
+        $('otra').addEventListener('click',()=>{CAMPOS.forEach(c=>$(c).value='');$('ok').style.display='none';$('formWrap').hidden=false;$('avisoBorrador').style.display='none';scrollTo(0,0);$('cedula').focus();});
+    </script>
+    <script src="cne-dateas.js"></script>
+</body>
+</html>
