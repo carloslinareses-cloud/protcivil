@@ -332,6 +332,8 @@
             const doc = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'landscape' });
             const pageW = 279.4, margenX = 14.2;
             const escudo = await cargarLogo('logos/cristobal-rojas.png');
+            const logoPC = await cargarLogo('logos/pc.png?v=20261005');
+            if (!logoPC) throw new Error('No se pudo cargar el logo de Protecci?n Civil.');
             const periodo = (f.desde || f.hasta) ? 'Del ' + (fechaDeFiltro(f.desde) || 'inicio') + ' al ' + (fechaDeFiltro(f.hasta) || 'hoy') : 'Todas las fechas';
             const sedes = ['Charallave', 'Las Brisas del Tuy'].filter(s => lista.some(r => r.parroquia === s));
             sedes.forEach((sede, k) => {
@@ -340,11 +342,7 @@
                 const filas = lista.filter(r => r.parroquia === sede).sort((a, b) => (Number(a.fecha_registro) || 0) - (Number(b.fecha_registro) || 0));
                 const cabecera = () => {
                     if (escudo) try { doc.addImage(escudo, 'PNG', margenX, 6, 24, 18); } catch (e) {}
-                    // Distintivo de protección civil dibujado (el logo en foto sale gris).
-                    const xp = pageW - margenX - 19, yp = 6, tp = 19;
-                    doc.setFillColor(247, 148, 29); doc.roundedRect(xp, yp, tp, tp, 3, 3, 'F');
-                    doc.setFillColor(28, 63, 148); doc.triangle(xp + tp / 2, yp + 2.5, xp + tp - 2.2, yp + tp - 2.8, xp + 2.2, yp + tp - 2.8, 'F');
-                    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.text('PC', xp + tp / 2, yp + tp - 5, { align: 'center' });
+                    doc.addImage(logoPC, 'PNG', pageW - margenX - 19, 6, 19, 19 * 937 / 949);
                     doc.setTextColor(28, 63, 148); doc.setFont('helvetica', 'bold');
                     doc.setFontSize(14); doc.text('CONTROL DE ASISTENCIA', pageW / 2, 11, { align: 'center' });
                     doc.setFontSize(11); doc.text(_safePdf('PROTECCIÓN CIVIL Y ADMINISTRACIÓN DE DESASTRES'), pageW / 2, 17, { align: 'center' });
