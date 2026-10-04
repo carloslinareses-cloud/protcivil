@@ -1,0 +1,178 @@
+{
+  "pc_educacion": {
+    ".read": "auth != null && root.child('pc_operadores').child(auth.uid).exists() && (root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin' || root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus')",
+    ".indexOn": [
+      "fecha_registro",
+      "parroquia"
+    ],
+    "$id": {
+      ".write": "(!data.exists() && newData.exists() && root.child('pc_config').child('formulario_abierto').val() === true) || (newData.exists() && (auth != null && root.child('pc_operadores').child(auth.uid).exists() && (root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin' || root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus'))) || (!newData.exists() && (auth != null && root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus'))",
+      ".validate": "(data.exists() || $id.matches(/^-[A-Za-z0-9_-]{19}$/)) && newData.hasChildren([\"plantel\",\"direccion\",\"parroquia\",\"comunidad\",\"director_nombre\",\"responsable\",\"origen\",\"fecha_registro\"]) && ((auth != null && root.child('pc_operadores').child(auth.uid).exists() && (root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin' || root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus')) || (newData.child('origen').val() === 'publico' && !newData.hasChild('fecha_edicion') && !newData.hasChild('editado_por')))",
+      "origen": {
+        ".validate": "newData.val() === 'publico' || newData.val() === 'interno'"
+      },
+      "fecha_registro": {
+        ".validate": "newData.isNumber() && newData.val() > 1700000000000 && newData.val() <= now + 60000 && (!data.exists() || newData.val() === data.val())"
+      },
+      "fecha_edicion": {
+        ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+      },
+      "editado_por": {
+        ".validate": "auth != null && root.child('pc_operadores').child(auth.uid).exists() && (root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin' || root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus') && newData.hasChildren(['uid','nombre']) && newData.child('uid').val() === auth.uid",
+        "uid": {
+          ".validate": "newData.isString() && newData.val().length <= 128"
+        },
+        "nombre": {
+          ".validate": "newData.isString() && newData.val().length <= 150"
+        },
+        "$otro": {
+          ".validate": false
+        }
+      },
+      "$otro": {
+        ".validate": false
+      },
+      "plantel": {
+        ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 200"
+      },
+      "codigo_plantel": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 80"
+      },
+      "direccion": {
+        ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 600"
+      },
+      "parroquia": {
+        ".validate": "newData.val() === 'Charallave' || newData.val() === 'Las Brisas del Tuy'"
+      },
+      "comunidad": {
+        ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 200"
+      },
+      "sala_autogobierno": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200"
+      },
+      "cuadrante_paz": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+      },
+      "iapem": {
+        ".validate": "newData.val() === 'Sí' || newData.val() === 'No'"
+      },
+      "guardia_pueblo": {
+        ".validate": "newData.val() === 'Sí' || newData.val() === 'No'"
+      },
+      "policia_municipal": {
+        ".validate": "newData.val() === 'Sí' || newData.val() === 'No'"
+      },
+      "pcad": {
+        ".validate": "newData.val() === 'Sí' || newData.val() === 'No'"
+      },
+      "director_nombre": {
+        ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 150"
+      },
+      "director_cedula": {
+        ".validate": "newData.isString() && newData.val().matches(/^[VE]?-?[0-9]{4,10}$/)"
+      },
+      "director_edad": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 120 && newData.val() % 1 === 0"
+      },
+      "director_telefono": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+      },
+      "estudiantes_ninos": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "estudiantes_ninas": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "estudiantes_total": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 200000 && newData.val() % 1 === 0 && newData.parent().child('estudiantes_ninos').isNumber() && newData.parent().child('estudiantes_ninas').isNumber() && newData.val() === newData.parent().child('estudiantes_ninos').val() + newData.parent().child('estudiantes_ninas').val()"
+      },
+      "estudiantes_matricula": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "especial_varones": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "especial_hembras": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "especial_total": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 200000 && newData.val() % 1 === 0 && newData.parent().child('especial_varones').isNumber() && newData.parent().child('especial_hembras').isNumber() && newData.val() === newData.parent().child('especial_varones').val() + newData.parent().child('especial_hembras').val()"
+      },
+      "especial_matricula": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "adultos_varones": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "adultos_hembras": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "adultos_total": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 200000 && newData.val() % 1 === 0 && newData.parent().child('adultos_varones').isNumber() && newData.parent().child('adultos_hembras').isNumber() && newData.val() === newData.parent().child('adultos_varones').val() + newData.parent().child('adultos_hembras').val()"
+      },
+      "adultos_matricula": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "madres_cocineras": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "personal_obrero": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "personal_inicial": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "personal_primaria": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "personal_media_general": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "personal_media_tecnica": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "personal_director": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "personal_subdirector": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "personal_coordinador": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "tiene_brigadas": {
+        ".validate": "newData.val() === 'Sí' || newData.val() === 'No'"
+      },
+      "brigadas_conformacion": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 1000"
+      },
+      "capacitados_ninos": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "capacitados_ninas": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000 && newData.val() % 1 === 0"
+      },
+      "capacitados_total": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 200000 && newData.val() % 1 === 0 && newData.parent().child('capacitados_ninos').isNumber() && newData.parent().child('capacitados_ninas').isNumber() && newData.val() === newData.parent().child('capacitados_ninos').val() + newData.parent().child('capacitados_ninas').val()"
+      },
+      "taller": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 300"
+      },
+      "responsable": {
+        ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 150"
+      },
+      "oficial": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 150"
+      },
+      "auxiliar": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 150"
+      },
+      "conductor": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 150"
+      },
+      "resena": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 6000"
+      }
+    }
+  }
+}
