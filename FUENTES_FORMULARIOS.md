@@ -17,3 +17,16 @@ Fuente: `PLANTILLA EDUCACION.xlsx`, hoja `Hoja1`. El original permanece intacto.
 IAPEM, Guardia del Pueblo, Policía Municipal y P.C.A.D. conservan las cuatro opciones de la hoja como selecciones Sí/No. No se infieren cantidades ni información personal.
 
 Los demás archivos de la carpeta solo se procesan según las instrucciones posteriores de Carlos.
+
+## Riesgo controlado
+
+Fuentes comparadas y renderizadas con PowerPoint: `Riesgo Controlado FORMATO.pptx` (vacío) e `INVERSIONES PARAVELAS, C.A..pptx` (lleno y modelo final). Ambos contienen una página vertical de 7,5 × 10 pulgadas. El modelo final define bordes, posiciones, tipografía, texto institucional, pie y firma. Los originales permanecen intactos.
+
+- `riesgo-controlado.html` y `riesgo-controlado.js`: panel exclusivo del administrador, con once datos variables, vista previa al escribir, informes guardados y edición. No se agrega al menú público.
+- `riesgo-controlado.css`: impresión de una página con las dimensiones del PowerPoint, borde azul, encabezado, establecimiento y fechas en rojo, director y pie del modelo final. La impresión usa el mismo artículo de la vista previa; la escala de pantalla se elimina al imprimir. Los textos largos se ajustan dentro de límites legibles; si todavía exceden el espacio, se bloquea la impresión y se muestra el problema en lugar de recortar información.
+- La casilla «Incluir firma digital al imprimir» comienza desmarcada, incluso al abrir un informe guardado. Su estado no se guarda en el registro. Se utiliza el JPEG original; el navegador reconoce su orientación EXIF y se conserva la caja horizontal equivalente al PowerPoint, sin volver a rotarlo ni deformarlo.
+- `pc_riesgo_controlado`: registros privados. `pc_riesgo_controlado_config`: firma original privada, accesible solo tras comprobar el rol del personal. La firma no se incluye en archivos públicos del sitio.
+- `reglas-riesgo-controlado.json`: fragmento de permisos y validaciones. `pruebas/riesgo-controlado-preparar.mjs --publicar` incorpora estos nodos conservando las demás reglas y verifica los datos privados preparados. No modifica los informes existentes.
+- `pruebas/e2e-riesgo-controlado.mjs`: privacidad, acceso desde admin, guardado, edición, móvil y PDF con/sin firma. Comprueba que el menú público no lo ofrezca y reproduce el ejemplo lleno solo en el navegador para comparar, sin guardarlo en Firebase. Retira registros y cuenta temporales al terminar.
+
+El contenido técnico y los datos de inspección los introduce y revisa el personal responsable. El panel reproduce el documento proporcionado, sin deducir que se realizó una inspección ni emitir por su cuenta una aprobación.

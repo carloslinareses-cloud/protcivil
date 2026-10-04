@@ -1,0 +1,68 @@
+{
+  "pc_riesgo_controlado": {
+    ".read": "auth != null && root.child('pc_operadores').child(auth.uid).exists() && (root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin' || root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus')",
+    ".indexOn": [
+      "fecha_registro",
+      "codigo"
+    ],
+    "$id": {
+      ".write": "(newData.exists() && (auth != null && root.child('pc_operadores').child(auth.uid).exists() && (root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin' || root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus'))) || (!newData.exists() && (auth != null && root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus'))",
+      ".validate": "(data.exists() || $id.matches(/^-[A-Za-z0-9_-]{19}$/)) && newData.hasChildren([\"codigo\",\"establecimiento\",\"rif\",\"representante\",\"cedula\",\"ramo_codigo\",\"ramo_descripcion\",\"direccion\",\"parroquia\",\"fecha_inspeccion\",\"fecha_vencimiento\",\"origen\",\"fecha_registro\",\"creado_por\"])",
+      "origen": {
+        ".validate": "newData.val() === 'interno'"
+      },
+      "fecha_registro": {
+        ".validate": "newData.isNumber() && newData.val() > 1700000000000 && newData.val() <= now + 60000 && (!data.exists() || newData.val() === data.val())"
+      },
+      "fecha_edicion": {
+        ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+      },
+      "creado_por": {
+        ".validate": "newData.isString() && (data.exists() ? newData.val() === data.val() : newData.val() === auth.uid)"
+      },
+      "editado_por": {
+        ".validate": "newData.isString() && newData.val() === auth.uid"
+      },
+      "$otro": {
+        ".validate": false
+      },
+      "codigo": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30 && newData.val().matches(/^GR\\/[0-9]{1,8}\\/[0-9]{4}$/)"
+      },
+      "establecimiento": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 140"
+      },
+      "rif": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 15 && newData.val().matches(/^[JGVEP]-[0-9]{8}-[0-9]$/)"
+      },
+      "representante": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 150"
+      },
+      "cedula": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 15 && newData.val().matches(/^[VE]-[0-9]{4,10}$/)"
+      },
+      "ramo_codigo": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+      },
+      "ramo_descripcion": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 300"
+      },
+      "direccion": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 500"
+      },
+      "parroquia": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30 && (newData.val() === 'Charallave' || newData.val() === 'Las Brisas del Tuy')"
+      },
+      "fecha_inspeccion": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10 && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
+      },
+      "fecha_vencimiento": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10 && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
+      }
+    }
+  },
+  "pc_riesgo_controlado_config": {
+    ".read": "auth != null && root.child('pc_operadores').child(auth.uid).exists() && (root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin' || root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus')",
+    ".write": "auth != null && root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus'"
+  }
+}

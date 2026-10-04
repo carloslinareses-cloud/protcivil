@@ -157,6 +157,12 @@
                 <div class="card-desc">Consultar planteles, poblaci?n estudiantil, personal, brigadas, capacitaci?n y rese?as. Fichas completas, edici?n, PDF y Excel.</div>
             </div>
 
+            <div class="card card-registrados" onclick="location.href='riesgo-controlado.html'">
+                <span class="card-icon">??</span>
+                <div class="card-title">Riesgo controlado</div>
+                <div class="card-desc">Preparar y guardar la planilla del establecimiento, con vista previa en tiempo real y firma digital opcional al imprimir. Uso exclusivo del administrador.</div>
+            </div>
+
             <div class="card card-publico" onclick="location.href='reportar-riesgo.html'">
                 <span class="card-icon">📣</span>
                 <div class="card-title">Formularios públicos</div>
@@ -211,6 +217,8 @@
            basta con otra entrada aquí: su nodo, a dónde lleva la tarjeta
            y qué cifra propia se destaca. */
         const FORMULARIOS = [
+            { clave: 'riesgo_controlado', nodo: 'pc_riesgo_controlado', titulo: 'Riesgo controlado', icono: '??', enlace: 'riesgo-controlado.html',
+              destacada: { etiqueta: 'Informes internos', calcular: lista => lista.length } },
             { clave: 'educacion', nodo: 'pc_educacion', titulo: 'Educaci?n', icono: '??', enlace: 'educacion-resultados.html',
               destacada: { etiqueta: 'Con brigadas', calcular: lista => lista.filter(r => r.tiene_brigadas === 'S?').length } },
             { clave: 'riesgo', nodo: 'pc_informes', titulo: 'Informes de riesgo', icono: '🏚️', enlace: 'informes-resultados.html',

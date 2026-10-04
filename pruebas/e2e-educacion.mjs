@@ -16,7 +16,7 @@ const datos={};for(const c of CAMPOS)datos[c.clave]=['number','edad'].includes(c
 assert.ok(validar({...datos,estudiantes_ninos:-1}));assert.ok(validar({...datos,estudiantes_total:99}));assert.ok(validar({...datos,director_edad:121}));
 const tipos={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.png':'image/png'};
 const servidor=http.createServer((req,res)=>{const f=path.resolve(carpeta,'.'+new URL(req.url,'http://localhost').pathname);if(!f.startsWith(carpeta+path.sep)){res.writeHead(403).end();return;}try{res.setHeader('Content-Type',tipos[path.extname(f)]||'application/octet-stream');res.end(fs.readFileSync(f));}catch(e){res.writeHead(404).end();}});
-await new Promise(ok=>servidor.listen(0,'127.0.0.1',ok));const base='http://127.0.0.1:'+servidor.address().port;
+await new Promise(ok=>servidor.listen(0,'127.0.0.1',ok));const base=process.argv.includes('--produccion')?'https://protcivil.alcaldiadecharallave.com':'http://127.0.0.1:'+servidor.address().port;
 async function esperarArchivo(ext){for(let i=0;i<80;i++){const f=fs.readdirSync(sal).find(f=>f.endsWith(ext));if(f)return path.join(sal,f);await new Promise(ok=>setTimeout(ok,200));}throw Error('No se descargó '+ext);}
 try{
  const url='https://alcaldia-admin-default-rtdb.firebaseio.com/pc_educacion.json';const anon=await fetch(url);assert.equal(anon.status,401,'Los registros no pueden leerse públicamente');
