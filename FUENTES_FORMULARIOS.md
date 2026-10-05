@@ -30,3 +30,7 @@ Fuentes comparadas y renderizadas con PowerPoint: `Riesgo Controlado FORMATO.ppt
 - `pruebas/e2e-riesgo-controlado.mjs`: privacidad, acceso desde admin, guardado, edición, móvil y PDF con/sin firma. Comprueba que el menú público no lo ofrezca y reproduce el ejemplo lleno solo en el navegador para comparar, sin guardarlo en Firebase. Retira registros y cuenta temporales al terminar.
 
 El contenido técnico y los datos de inspección los introduce y revisa el personal responsable. El panel reproduce el documento proporcionado, sin deducir que se realizó una inspección ni emitir por su cuenta una aprobación.
+
+## Corrección del administrador
+
+Se corrigen las tildes e iconos de las tarjetas y del menú que se habían deteriorado al insertar texto desde PowerShell. El contador de brigadas compara correctamente `Sí`, con tilde. Las tarjetas nuevas utilizan enlaces nativos que pueden abrirse con teclado. El panel conserva su diseño y adapta contenedor, selector de módulo y cifras a 320 y 375 píxeles sin desbordamiento. La prueba de Educación comprueba textos, iconos, contador real, enlaces de ambos módulos y capturas de escritorio/teléfono. Las futuras ediciones conservan UTF-8 y no introducen texto Unicode mediante una tubería de PowerShell a Python.

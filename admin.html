@@ -13,7 +13,7 @@
         }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--gris-fondo); padding: 20px 0; padding-top: 30px; }
         .cintillo-gob { width: 100%; background-color: #1a1a1a; color: #fff; text-align: center; padding: 6px 0; font-size: 11px; font-weight: bold; letter-spacing: 1px; position: fixed; top: 0; left: 0; z-index: 1000; }
-        .container { background-color: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); max-width: 1100px; margin: auto; border-top: 8px solid var(--naranja-pc); }
+        .container { box-sizing: border-box; background-color: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); width: calc(100% - 28px); max-width: 1180px; margin: auto; border-top: 8px solid var(--naranja-pc); }
         .gob-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gris-borde); padding-bottom: 20px; margin-bottom: 20px; }
         .gob-header img { height: 68px; object-fit: contain; }
         .header-titles { text-align: center; flex-grow: 1; padding: 0 20px; }
@@ -22,24 +22,25 @@
         /* En el teléfono los dos escudos y el título no caben en una fila:
            los escudos quedan arriba, a los lados, y el título debajo. */
         @media (max-width: 560px) {
+            .container { padding: 18px; }
             .gob-header { flex-wrap: wrap; }
             .gob-header img { height: 52px; }
             .header-titles { order: 3; flex-basis: 100%; padding: 10px 0 0; }
             .header-titles h1 { font-size: 18px; }
         }
-        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .quien-soy { font-size: 13px; color: #555; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+        .quien-soy { font-size: 13px; color: #555; min-width: 0; overflow-wrap: anywhere; }
         .quien-soy b { color: var(--azul-pc); }
         .rol-badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-left: 6px; }
         .rol-badge.admin_plus { background: #fef3c7; color: #92400e; }
         .rol-badge.admin { background: #dbeafe; color: #1e40af; }
-        .btn-nav { background-color: #333; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; text-transform: uppercase; }
+        .btn-nav { background-color: #333; color: white; padding: 10px 20px; min-height: 44px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; text-transform: uppercase; }
         .btn-nav:hover { background-color: #555; }
         h2 { text-align: center; color: var(--naranja-pc); margin-top: 10px; font-size: 22px; text-transform: uppercase; }
         p.sub-title { text-align: center; color: #666; font-size: 15px; margin-bottom: 30px; font-weight: bold; }
 
         /* Resumen en vivo: una tarjeta por formulario. */
-        .resumen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 35px; }
+        .resumen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; margin-bottom: 35px; }
         .resumen { display: block; background: #fff; border: 1px solid #e2e8f0; border-top: 5px solid var(--naranja-pc); border-radius: 10px; padding: 16px; text-decoration: none; color: inherit; box-shadow: 0 3px 10px rgba(0,0,0,.05); min-width: 0; }
         .resumen:hover, .resumen:focus-visible { border-color: var(--azul-pc); outline: none; }
         .resumen-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
@@ -56,12 +57,19 @@
         .barras span { flex: 1; background: #bfdbfe; border-radius: 3px 3px 0 0; min-height: 2px; }
         .barras span.hoy { background: var(--naranja-pc); }
         .barras-pie { display: flex; justify-content: space-between; font-size: 10.5px; color: #94a3b8; margin-top: 3px; }
-        @media (max-width: 420px) { .resumen-cifras .n { font-size: 19px; } }
+        @media (max-width: 420px) {
+            .resumen-cifras { grid-template-columns: repeat(2, 1fr); }
+            .resumen-cifras .n { font-size: 19px; }
+            .selector-wrap .selector-modulo { display: flex; max-width: 100%; box-sizing: border-box; }
+            .selector-wrap .selector-modulo button { flex: 1; min-width: 0; justify-content: center; padding: 8px; font-size: 13px; }
+        }
         .stat-box { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fdba74; border-radius: 8px; padding: 16px; text-align: center; }
         .stat-box .num { font-size: 28px; font-weight: 900; color: var(--azul-pc); font-variant-numeric: tabular-nums; }
         .stat-box .lbl { font-size: 12px; color: #78350f; font-weight: bold; text-transform: uppercase; margin-top: 4px; }
 
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 10px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 25px; margin-top: 10px; }
+        a.card { text-decoration: none; }
+        a.card:focus-visible { outline: 3px solid var(--azul-pc); outline-offset: 4px; }
         .card { background: #fdfdfd; border: 1px solid var(--gris-borde); border-radius: 8px; padding: 30px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-color: var(--azul-pc); }
         .card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 5px; }
@@ -122,7 +130,7 @@
 
         <div id="vistaFormularios">
         <h2>Panel de Protección Civil</h2>
-        <p class="sub-title">Lo que ha llegado por cada formulario, en vivo. Toca una tarjeta para ver el detalle, el PDF y el Excel.</p>
+        <p class="sub-title">Consulta los registros de cada módulo en vivo. En Educación puedes revisar las fichas y exportar PDF o Excel; en Riesgo controlado puedes preparar, guardar e imprimir el informe.</p>
 
         <div class="resumen-grid" id="resumenGrid"></div>
 
@@ -151,17 +159,17 @@
                 <div class="card-desc">Cada jornada con su lista de personas atendidas, cuántas van en el mes, PDF como la hoja de papel y Excel.</div>
             </div>
 
-            <div class="card card-registrados" onclick="location.href='educacion-resultados.html'">
-                <span class="card-icon">??</span>
-                <div class="card-title">Educaci?n</div>
-                <div class="card-desc">Consultar planteles, poblaci?n estudiantil, personal, brigadas, capacitaci?n y rese?as. Fichas completas, edici?n, PDF y Excel.</div>
-            </div>
+            <a class="card card-registrados" href="educacion-resultados.html">
+                <span class="card-icon" aria-hidden="true">🏫</span>
+                <div class="card-title">Educación</div>
+                <div class="card-desc">Consultar planteles, población estudiantil, personal, brigadas, capacitación y reseñas. Fichas completas, edición, PDF y Excel.</div>
+            </a>
 
-            <div class="card card-registrados" onclick="location.href='riesgo-controlado.html'">
-                <span class="card-icon">??</span>
+            <a class="card card-registrados" href="riesgo-controlado.html">
+                <span class="card-icon" aria-hidden="true">📄</span>
                 <div class="card-title">Riesgo controlado</div>
                 <div class="card-desc">Preparar y guardar la planilla del establecimiento, con vista previa en tiempo real y firma digital opcional al imprimir. Uso exclusivo del administrador.</div>
-            </div>
+            </a>
 
             <div class="card card-publico" onclick="location.href='reportar-riesgo.html'">
                 <span class="card-icon">📣</span>
@@ -217,10 +225,10 @@
            basta con otra entrada aquí: su nodo, a dónde lleva la tarjeta
            y qué cifra propia se destaca. */
         const FORMULARIOS = [
-            { clave: 'riesgo_controlado', nodo: 'pc_riesgo_controlado', titulo: 'Riesgo controlado', icono: '??', enlace: 'riesgo-controlado.html',
+            { clave: 'riesgo_controlado', nodo: 'pc_riesgo_controlado', titulo: 'Riesgo controlado', icono: '📄', enlace: 'riesgo-controlado.html',
               destacada: { etiqueta: 'Informes internos', calcular: lista => lista.length } },
-            { clave: 'educacion', nodo: 'pc_educacion', titulo: 'Educaci?n', icono: '??', enlace: 'educacion-resultados.html',
-              destacada: { etiqueta: 'Con brigadas', calcular: lista => lista.filter(r => r.tiene_brigadas === 'S?').length } },
+            { clave: 'educacion', nodo: 'pc_educacion', titulo: 'Educación', icono: '🏫', enlace: 'educacion-resultados.html',
+              destacada: { etiqueta: 'Con brigadas', calcular: lista => lista.filter(r => r.tiene_brigadas === 'Sí').length } },
             { clave: 'riesgo', nodo: 'pc_informes', titulo: 'Informes de riesgo', icono: '🏚️', enlace: 'informes-resultados.html',
               destacada: { etiqueta: 'Del público sin código', calcular: lista => lista.filter(r => r.origen === 'publico' && !r.codigo).length } },
             { clave: 'novedades', nodo: 'pc_novedades', titulo: 'Novedades relevantes', icono: '🚑', enlace: 'novedades-resultados.html',

@@ -333,7 +333,7 @@
             const pageW = 279.4, margenX = 14.2;
             const escudo = await cargarLogo('logos/cristobal-rojas.png');
             const logoPC = await cargarLogo('logos/pc.png?v=20261005');
-            if (!logoPC) throw new Error('No se pudo cargar el logo de Protecci?n Civil.');
+            if (!logoPC) throw new Error('No se pudo cargar el logo de Protección Civil.');
             const periodo = (f.desde || f.hasta) ? 'Del ' + (fechaDeFiltro(f.desde) || 'inicio') + ' al ' + (fechaDeFiltro(f.hasta) || 'hoy') : 'Todas las fechas';
             const sedes = ['Charallave', 'Las Brisas del Tuy'].filter(s => lista.some(r => r.parroquia === s));
             sedes.forEach((sede, k) => {
