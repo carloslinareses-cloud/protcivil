@@ -89,6 +89,10 @@
         .card-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; text-transform: uppercase; }
         .card-desc { font-size: 13px; color: #666; }
         .hidden { display: none !important; }
+        .acceso-informe { display: block; margin: 0 0 24px; padding: 18px 20px; border: 2px solid var(--azul-pc); border-left: 8px solid var(--naranja-pc); border-radius: 8px; background: #eff6ff; color: var(--azul-pc); text-decoration: none; }
+        .acceso-informe strong { display: block; font-size: 18px; margin-bottom: 6px; }
+        .acceso-informe span { display: block; color: #334155; font-size: 14px; line-height: 1.5; }
+        .acceso-informe:focus-visible { outline: 3px solid var(--naranja-pc); outline-offset: 4px; }
         #loader { text-align: center; padding: 80px 20px; color: #777; }
         #acceso-restringido { text-align: center; padding: 80px 20px; color: #c0392b; font-weight: bold; }
     </style>
@@ -125,6 +129,11 @@
                 <button type="button" data-modulo="asistencia" aria-pressed="false"><span aria-hidden="true">🕐</span> Asistencia</button>
             </div>
         </div>
+
+        <a class="acceso-informe" id="abrirRiesgoControlado" href="riesgo-controlado.html">
+            <strong>Llenar informe de riesgo controlado →</strong>
+            <span>Completar los datos, ver el informe en tiempo real e imprimir con o sin firma digital.</span>
+        </a>
 
         <div id="vistaAsistencia" hidden></div>
 
