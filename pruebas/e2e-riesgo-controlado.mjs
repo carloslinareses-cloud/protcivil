@@ -30,6 +30,19 @@ with zipfile.ZipFile(r'C:/Users/carlo/Documents/protcivil form/nuevo/INVERSIONES
  print(json.dumps({'codigo':textos['6'].split(':')[1].strip(),'establecimiento':textos['7'].strip(),'rif':textos['8'].split(':')[1].strip(),'representante':re.search(r'Representada por: (.*?), titular',body).group(1),'cedula':re.search(r'Identidad (V[-.0-9]+)',body).group(1).replace('.',''),'ramo_codigo':ramo.group(1),'ramo_descripcion':ramo.group(2),'direccion':re.search(r'ubicada en: (.*?), Parroquia',body).group(1),'parroquia':'Charallave','fecha_inspeccion':'2026-09-21','fecha_vencimiento':'2026-12-31'}))
 `],{encoding:'utf8',windowsHide:true});assert.equal(extraer.status,0,extraer.stderr);const modelo=JSON.parse(extraer.stdout);
  await page.setViewport({width:1600,height:1000});await page.goto(base+'/riesgo-controlado.html',{waitUntil:'networkidle2'});await page.waitForFunction(()=>!document.getElementById('contenido').hidden);await page.evaluate(d=>{for(const [k,v] of Object.entries(d))document.getElementById(k).value=v;document.getElementById('codigo').dispatchEvent(new Event('input',{bubbles:true}));},modelo);await page.click('#incluirFirma');await page.waitForFunction(()=>document.getElementById('firma').complete);assert.equal(await page.$eval('#errorVista',e=>e.textContent),'');await page.pdf({path:path.join(sal,'modelo-final-reproducido.pdf'),preferCSSPageSize:true,printBackground:true});
+ const verificarCarta=spawnSync('python',['-c',`import fitz,sys,json
+from PIL import Image,ImageChops
+from pathlib import Path
+carpeta=Path(sys.argv[1]);resultados=[]
+for nombre in ['sin-firma','con-firma','modelo-final-reproducido']:
+ d=fitz.open(carpeta/(nombre+'.pdf'));assert len(d)==1,(nombre,len(d))
+ p=d[0];assert abs(p.rect.width-612)<.1 and abs(p.rect.height-792)<.1,(nombre,p.rect)
+ pix=p.get_pixmap(matrix=fitz.Matrix(2,2),alpha=False);im=Image.frombytes('RGB',[pix.width,pix.height],pix.samples)
+ gris=im.convert('L');tinta=gris.point(lambda x:255 if x<245 else 0);bbox=tinta.getbbox();assert bbox is not None
+ assert bbox[0]>=71 and bbox[1]>=71 and bbox[2]<=1153 and bbox[3]<=1513,(nombre,bbox)
+ im.save(carpeta/(nombre+'-carta.png'));resultados.append({'archivo':nombre,'pagina':'carta','margen_minimo_cm':1.27,'tinta':bbox})
+print(json.dumps(resultados))
+`,sal],{encoding:'utf8',windowsHide:true});assert.equal(verificarCarta.status,0,verificarCarta.stderr);console.log(verificarCarta.stdout.trim());
  console.log(JSON.stringify({resultado:'OK',privado:true,guardado:true,edicion:true,vistaPrevia:true,firmaOpcional:true,movil:true,modeloComparado:true,archivos:sal}));
 }finally{if(browser)await browser.close();if(id)await db.ref('pc_riesgo_controlado/'+id).remove();await db.ref('pc_operadores/'+uid).remove();const b=(await db.ref('pc_bitacora').once('value')).val()||{};for(const [k,v] of Object.entries(b))if(v.uid===uid)await db.ref('pc_bitacora/'+k).remove();await auth.deleteUser(uid).catch(()=>{});servidor.close();}
 process.exit(0);
