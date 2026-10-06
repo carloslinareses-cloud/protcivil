@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const {validar,fotosValidas}=await import('data:text/javascript;base64,'+Buffer.from(fs.readFileSync(new URL('../parque-automotor-data.js',import.meta.url),'utf8')).toString('base64'));
+const ejemplo={bomba:'PRUEBA',tipo_bomba:'Subsidiada',nombre:'PRUEBA',apellido:'FICTICIA',cedula:'0000',telefono:'0000000',municipio:'Cristóbal Rojas',fecha:'2026-10-06',hora:'13:00',unidad:'Moto',marca:'PRUEBA',placa:'QA',fotos:[]};
+assert.equal(validar(ejemplo),'');
+assert.equal(validar({...ejemplo,unidad:'Ambulancia',tipo_bomba:'Internacional'}),'');
+for(const cambio of [{nombre:''},{fecha:'2026-02-30'},{hora:'24:00'},{unidad:'Carro'},{tipo_bomba:'Otra'},{fotos:['https://otro-dominio.com/foto.jpg']},{fotos:Array(11).fill('https://fotos.alcaldiadecharallave.com/foto/'+'a'.repeat(32)+'.jpg')}])assert(validar({...ejemplo,...cambio}),JSON.stringify(cambio));
+assert.equal(fotosValidas({fotos:['javascript:alert(1)']}).length,0);
+assert.equal(validar({...ejemplo,fecha:'2024-02-29'}),'');
+console.log('OK: unidades, tipos de bomba, campos obligatorios, fecha real, hora y fotografías seguras.');
