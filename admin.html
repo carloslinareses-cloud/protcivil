@@ -144,6 +144,11 @@
         <div class="resumen-grid" id="resumenGrid"></div>
 
         <div class="dashboard-grid">
+            <a class="card card-registrados" href="parque-automotor-resultados.html">
+                <span class="card-icon" aria-hidden="true">🚑</span>
+                <div class="card-title">Parque automotor</div>
+                <div class="card-desc">Reportes de motos y ambulancias: abastecimiento, funcionario, combustible, aceite y fotografías. Fichas completas, PDF y Excel.</div>
+            </a>
             <div class="card card-nuevo" onclick="location.href='informe-riesgo.html'">
                 <span class="card-icon">📋</span>
                 <div class="card-title">Nuevo Informe Técnico de Riesgo</div>
@@ -234,6 +239,8 @@
            basta con otra entrada aquí: su nodo, a dónde lleva la tarjeta
            y qué cifra propia se destaca. */
         const FORMULARIOS = [
+            { clave: 'parque_automotor', nodo: 'pc_parque_automotor', titulo: 'Parque automotor', icono: '🚑', enlace: 'parque-automotor-resultados.html',
+              destacada: { etiqueta: 'Ambulancias · motos', calcular: lista => lista.filter(r => r.unidad === 'Ambulancia').length + ' · ' + lista.filter(r => r.unidad === 'Moto').length } },
             { clave: 'riesgo_controlado', nodo: 'pc_riesgo_controlado', titulo: 'Riesgo controlado', icono: '📄', enlace: 'riesgo-controlado.html',
               destacada: { etiqueta: 'Informes internos', calcular: lista => lista.length } },
             { clave: 'educacion', nodo: 'pc_educacion', titulo: 'Educación', icono: '🏫', enlace: 'educacion-resultados.html',

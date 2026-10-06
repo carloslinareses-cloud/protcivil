@@ -1,0 +1,74 @@
+{
+  "pc_parque_automotor": {
+    ".read": "auth != null && root.child('pc_operadores').child(auth.uid).exists() && (root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin' || root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus')",
+    ".indexOn": [
+      "fecha_registro",
+      "fecha",
+      "unidad"
+    ],
+    "$id": {
+      ".write": "!data.exists() && newData.exists() && root.child('pc_config').child('formulario_abierto').val() === true",
+      ".validate": "$id.matches(/^-[A-Za-z0-9_-]{19}$/) && newData.hasChildren([\"bomba\",\"tipo_bomba\",\"nombre\",\"apellido\",\"cedula\",\"telefono\",\"municipio\",\"fecha\",\"hora\",\"unidad\",\"marca\",\"placa\",\"origen\",\"fecha_registro\"])",
+      "origen": {
+        ".validate": "newData.val() === 'publico'"
+      },
+      "fecha_registro": {
+        ".validate": "newData.isNumber() && newData.val() > 1700000000000 && newData.val() <= now + 60000"
+      },
+      "fotos": {
+        ".validate": "newData.hasChildren()",
+        "$i": {
+          ".validate": "$i.matches(/^[0-9]$/) && newData.isString() && newData.val().matches(/^https:\\/\\/fotos\\.alcaldiadecharallave\\.com\\/foto\\/[a-z0-9]{32}\\.(jpg|png|webp)$/)"
+        }
+      },
+      "$otro": {
+        ".validate": false
+      },
+      "bomba": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 160"
+      },
+      "tipo_bomba": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 20 && (newData.val() === 'Subsidiada' || newData.val() === 'Internacional')"
+      },
+      "nombre": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+      },
+      "apellido": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+      },
+      "cedula": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 15 && newData.val().matches(/^[VE]?-?[0-9]{4,10}$/)"
+      },
+      "telefono": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30 && newData.val().matches(/^[+0-9() .-]{7,30}$/)"
+      },
+      "municipio": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+      },
+      "fecha": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10 && newData.val().matches(/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)"
+      },
+      "hora": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 5 && newData.val().matches(/^([01][0-9]|2[0-3]):[0-5][0-9]$/)"
+      },
+      "unidad": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 20 && (newData.val() === 'Ambulancia' || newData.val() === 'Moto')"
+      },
+      "marca": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+      },
+      "placa": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+      },
+      "combustible": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200"
+      },
+      "aceite": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200"
+      },
+      "nota": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 3000"
+      }
+    }
+  }
+}
