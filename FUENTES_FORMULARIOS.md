@@ -18,6 +18,19 @@ IAPEM, Guardia del Pueblo, Policía Municipal y P.C.A.D. conservan las cuatro op
 
 Los demás archivos de la carpeta solo se procesan según las instrucciones posteriores de Carlos.
 
+## Solicitud ciudadana de inspección
+
+Fuente autorizada el 16/10/2026: `C:\Users\carlo\Documents\SOLICITUD DE INSPECCION.docx`. El Word original permanece intacto. Carlos indicó que el ciudadano describe el motivo en el apartado «Diagnóstico».
+
+- `solicitud-inspeccion.html`: formulario público independiente, sin acceso desde `reportar-riesgo.html`. Conserva los 23 campos generales del Word: ubicación, solicitante, cantidades familiares, seis tipos de inspección y diagnóstico o motivo. Estado Miranda y municipio Cristóbal Rojas son los valores del documento. Cantidades vacías permanecen desconocidas y cero se conserva como cero; no se suman categorías que pueden solaparse.
+- `solicitud-inspeccion-data.mjs`: esquema compartido para controles, validación, lectura y exportaciones. Para casa o apartamento se permite añadir hasta 50 integrantes del núcleo familiar con parentesco, nombre, edad, sexo, cédula y plantel. Las cédulas de familiares son opcionales; no se deducen datos de menores ni se inventan edades.
+- `solicitud-inspeccion-resultados.html`: acceso desde el administrador y su resumen en vivo. Permite consultar todas las solicitudes completas, buscar y filtrar, descargar todas las coincidencias en PDF o Excel y ver la ficha de cada solicitud. La tarjeta para compartir pertenece a este tablero: copiar enlace, abrir formulario, WhatsApp y descargar QR PNG. El QR contiene únicamente el enlace público, no datos personales.
+- `pc_solicitudes_inspeccion`: nodo propio. El ciudadano solo crea una solicitud nueva con identificador válido y fecha del servidor; no puede leer, modificar ni borrar solicitudes. El personal con rol `admin` o `admin_plus` y cambio obligatorio resuelto puede leerlas. Las solicitudes se conservan sin edición o borrado desde esta interfaz. El formulario es independiente del interruptor de los formularios habituales.
+- `reglas-solicitud-inspeccion.json` y `pruebas/solicitud-inspeccion-reglas.mjs`: publican únicamente el nodo nuevo conservando y verificando las demás reglas efectivas. La copia del nodo se sincroniza con `alcaldia-admin/firebase-rules.json`.
+- `pruebas/solicitud-inspeccion-e2e.mjs`: prueba pública y privada con datos ficticios, privacidad, rechazo de modificaciones y campos inválidos, conservación completa de campos y familia, filtros, copia de enlace, QR, Excel, PDF y teléfono. Los registros propios de prueba se retiran al finalizar; no se crean cuentas temporales.
+
+La confirmación acredita la recepción de la solicitud; no asigna una fecha de visita ni constituye una evaluación técnica. El catálogo público de formularios permanece sin modificaciones.
+
 ## Riesgo controlado
 
 Fuentes comparadas y renderizadas con PowerPoint: `Riesgo Controlado FORMATO.pptx` (vacío) e `INVERSIONES PARAVELAS, C.A..pptx` (lleno y modelo final). Ambos contienen una página vertical de 7,5 × 10 pulgadas. El modelo final define bordes, posiciones, tipografía, texto institucional, pie y firma. Los originales permanecen intactos.

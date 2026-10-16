@@ -1,0 +1,119 @@
+{
+  "pc_solicitudes_inspeccion": {
+    ".read": "auth != null && root.child('pc_operadores').child(auth.uid).exists() && (root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin' || root.child('pc_operadores').child(auth.uid).child('rol').val() === 'admin_plus') && root.child('pc_operadores').child(auth.uid).child('cambio_obligatorio').val() !== true",
+    ".indexOn": [
+      "fecha_registro",
+      "parroquia",
+      "tipo_inspeccion"
+    ],
+    "$id": {
+      ".write": "!data.exists() && newData.exists()",
+      ".validate": "$id.matches(/^-[A-Za-z0-9_-]{19}$/) && newData.hasChildren([\"estado\",\"municipio\",\"parroquia\",\"comunidad\",\"direccion\",\"solicitante_nombre\",\"solicitante_cedula\",\"solicitante_telefono\",\"tipo_inspeccion\",\"diagnostico\",\"origen\",\"fecha_registro\"])",
+      "origen": {
+        ".validate": "newData.val() === 'publico'"
+      },
+      "fecha_registro": {
+        ".validate": "newData.isNumber() && newData.val() >= now - 600000 && newData.val() <= now + 60000"
+      },
+      "$otro": {
+        ".validate": false
+      },
+      "estado": {
+        ".validate": "newData.val() === \"Miranda\""
+      },
+      "municipio": {
+        ".validate": "newData.val() === \"Cristóbal Rojas\""
+      },
+      "parroquia": {
+        ".validate": "newData.val() === 'Charallave' || newData.val() === 'Las Brisas del Tuy'"
+      },
+      "sector": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 160"
+      },
+      "comunidad": {
+        ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 160"
+      },
+      "calle": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200"
+      },
+      "cuadrante_paz": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 120"
+      },
+      "telefono_cuadrante": {
+        ".validate": "newData.isString() && newData.val().length <= 30 && newData.val().matches(/^[+0-9][0-9 ()-]{6,29}$/)"
+      },
+      "sala_autogobierno": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200"
+      },
+      "direccion": {
+        ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 1000"
+      },
+      "solicitante_nombre": {
+        ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 150"
+      },
+      "solicitante_cedula": {
+        ".validate": "newData.isString() && newData.val().matches(/^[VE]?-?[0-9]{4,10}$/)"
+      },
+      "solicitante_edad": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 120 && newData.val() % 1 === 0"
+      },
+      "solicitante_telefono": {
+        ".validate": "newData.isString() && newData.val().length <= 30 && newData.val().matches(/^[+0-9][0-9 ()-]{6,29}$/)"
+      },
+      "ocupacion": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200"
+      },
+      "adultos": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000 && newData.val() % 1 === 0"
+      },
+      "ninos": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000 && newData.val() % 1 === 0"
+      },
+      "lactantes": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000 && newData.val() % 1 === 0"
+      },
+      "adolescentes": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000 && newData.val() % 1 === 0"
+      },
+      "tercera_edad": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000 && newData.val() % 1 === 0"
+      },
+      "discapacidad": {
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000 && newData.val() % 1 === 0"
+      },
+      "tipo_inspeccion": {
+        ".validate": "newData.val() === \"Apartamento\" || newData.val() === \"Casa\" || newData.val() === \"Local comercial\" || newData.val() === \"Institución educativa\" || newData.val() === \"Ente público\" || newData.val() === \"Árbol\""
+      },
+      "diagnostico": {
+        ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 6000"
+      },
+      "familia": {
+        ".validate": "newData.hasChildren() && (newData.parent().child('tipo_inspeccion').val() === 'Casa' || newData.parent().child('tipo_inspeccion').val() === 'Apartamento')",
+        "$indice": {
+          ".validate": "($indice.matches(/^[0-9]$/) || $indice.matches(/^[1-4][0-9]$/)) && newData.hasChildren(['parentesco','nombre'])",
+          "$otro": {
+            ".validate": false
+          },
+          "parentesco": {
+            ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 80"
+          },
+          "nombre": {
+            ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 150"
+          },
+          "edad": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 120 && newData.val() % 1 === 0"
+          },
+          "sexo": {
+            ".validate": "newData.val() === \"Femenino\" || newData.val() === \"Masculino\" || newData.val() === \"No indicado\""
+          },
+          "cedula": {
+            ".validate": "newData.isString() && newData.val().matches(/^[VE]?-?[0-9]{4,10}$/)"
+          },
+          "plantel": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200"
+          }
+        }
+      }
+    }
+  }
+}

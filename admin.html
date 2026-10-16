@@ -173,6 +173,11 @@
                 <div class="card-desc">Cada jornada con su lista de personas atendidas, cuántas van en el mes, PDF como la hoja de papel y Excel.</div>
             </div>
 
+            <a class="card card-registrados" href="solicitud-inspeccion-resultados.html">
+                <div class="card-icon">📝</div>
+                <div class="card-title">Solicitudes de inspección</div>
+                <div class="card-desc">Leer solicitudes ciudadanas completas y compartir el formulario independiente por enlace o QR.</div>
+            </a>
             <a class="card card-registrados" href="educacion-resultados.html">
                 <span class="card-icon" aria-hidden="true">🏫</span>
                 <div class="card-title">Educación</div>
@@ -239,6 +244,8 @@
            basta con otra entrada aquí: su nodo, a dónde lleva la tarjeta
            y qué cifra propia se destaca. */
         const FORMULARIOS = [
+            { clave: 'solicitudes_inspeccion', nodo: 'pc_solicitudes_inspeccion', titulo: 'Solicitudes de inspección', icono: '📝', enlace: 'solicitud-inspeccion-resultados.html',
+              destacada: { etiqueta: 'Solicitudes ciudadanas', calcular: lista => lista.length } },
             { clave: 'parque_automotor', nodo: 'pc_parque_automotor', titulo: 'Parque automotor', icono: '🚑', enlace: 'parque-automotor-resultados.html',
               destacada: { etiqueta: 'Ambulancias · motos', calcular: lista => lista.filter(r => r.unidad === 'Ambulancia').length + ' · ' + lista.filter(r => r.unidad === 'Moto').length } },
             { clave: 'riesgo_controlado', nodo: 'pc_riesgo_controlado', titulo: 'Riesgo controlado', icono: '📄', enlace: 'riesgo-controlado.html',
