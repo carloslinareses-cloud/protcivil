@@ -1,5 +1,5 @@
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import {getDatabase,ref,push,set,serverTimestamp} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getDatabase,ref,push,set,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import {SECCIONES,CAMPOS,OPCIONES,escapar,validar,fotosValidas} from './parque-automotor-data.js';
 const app=initializeApp({apiKey:'AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU',authDomain:'alcaldia-admin.firebaseapp.com',databaseURL:'https://alcaldia-admin-default-rtdb.firebaseio.com',projectId:'alcaldia-admin'}),db=getDatabase(app),$=id=>document.getElementById(id);
 let destino=null,enviando=false;const fotos=[];

@@ -28,7 +28,7 @@ try{
  await page.click('#enviar');await page.waitForFunction(()=>!document.getElementById('confirmacion').hidden,{timeout:20000});
  const s=await db.ref('pc_educacion').once('value');id=Object.keys(s.val()||{}).find(k=>s.val()[k].plantel===marca);assert.ok(id,'Registro público guardado');for(const [k,v] of Object.entries(datos))assert.equal(s.val()[id][k],v,'Campo '+k);
  await auth.createUser({uid,email:uid+'@alcaldia.com',password:'Temporal-'+crypto.randomUUID()});await db.ref('pc_operadores/'+uid).set({nombre:'Prueba automatizada de educación',rol:'admin_plus',cambio_obligatorio:false});const token=await auth.createCustomToken(uid);
- await page.evaluate(async token=>{const {getAuth,signInWithCustomToken}=await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');await signInWithCustomToken(getAuth(),token);},token);
+ await page.evaluate(async token=>{const {getAuth,signInWithCustomToken}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');await signInWithCustomToken(getAuth(),token);},token);
  await page.goto(base+'/admin.html',{waitUntil:'networkidle2'});await page.waitForSelector('#r_educacion_total');await page.waitForFunction(()=>document.getElementById('r_educacion_total').textContent!=='–');assert.ok(await page.$('a.card[href="educacion-resultados.html"]'));assert.ok(await page.$('a.card[href="riesgo-controlado.html"]'));
  assert.equal(await page.$eval('a.card[href="educacion-resultados.html"] .card-title',e=>e.textContent),'Educación');
  assert.equal(await page.$eval('a.card[href="educacion-resultados.html"] .card-icon',e=>e.textContent),'🏫');assert.equal(await page.$eval('a.card[href="riesgo-controlado.html"] .card-icon',e=>e.textContent),'📄');

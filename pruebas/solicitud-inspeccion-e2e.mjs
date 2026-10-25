@@ -40,7 +40,7 @@ try{
  }
  const operadores=(await db.ref('pc_operadores').get()).val()||{},permitidos=Object.entries(operadores).filter(([,p])=>['admin_plus','admin'].includes(p.rol)&&!p.cambio_obligatorio);let operador;
  for(const [uid]of permitidos){const u=await auth.getUser(uid).catch(()=>null);if(u&&!u.disabled){operador=uid;break;}}assert(operador,'Debe existir una cuenta autorizada de Protección Civil');
- const token=await auth.createCustomToken(operador);await page.evaluate(async token=>{const {getAuth,signInWithCustomToken}=await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');await signInWithCustomToken(getAuth(),token);},token);
+ const token=await auth.createCustomToken(operador);await page.evaluate(async token=>{const {getAuth,signInWithCustomToken}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');await signInWithCustomToken(getAuth(),token);},token);
  await page.goto(base+'/admin.html');await page.locator('a.card[href="solicitud-inspeccion-resultados.html"]').waitFor({state:'visible'});await page.waitForFunction(()=>document.getElementById('r_solicitudes_inspeccion_total')?.textContent==='1');
  await page.click('a.card[href="solicitud-inspeccion-resultados.html"]');await page.locator('#contenido').waitFor({state:'visible'});await page.waitForFunction(()=>document.getElementById('cantidad').textContent.includes('solicitudes encontradas'));
  await page.fill('#buscar',marca);await page.locator('#filas button').click();assert.equal(await page.locator('#ficha img').count(),0);assert((await page.locator('#ficha').innerText()).includes(datos.diagnostico));
@@ -50,7 +50,7 @@ try{
  await descargar(page,'#descargarQR',produccion?'qr-produccion.png':'qr.png');await descargar(page,'#excel',produccion?'solicitudes-produccion.xlsx':'solicitudes.xlsx');await descargar(page,'#pdfFicha',produccion?'solicitud-produccion.pdf':'solicitud.pdf');
  await page.locator('#cerrarDetalle').click();await page.setViewportSize({width:1280,height:900});await page.screenshot({path:path.join(salida,'panel-escritorio.png'),fullPage:true});await page.setViewportSize({width:375,height:900});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:path.join(salida,'panel-movil.png'),fullPage:true});
  assert.equal(await page.locator('#imagenQR').evaluate(e=>e.complete&&e.naturalWidth>0),true);assert.deepEqual(errores,[]);
- await page.evaluate(async()=>{const{getAuth,signOut}=await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js');await signOut(getAuth());});
+ await page.evaluate(async()=>{const{getAuth,signOut}=await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js');await signOut(getAuth());});
  assert.equal(fs.readFileSync(path.join(raiz,'reportar-riesgo.html'),'utf8'),menuAntes);
  console.log(JSON.stringify({modo:produccion?'produccion':'localConBackendReal',campos:CAMPOS.length,familiares:2,guardadoCompleto:true,lecturaPublicaBloqueada:true,cambiosPublicosBloqueados:true,validacionServidor:true,admin:true,qrEnlaceExcelPDF:true,movilSinDesborde:true,menuPublicoSinCambios:true,errores}));
 }catch(e){console.error('Fallo de verificación: '+e.message);process.exitCode=1;}

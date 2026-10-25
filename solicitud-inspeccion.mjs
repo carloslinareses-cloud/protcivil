@@ -1,5 +1,5 @@
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import {getDatabase,ref,push,set,onValue,serverTimestamp} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getDatabase,ref,push,set,onValue,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import {SECCIONES,CAMPOS,FAMILIA,TIPOS,escapar,esVivienda,validar} from './solicitud-inspeccion-data.mjs?v=20261016';
 const app=initializeApp({apiKey:'AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU',authDomain:'alcaldia-admin.firebaseapp.com',databaseURL:'https://alcaldia-admin-default-rtdb.firebaseio.com',projectId:'alcaldia-admin'});
 const db=getDatabase(app),$=id=>document.getElementById(id);let siguiente=0,enviando=false,destino=null;

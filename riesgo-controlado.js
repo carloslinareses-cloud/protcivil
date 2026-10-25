@@ -1,6 +1,6 @@
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import {getDatabase,ref,get,onValue,push,update,serverTimestamp} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import {getDatabase,ref,get,onValue,push,update,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import {CAMPOS_RIESGO,validarRiesgo,fechaInforme} from './riesgo-controlado-data.js';
 import {escapar} from './educacion-data.js';
 const app=initializeApp({apiKey:'AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU',authDomain:'alcaldia-admin.firebaseapp.com',databaseURL:'https://alcaldia-admin-default-rtdb.firebaseio.com',projectId:'alcaldia-admin'}),db=getDatabase(app),auth=getAuth(app),$=id=>document.getElementById(id);

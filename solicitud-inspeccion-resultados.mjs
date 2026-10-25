@@ -1,6 +1,6 @@
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import {getDatabase,ref,get,onValue} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import {getDatabase,ref,get,onValue} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import {SECCIONES,CAMPOS,FAMILIA,TIPOS,escapar,fecha,dia} from './solicitud-inspeccion-data.mjs?v=20261016';
 const app=initializeApp({apiKey:'AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU',authDomain:'alcaldia-admin.firebaseapp.com',databaseURL:'https://alcaldia-admin-default-rtdb.firebaseio.com',projectId:'alcaldia-admin'}),auth=getAuth(app),db=getDatabase(app),$=id=>document.getElementById(id);
 const url='https://protcivil.alcaldiadecharallave.com/solicitud-inspeccion.html',qr='https://api.qrserver.com/v1/create-qr-code/?size=900x900&margin=16&format=png&data='+encodeURIComponent(url);

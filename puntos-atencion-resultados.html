@@ -4,7 +4,7 @@
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puntos de atención - Protección Civil</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="autofresh.js"></script>
     <style>
@@ -37,9 +37,9 @@
         </div>
     </main>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { getDatabase,ref,get,child,onValue,remove,push,set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+        import { getDatabase,ref,get,child,onValue,remove,push,set } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
         const firebaseConfig={apiKey:"AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",authDomain:"alcaldia-admin.firebaseapp.com",databaseURL:"https://alcaldia-admin-default-rtdb.firebaseio.com",projectId:"alcaldia-admin",storageBucket:"alcaldia-admin.firebasestorage.app",messagingSenderId:"945828226894",appId:"1:945828226894:web:0efeebeb270357e6f5201f",measurementId:"G-P4QSQR0XGE"};
         const app=initializeApp(firebaseConfig),auth=getAuth(app),database=getDatabase(app),$=id=>document.getElementById(id);
         const PUNTOS=[{nombre:'Punto de La Peñita',corto:'https://tinyurl.com/asistenciapclapenita',largo:'https://protcivil.alcaldiadecharallave.com/puntos-atencion.html?punto=penita',alias:'penita'},{nombre:'Punto del Terminal',corto:'https://tinyurl.com/asistenciapcterminal',largo:'https://protcivil.alcaldiadecharallave.com/puntos-atencion.html?punto=terminal',alias:'terminal'}];

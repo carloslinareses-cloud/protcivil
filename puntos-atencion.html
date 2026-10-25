@@ -83,8 +83,8 @@
     <footer class="pie"><b>Dirección de Protección Civil y Administración de Desastres</b><br>Alcaldía del Municipio Bolivariano Cristóbal Rojas</footer>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
         const firebaseConfig={apiKey:"AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU",authDomain:"alcaldia-admin.firebaseapp.com",databaseURL:"https://alcaldia-admin-default-rtdb.firebaseio.com",projectId:"alcaldia-admin",storageBucket:"alcaldia-admin.firebasestorage.app",messagingSenderId:"945828226894",appId:"1:945828226894:web:0efeebeb270357e6f5201f",measurementId:"G-P4QSQR0XGE"};
         const database=getDatabase(initializeApp(firebaseConfig)),$=id=>document.getElementById(id);
         const PUNTOS={penita:'Punto de La Peñita',terminal:'Punto del Terminal'};

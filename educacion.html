@@ -6,9 +6,9 @@
 <form id="formulario"><p class="ayuda">Los campos con * son obligatorios. Deja vacío lo que no tengas confirmado; escribe 0 cuando la cantidad sea cero. Los totales se calculan al completar ambas cantidades.</p><div id="secciones"></div><section class="seccion"><button class="enviar" id="enviar" type="submit">Guardar registro de educación</button><p class="mensaje" id="mensaje" role="status" aria-live="polite"></p></section></form>
 <section class="seccion" id="confirmacion" hidden><h2>Registro de educación guardado</h2><p>Protección Civil puede consultarlo desde su administrador.</p><button type="button" id="otro">Registrar otro plantel</button></section></main><footer class="pie">Dirección de Protección Civil y Administración de Desastres · Cristóbal Rojas</footer>
 <script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import {getDatabase,ref,push,set,get,update,serverTimestamp} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
-import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getDatabase,ref,push,set,get,update,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {SECCIONES,CAMPOS,SUMAS,escapar,validar} from './educacion-data.js';
 const app=initializeApp({apiKey:'AIzaSyCEqiu5ypPSGbS6nzju6VZtd2RIRYRDmGU',authDomain:'alcaldia-admin.firebaseapp.com',databaseURL:'https://alcaldia-admin-default-rtdb.firebaseio.com',projectId:'alcaldia-admin'});
 const db=getDatabase(app),$=id=>document.getElementById(id),id=new URLSearchParams(location.search).get('id');
